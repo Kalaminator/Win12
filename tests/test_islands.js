@@ -110,6 +110,15 @@ assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparat
 assert.strictEqual(cfgOf(sh.tm, "win12Island"), ""); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop,z.desktop");
 // splits still converge fast, and islands -> split-left goes through the restore
 sh = shell(); assert.ok(passes(sh, sub(sh, "split-left")) <= 3); assert.ok(passes(sh, sub(sh, "islands", 0)) <= 5); assert.ok(passes(sh, sub(sh, "split-left")) <= 6);
+// Start at Right mirrors the One bar (syncCenterPanel). Live 2026-10-17: the switch moved the Start widget into the
+// new island, which then split itself again every pass until plasmashell ran out of files and crashed.
+for (const m of ["split-left", "islands"]) { sh = shell(); sh.host.ws.reverse();
+    assert.ok(passes(sh, sub(sh, m, 0)) <= 3, m + " from a mirrored bar converges"); assert.strictEqual(sh.panels().length, 3);
+    assert.strictEqual(sh.me.panel, sh.host, "Start stays in the host");
+    assert.deepStrictEqual(types(isl(sh, m === "islands" ? "T" : "R")).filter(t => /tray|clock|desktop/.test(t)), ["systemtray", "digitalclock", "showdesktop"]); }
+// the Start widget dragged into an island by hand: no new islands from there
+sh = shell(); assert.ok(passes(sh, sub(sh, "split-left", 0)) <= 3); isl(sh, "R").addWidget(sh.me);
+assert.strictEqual(runIslands(sh, sub(sh, "split-left", 0)), "done"); assert.strictEqual(sh.panels().length, 3);
 // no task manager in the host (taken out for real, not a lingering removal): islands does nothing
 sh = shell(); sh.host.ws.splice(sh.host.ws.indexOf(sh.tm), 1); sh.tm.panel = null;
 assert.strictEqual(runIslands(sh, sub(sh, "islands", 0)), "done"); assert.strictEqual(sh.panels().length, 1);

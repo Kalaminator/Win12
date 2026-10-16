@@ -29,7 +29,8 @@ const tray = (q, w, s) => { if (!/systemtray/.test(w.type) || get(host, 'General
  for (const k of w.configKeys) n.writeConfig(k, w.readConfig(k)); n.reloadConfig();
  const re = a => a.map(i => i === w.id ? n.id : i); s.moved = re(s.moved); s.order = re(s.order); put(host, 'win12Layout', JSON.stringify(s));
  gone.push(w.id); put(host, 'win12Gone', gone.filter(i => i).join(';')); put(host, 'win12TrayClean', 'true'); w.remove(); return n; };
-for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue; host = p;
+// an island is never a host (Start dragged into one by hand would split it again every pass)
+for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me || get(p, 'General', 'win12Island', '')) continue; host = p;
  const want = WANT;   // main.qml islandWant: the taskbar look is Windows 12, else 'single'
  // W15: wait until syncPanelLook has put the gap mode's thickness back (islands copy the panel height and layout)
  if (want !== 'single' && get(p, 'General', 'win12Saved_height', '')) { out = 'again'; continue; }
@@ -54,9 +55,12 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   put(p, 'win12Layout', ''); continue; }
  const tm = live(p).find(isTM);
  if (mode === 'islands' && !tm) continue;   // no task manager in the bar: nothing to split into islands
- if (!s) { const ws = live(p).sort((a, b) => a.index - b.index), t = ws.map(isTM).lastIndexOf(true);
+ if (!s) { const ws = live(p).sort((a, b) => a.index - b.index), tms = ws.map(isTM), t = tms.lastIndexOf(true);
+  // Start at Right mirrors the bar (syncCenterPanel): the tray side is then in front of the task manager. moved keeps
+  // the Start-left order (trayOrder mirrors it); this widget never moves (an island holding it would split again).
+  const side = t >= 0 && ws.findIndex(w => w.id === ID) > t ? ws.slice(0, tms.indexOf(true)).reverse() : ws.slice(t + 1);
   s = { mode: want, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: ws.map(w => w.id),
-   moved: ws.slice(t + 1).filter(w => !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
+   moved: side.filter(w => w.id !== ID && w.type !== HELPER && !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
  const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); s[k] = q.id; out = 'again'; return q; };
  if (mode === 'islands') {
   if (!isl('A')) s.atm = mk('A', 'center').addWidget(tm.type).id;
