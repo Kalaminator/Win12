@@ -107,3 +107,11 @@ left: nothing
 notes: change from the plan's verify: in 6.8 the task manager is ONE plugin, /usr/lib/qt6/plugins/plasma/applets/org.kde.plasma.taskmanager.so (QML + main.xml are compressed resources inside it; no /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager dir, so the main.xml grep has no file). Checked instead: the .so holds `Win12IslandRegistry` / `Win12Islands` (grep -a), and the tree makepkg built (~/.cache/win12-kde/plasma-desktop/src/plasma-desktop-6.8.0/applets/taskmanager/) has win12Island in main.xml (1), qml/main.qml, qml/MouseHandler.qml. The pacman hook ran at install and printed no "stock package replaced" warning (all three patched now). plasma-desktop-debug 6.8.0-1 got installed too (same as Tasks 10-11). The running plasmashell still uses the old libraries until the restart in Task 13; back up ~/.config/plasma-org.kde.plasma.desktop-appletsrc first, and install.sh may run now (kdePatched gate is true). Packages: ~/.cache/win12-kde/plasma-desktop/plasma-desktop-6.8.0-1-x86_64.pkg.tar.zst (+ -debug). No build job left running.
 next: Task 13 — Live test A — every layout x Start position, timing, screenshots, tray
 next-model: opus
+
+## 2026-10-17 01:45 Task 13: Live test A — every layout x Start position, timing, screenshots, tray
+status: partial
+done: appletsrc backup ~/.config/plasma-org.kde.plasma.desktop-appletsrc.bak-fastislands-20261017-0144; install.sh --restart (plasmashell 01:44:04 maps the patched /usr/lib libs)
+left: Step 3 matrix, Step 4 table, Step 5
+notes: USER VALUES TO RESTORE (Task 14 Step 5): taskbarLayout=split-right, taskbarLook= (empty), menuPosition=0, menuStyle=windows12 -> restore with `tests/tools/setlayout.sh split-right 0` (no look argument). Before the test: panel 2 (host: pager, icontasks, marginsseparator, win12 menu, reveal) + panel 242 isl=R (weather, systemtray 244 extra=19, clock, showdesktop, reveal).
+next: Task 13 — Live test A — every layout x Start position, timing, screenshots, tray (resume at Step 3)
+next-model: opus
