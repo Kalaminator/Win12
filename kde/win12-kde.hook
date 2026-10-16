@@ -1,0 +1,14 @@
+# Win12: after a Plasma update, say so when a stock package replaced a patched one (spec part 1).
+# Shipped by the patched plasma-workspace package as /usr/share/libalpm/hooks/win12-kde.hook.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = libplasma
+Target = plasma-workspace
+Target = plasma-desktop
+
+[Action]
+Description = Win12: checking the patched KDE packages...
+When = PostTransaction
+Exec = /bin/sh -c 'pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null || echo "Win12: a stock KDE package replaced a patched one. Run kde/build.sh again."'
