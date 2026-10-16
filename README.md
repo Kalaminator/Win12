@@ -94,6 +94,19 @@ If you used the old Start12 version, `install.sh` migrates your setup automatica
 
 Update: `git pull && ./install.sh --restart`.
 
+## Patched KDE for the taskbar layouts (Arch)
+
+The split and 3 Islands layouts and the Start position move panel widgets through Plasma's scripting. Stock Plasma
+6.8 does that one step at a time (5-8 s per switch) and loses tray icons when a tray is moved, so Win12 ships small
+patches for three packages and rebuilds them from Arch's own PKGBUILDs:
+
+    kde/build.sh            # libplasma, plasma-workspace, plasma-desktop; 20-40 min; asks for sudo to install
+
+Without the patched packages the Taskbar page shows a warning and Win12 leaves your panels alone. After a Plasma
+update pacman prints "Win12: run kde/build.sh again" (a hook shipped by the patched plasma-workspace). Undo at any
+time: `sudo pacman -S libplasma plasma-workspace plasma-desktop`. Patches: `kde/patches/`; what they change is in
+`docs/superpowers/specs/2026-10-16-fast-islands-design.md`.
+
 ## Uninstall
 
 ```sh

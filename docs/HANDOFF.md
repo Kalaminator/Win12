@@ -173,3 +173,16 @@ setup once (backup in `~/.config/win12-migration-backup-<date>/`, plasmashell st
 Done on the user's PC, verified on screen. Kept on purpose: the KAStats favourites client id
 `org.start12.menu.favorites.instance-` (stored favourites), the GitHub URL `Kalaminator/Start12.git` (repo not renamed yet),
 paths under `Documents/Start12` (folder not renamed yet). Store users get a new widget id (no in-widget migration).
+
+## Fast islands on a patched KDE + 3 Islands (2026-10-17)
+`kde/build.sh` rebuilds libplasma / plasma-workspace / plasma-desktop from Arch PKGBUILDs with `kde/patches/*`
+(`provides <pkg>-win12`; hook `win12-kde.hook` warns after an update). Patches: libplasma `Containment::addApplet`
+moves the whole `[Applets][id]` group (tray keeps its icons); plasma-workspace `Widget.index` get/set skip empty
+parts + clamp to length, `TasksModel.appIdFilter`/`appIdFilterExclude`; plasma-desktop panel saves `AppletOrder` at
+once, task manager key `win12Island` (pinned|open|tray), registry singleton `TaskManagerApplet.Win12Islands`
+(`~/.config/win12islandsrc` [Apps] appid=island), drag mime `text/x-win12-appid` + `text/x-win12-launcher`, drop on
+another island assigns the app (+ launcher). Win12: `main.qml kdePatched` (pacman -T) gates syncIslands/syncCenterPanel;
+`code/islandlogic.js` (roles/trayOrder/listsFor/mergeLists) + `code/islands.js` do all moves in one pass (`@POS@` =
+menuPosition; `islands` mode: host + A (other app island) + T (tray island), keys `win12Layout` {A,T,atm,ttm,weather},
+`win12TrayClean`); `tests/test_islands.js` = pure tests + fake-shell harness (<= 3 passes per switch);
+`tests/tools/` = setlayout.sh (timing), state.sh, w16mouse.py (drag). Spec + plan + progress: docs/superpowers/.
