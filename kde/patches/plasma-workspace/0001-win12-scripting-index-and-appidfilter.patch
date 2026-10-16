@@ -1,0 +1,242 @@
+diff --git a/libtaskmanager/autotests/CMakeLists.txt b/libtaskmanager/autotests/CMakeLists.txt
+index c226e8c..0d58a77 100644
+--- a/libtaskmanager/autotests/CMakeLists.txt
++++ b/libtaskmanager/autotests/CMakeLists.txt
+@@ -11,8 +11,11 @@ target_link_libraries(samplewidgetwindow Qt::Core Qt::Gui)
+ ecm_add_tests(
+     tasktoolstest.cpp
+     launchertasksmodeltest.cpp
++    win12appidfiltertest.cpp
+     LINK_LIBRARIES taskmanager Qt::Test KF6::Service KF6::ConfigCore
+ )
++# Win12: no display in makepkg check(); the filter test needs only launcher rows
++set_tests_properties(win12appidfiltertest PROPERTIES ENVIRONMENT QT_QPA_PLATFORM=offscreen)
+ 
+ add_executable(tasksmodeltest tasksmodeltest.cpp)
+ target_link_libraries(tasksmodeltest PRIVATE taskmanager Qt::Test KF6::Service KF6::ConfigCore)
+diff --git a/libtaskmanager/autotests/win12appidfiltertest.cpp b/libtaskmanager/autotests/win12appidfiltertest.cpp
+new file mode 100644
+index 0000000..d52040f
+--- /dev/null
++++ b/libtaskmanager/autotests/win12appidfiltertest.cpp
+@@ -0,0 +1,81 @@
++/*
++    Win12: TasksModel::appIdFilter include/exclude modes (launcher rows carry an AppId, no window system needed).
++    SPDX-License-Identifier: LGPL-2.1-or-later
++*/
++#include <QSignalSpy>
++#include <QTest>
++
++#include "abstracttasksmodel.h"
++#include "tasksmodel.h"
++
++using namespace TaskManager;
++
++class Win12AppIdFilterTest : public QObject
++{
++    Q_OBJECT
++    QStringList m_urls;
++    static QString appId(TasksModel &m, int row)
++    {
++        return m.data(m.index(row, 0), AbstractTasksModel::AppId).toString();
++    }
++    // Not used by QML, so componentComplete() fills the model at once (else a 0 ms timer does it).
++    bool setup(TasksModel &m)
++    {
++        m.componentComplete();
++        m.setLauncherList(m_urls);
++        return m.rowCount() == 2;
++    }
++
++private Q_SLOTS:
++    void initTestCase()
++    {
++        qputenv("XDG_DATA_DIRS", QFINDTESTDATA("data").toLocal8Bit());
++        m_urls = {QUrl::fromLocalFile(QFINDTESTDATA("data/applications/org.kde.dolphin.desktop")).toString(),
++                  QUrl::fromLocalFile(QFINDTESTDATA("data/applications/org.kde.konversation.desktop")).toString()};
++    }
++    void noFilterShowsAll()
++    {
++        TasksModel m;
++        QVERIFY(setup(m));
++        m.setAppIdFilterExclude(true); // exclude nothing = everything
++        QCOMPARE(m.rowCount(), 2);
++    }
++    void includeMode()
++    {
++        TasksModel m;
++        QVERIFY(setup(m));
++        const QString dolphin = appId(m, 0);
++        QVERIFY(!dolphin.isEmpty());
++        QSignalSpy spy(&m, &TasksModel::appIdFilterChanged);
++        m.setAppIdFilter({dolphin});
++        QCOMPARE(spy.count(), 1);
++        QCOMPARE(m.rowCount(), 1);
++        QCOMPARE(appId(m, 0), dolphin);
++        m.setAppIdFilter({QStringLiteral("nothing.desktop")});
++        QCOMPARE(m.rowCount(), 0);
++        m.setAppIdFilter({});
++        QCOMPARE(m.rowCount(), 2);
++    }
++    void excludeMode()
++    {
++        TasksModel m;
++        QVERIFY(setup(m));
++        const QString dolphin = appId(m, 0);
++        m.setAppIdFilterExclude(true);
++        m.setAppIdFilter({dolphin});
++        QCOMPARE(m.rowCount(), 1);
++        QVERIFY(appId(m, 0) != dolphin);
++    }
++    void launcherUrlFallback()
++    {
++        TasksModel m;
++        QVERIFY(setup(m));
++        const QString url = m.data(m.index(0, 0), AbstractTasksModel::LauncherUrlWithoutIcon).toUrl().toString();
++        QVERIFY(!url.isEmpty());
++        m.setAppIdFilter({url});
++        QCOMPARE(m.rowCount(), 1);
++    }
++};
++
++QTEST_MAIN(Win12AppIdFilterTest)
++#include "win12appidfiltertest.moc"
+diff --git a/libtaskmanager/tasksmodel.cpp b/libtaskmanager/tasksmodel.cpp
+index a8252d1..6899059 100644
+--- a/libtaskmanager/tasksmodel.cpp
++++ b/libtaskmanager/tasksmodel.cpp
+@@ -66,6 +66,8 @@ public:
+     std::shared_ptr<ActivityInfo> activityInfo;
+ 
+     bool groupInline = false;
++    QStringList appIdFilter; // Win12 islands
++    bool appIdFilterExclude = false;
+     int groupingWindowTasksThreshold = -1;
+     // A "stable" way to remember the active tasks without having to instantiate complex QPersistentModelIndex
+     QVariantList activeTaskWinIds;
+@@ -1347,6 +1349,36 @@ void TasksModel::setGroupingAppIdBlacklist(const QStringList &list)
+     }
+ }
+ 
++QStringList TasksModel::appIdFilter() const
++{
++    return d->appIdFilter;
++}
++
++void TasksModel::setAppIdFilter(const QStringList &list)
++{
++    if (d->appIdFilter == list) {
++        return;
++    }
++    d->appIdFilter = list;
++    invalidateFilter();
++    Q_EMIT appIdFilterChanged();
++}
++
++bool TasksModel::appIdFilterExclude() const
++{
++    return d->appIdFilterExclude;
++}
++
++void TasksModel::setAppIdFilterExclude(bool exclude)
++{
++    if (d->appIdFilterExclude == exclude) {
++        return;
++    }
++    d->appIdFilterExclude = exclude;
++    invalidateFilter();
++    Q_EMIT appIdFilterExcludeChanged();
++}
++
+ QStringList TasksModel::groupingLauncherUrlBlacklist() const
+ {
+     if (!d->groupingProxyModel) {
+@@ -1987,6 +2019,15 @@ bool TasksModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent
+     const QString &appId = sourceIndex.data(AbstractTasksModel::AppId).toString();
+     const QString &appName = sourceIndex.data(AbstractTasksModel::AppName).toString();
+ 
++    // Win12 islands: hide a task that is not in the list (include mode) or is in it (exclude mode).
++    if (!d->appIdFilter.isEmpty()) {
++        const QString url = sourceIndex.data(AbstractTasksModel::LauncherUrlWithoutIcon).toUrl().toString();
++        const bool listed = (!appId.isEmpty() && d->appIdFilter.contains(appId)) || (!url.isEmpty() && d->appIdFilter.contains(url));
++        if (listed == d->appIdFilterExclude) {
++            return false;
++        }
++    }
++
+     // Filter startup tasks we already have a window task for.
+     if (sourceIndex.data(AbstractTasksModel::IsStartup).toBool()) {
+         for (int i = 0; i < d->filterProxyModel->rowCount(); ++i) {
+diff --git a/libtaskmanager/tasksmodel.h b/libtaskmanager/tasksmodel.h
+index 6d97fd7..b37cf7d 100644
+--- a/libtaskmanager/tasksmodel.h
++++ b/libtaskmanager/tasksmodel.h
+@@ -83,6 +83,12 @@ class TASKMANAGER_EXPORT TasksModel : public QSortFilterProxyModel, public Abstr
+     Q_PROPERTY(
+         int groupingWindowTasksThreshold READ groupingWindowTasksThreshold WRITE setGroupingWindowTasksThreshold NOTIFY groupingWindowTasksThresholdChanged)
+     Q_PROPERTY(QStringList groupingAppIdBlacklist READ groupingAppIdBlacklist WRITE setGroupingAppIdBlacklist NOTIFY groupingAppIdBlacklistChanged)
++    /**
++     * Win12: show only the tasks of these apps (appIdFilterExclude false) or all but them (true). Entries are
++     * app ids (AbstractTasksModel::AppId) or launcher URLs without icon. An empty list in include mode = no filter.
++     */
++    Q_PROPERTY(QStringList appIdFilter READ appIdFilter WRITE setAppIdFilter NOTIFY appIdFilterChanged)
++    Q_PROPERTY(bool appIdFilterExclude READ appIdFilterExclude WRITE setAppIdFilterExclude NOTIFY appIdFilterExcludeChanged)
+     Q_PROPERTY(QStringList groupingLauncherUrlBlacklist READ groupingLauncherUrlBlacklist WRITE setGroupingLauncherUrlBlacklist NOTIFY
+                    groupingLauncherUrlBlacklistChanged)
+     Q_PROPERTY(bool taskReorderingEnabled READ taskReorderingEnabled WRITE setTaskReorderingEnabled NOTIFY taskReorderingEnabledChanged)
+@@ -633,6 +639,12 @@ public:
+      **/
+     void setGroupingAppIdBlacklist(const QStringList &list);
+ 
++    // Win12 islands: see the appIdFilter property.
++    QStringList appIdFilter() const;
++    void setAppIdFilter(const QStringList &list);
++    bool appIdFilterExclude() const;
++    void setAppIdFilterExclude(bool exclude);
++
+     /**
+      * A blacklist of launcher URLs (AbstractTasksModel::LauncherUrl) that is
+      * consulted before grouping a task. If a task's launcher URL is found on the
+@@ -1033,6 +1045,8 @@ Q_SIGNALS:
+     void groupInlineChanged() const;
+     void groupingWindowTasksThresholdChanged() const;
+     void groupingAppIdBlacklistChanged() const;
++    void appIdFilterChanged() const;
++    void appIdFilterExcludeChanged() const;
+     void groupingLauncherUrlBlacklistChanged() const;
+     void taskReorderingEnabledChanged() const;
+     void activeTaskChanged() const;
+diff --git a/shell/scripting/widget.cpp b/shell/scripting/widget.cpp
+index 1cafd1c..316308e 100644
+--- a/shell/scripting/widget.cpp
++++ b/shell/scripting/widget.cpp
+@@ -101,7 +101,8 @@ int Widget::index() const
+     KConfigGroup cg = c->config();
+     cg = KConfigGroup(&cg, QStringLiteral("General"));
+     const QString orderString = cg.readEntry("AppletOrder", QString());
+-    auto parts = orderString.split(u';');
++    // Win12: skip empty parts; an empty AppletOrder split to [""], a fake applet id 0
++    auto parts = orderString.split(u';', Qt::SkipEmptyParts);
+     QList<int> order;
+     std::ranges::transform(parts, std::back_inserter(order), [](const QString &s) {
+         return s.toInt();
+@@ -124,7 +125,8 @@ void Widget::setIndex(int index)
+     KConfigGroup cg = c->config();
+     cg = KConfigGroup(&cg, QStringLiteral("General"));
+     const QString orderString = cg.readEntry("AppletOrder", QString());
+-    auto parts = orderString.split(u';');
++    // Win12: skip empty parts; an empty AppletOrder split to [""], a fake applet id 0
++    auto parts = orderString.split(u';', Qt::SkipEmptyParts);
+     QList<int> order;
+     order.reserve(parts.size());
+     std::ranges::transform(std::as_const(parts), std::back_inserter(order), [](const QString &s) {
+@@ -133,7 +135,8 @@ void Widget::setIndex(int index)
+ 
+     order.removeAll(d->applet->id());
+ 
+-    order.insert(std::min(std::max(0, index), int(order.length()) - 1), d->applet->id());
++    // Win12: the applet was removed above, so length() is the last slot (length()-1 put index=last one too early)
++    order.insert(std::min(std::max(0, index), int(order.length())), d->applet->id());
+ 
+     parts.clear();
+     std::ranges::transform(std::as_const(order), std::back_inserter(parts), [](int val) {
