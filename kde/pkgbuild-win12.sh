@@ -21,6 +21,7 @@ SUMS=(); for f in "${FILES[@]}"; do SUMS+=("'$(sha256sum "$f" | cut -c1-64)'"); 
   echo 'prepare() { cd "$pkgname-$pkgver"; for p in "$srcdir"/*.patch; do patch -Np1 -i "$p"; done; }'
   echo "check() { ctest --test-dir build -R 'win12|coronatest' --output-on-failure; }"
   if [ "$PKG" = plasma-workspace ]; then
+    echo 'makedepends+=(qt6-wayland)  # BUILD_TESTING=ON needs Qt6 WaylandCompositor; Arch does not list it'
     echo 'package() { _win12_package; install -Dm644 "$srcdir/win12-kde.hook" "$pkgdir/usr/share/libalpm/hooks/win12-kde.hook"; }'
   else
     echo 'package() { _win12_package; }'

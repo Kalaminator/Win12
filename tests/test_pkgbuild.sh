@@ -24,6 +24,7 @@ bash -n PKGBUILD
 S=$(makepkg --printsrcinfo)
 echo "$S" | grep -q 'source = 0001-win12-x.patch' && echo "$S" | grep -q 'source = win12-kde.hook' \
   && echo "$S" | grep -q 'provides = plasma-workspace-win12=6.8.0-1' && grep -q 'BUILD_TESTING=ON' PKGBUILD \
+  && echo "$S" | grep -q 'makedepends = qt6-wayland' \
   && grep -q '^_win12_package() {' PKGBUILD && grep -c '^package() {' PKGBUILD | grep -qx 1 && echo "test_pkgbuild OK"
 # second run must refuse (prepare() already there)
 if bash "$HERE/kde/pkgbuild-win12.sh" plasma-workspace "$T/patches" "$HERE/kde/win12-kde.hook" 2>/dev/null; then echo "FAIL: edited twice"; exit 1; fi
