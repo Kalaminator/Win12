@@ -1,0 +1,129 @@
+diff --git a/autotests/coronatest.cpp b/autotests/coronatest.cpp
+index cd69869..b8ac6b4 100644
+--- a/autotests/coronatest.cpp
++++ b/autotests/coronatest.cpp
+@@ -137,6 +137,30 @@ void CoronaTest::addRemoveApplets()
+     QCOMPARE(m_corona->containments().at(0)->applets().count(), 2);
+ }
+ 
++// Win12: Containment::addApplet moves the applet's whole main config group, nothing nests (the system tray
++// used to end as [Applets][id][id] and show only some icons until a restart).
++void CoronaTest::moveAppletKeepsConfig()
++{
++    Plasma::Containment *from = m_corona->containments().at(0);
++    Plasma::Containment *to = m_corona->containments().at(1);
++    QVERIFY(to && to != from);
++    Plasma::Applet *a = from->createApplet(QStringLiteral("invalid"));
++    QVERIFY(a);
++    const QString id = QString::number(a->id());
++    from->config().group(QStringLiteral("Applets")).group(id).writeEntry("plugin", "invalid");
++    a->config().writeEntry("win12", "kept"); // the [Configuration] subgroup
++
++    to->addApplet(std::unique_ptr<Plasma::Applet>(a)); // a move: the applet keeps its parent until here
++
++    QCOMPARE(a->containment(), to);
++    KConfigGroup g = to->config().group(QStringLiteral("Applets")).group(id);
++    QCOMPARE(g.readEntry("plugin", QString()), QStringLiteral("invalid"));
++    QCOMPARE(g.group(QStringLiteral("Configuration")).readEntry("win12", QString()), QStringLiteral("kept"));
++    QVERIFY(!g.hasGroup(id));
++    QVERIFY(!from->config().group(QStringLiteral("Applets")).hasGroup(id));
++    QCOMPARE(a->config().readEntry("win12", QString()), QStringLiteral("kept")); // read through the new path
++}
++
+ // this test has to be the last, since systemimmutability
+ // can't be programmatically unlocked
+ void CoronaTest::immutability()
+diff --git a/autotests/coronatest.h b/autotests/coronatest.h
+index 0674754..3d720bd 100644
+--- a/autotests/coronatest.h
++++ b/autotests/coronatest.h
+@@ -67,6 +67,7 @@ private Q_SLOTS:
+     void checkOrder();
+     void startupCompletion();
+     void addRemoveApplets();
++    void moveAppletKeepsConfig();
+     void immutability();
+ 
+ private:
+diff --git a/src/plasma/containment.cpp b/src/plasma/containment.cpp
+index 7b28b01..f1f73b2 100644
+--- a/src/plasma/containment.cpp
++++ b/src/plasma/containment.cpp
+@@ -384,30 +384,58 @@ void Containment::addApplet(std::unique_ptr<Applet> &&_applet, const QRectF &geo
+ 
+         disconnect(applet, nullptr, currentContainment, nullptr);
+         connect(currentContainment, nullptr, applet, nullptr);
+-        KConfigGroup oldConfig = applet->config();
++        // Win12: move the applet's whole main group ([Applets][id] with plugin=), not applet->config(): for a
++        // containment-applet (the system tray) that IS the main group and KConfigGroup::reparent keeps the name,
++        // so the tray ended as [Applets][id][id] and showed only some icons until a restart. Also fixes the
++        // upstream FIXME (plugin= lost) for ordinary widgets.
++        // config loader groups are full paths joined with \x1d (built like this in KConfigLoader); the old code
++        // compared them with "Containments<id>Applets", which never matched
++        const auto groupPrefix = [](KConfigGroup g) {
++            QString path = g.name() + QChar(0x1d);
++            for (g = g.parent(); g.isValid() && g.name() != QLatin1String("<default>"); g = g.parent()) {
++                path = g.name() + QChar(0x1d) + path;
++            }
++            return path;
++        };
++        KConfigGroup oldMain = *applet->d->mainConfigGroup();
++        const QString oldGroupPrefix = groupPrefix(oldMain);
+         currentContainment->d->applets.removeAll(applet);
+         applet->setParent(this);
+ 
+-        // now move the old config to the new location
+-        // FIXME: this doesn't seem to get the actual main config group containing plugin=, etc
+-        KConfigGroup c = config().group(QStringLiteral("Applets")).group(QString::number(applet->id()));
+-        oldConfig.reparent(&c);
+-        applet->d->resetConfigurationObject();
+-
+-        disconnect(applet, &Applet::activated, currentContainment, &Applet::activated);
+-        // change the group to its configloader, if any
+-        // FIXME: this is very, very brutal
+-        if (applet->configScheme()) {
+-            const QString oldGroupPrefix = QStringLiteral("Containments") + QString::number(currentContainment->id()) + QStringLiteral("Applets");
+-            const QString newGroupPrefix = QStringLiteral("Containments") + QString::number(id()) + QStringLiteral("Applets");
+-
+-            applet->configScheme()->setCurrentGroup(applet->configScheme()->currentGroup().replace(0, oldGroupPrefix.length(), newGroupPrefix));
+-
+-            const auto items = applet->configScheme()->items();
+-            for (KConfigSkeletonItem *item : items) {
+-                item->setGroup(item->group().replace(0, oldGroupPrefix.length(), newGroupPrefix));
++        KConfigGroup applets = config().group(QStringLiteral("Applets"));
++        oldMain.reparent(&applets);
++        const QString newGroupPrefix = groupPrefix(oldMain); // reparent() pointed oldMain at its new place
++        // forget the cached groups so they are built again under this containment; only loader groups under the
++        // applet's old main group are re-targeted (a tray's children live under it too)
++        const auto retarget = [&](Applet *a) {
++            delete a->d->mainConfig;
++            a->d->mainConfig = nullptr;
++            a->d->mainConfigGroup();
++            if (KConfigLoader *scheme = a->configScheme()) {
++                if (scheme->currentGroup().startsWith(oldGroupPrefix)) {
++                    scheme->setCurrentGroup(newGroupPrefix + scheme->currentGroup().mid(oldGroupPrefix.length()));
++                }
++                const auto items = scheme->items();
++                for (KConfigSkeletonItem *item : items) {
++                    if (item->group().startsWith(oldGroupPrefix)) {
++                        item->setGroup(newGroupPrefix + item->group().mid(oldGroupPrefix.length()));
++                    }
++                }
++            }
++        };
++        retarget(applet);
++        if (applet->isContainment()) {
++            const auto children = static_cast<Containment *>(applet)->applets();
++            for (Applet *child : children) {
++                retarget(child);
+             }
+         }
++        // what resetConfigurationObject() did besides dropping plugin=: schedule a config save
++        if (Corona *c = corona()) {
++            c->requireConfigSync();
++        }
++
++        disconnect(applet, &Applet::activated, currentContainment, &Applet::activated);
+     } else {
+         applet->setParent(this);
+     }
