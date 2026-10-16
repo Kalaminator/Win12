@@ -91,3 +91,11 @@ left: nothing
 notes: check() needed no QT_QPA_PLATFORM here (the run's env has WAYLAND_DISPLAY=wayland-0 / DISPLAY=:0); an env without a display may need it. build.sh installs every *.pkg.tar.zst in the clone, so libplasma-debug 6.8.0-1 got installed too (makepkg's debug split; harmless). Task 15/README: the undo `sudo pacman -S libplasma ...` leaves libplasma-debug from the patched build; mention `pacman -R libplasma-debug` or skip -debug in build.sh. The running plasmashell still uses the old library until the restart in Task 13. Packages: ~/.cache/win12-kde/libplasma/libplasma-6.8.0-1-x86_64.pkg.tar.zst (+ -debug).
 next: Task 11 — Build + install patched plasma-workspace
 next-model: opus
+
+## 2026-10-17 01:29 Task 11: Build + install patched plasma-workspace
+status: done
+done: kde/pkgbuild-win12.sh adds `makedepends+=(qt6-wayland)` for plasma-workspace + test_pkgbuild checks it (c9e1611; `test_pkgbuild OK`). `kde/build.sh plasma-workspace` (detached, log ~/.cache/win12-kde/plasma-workspace.log) printed WIN12_BUILD_OK plasma-workspace in 1979 s (~33 min, 4 waits); check() ran win12appidfiltertest (`100% tests passed out of 1`), install via sudo -n pacman -U. `pacman -Q plasma-workspace` = 6.8.0-1, `pacman -T plasma-workspace-win12` = 0, libplasma-win12 still 0, `pacman -Ql plasma-workspace | grep -c win12-kde.hook` = 1.
+left: nothing
+notes: the new hook ran during this install and printed "Win12: a stock KDE package replaced a patched one. Run kde/build.sh again." That is right for now: plasma-desktop-win12 is still missing (`pacman -T` of all three = 127, lists plasma-desktop-win12) until Task 12; it proves the hook works. plasma-workspace-debug 6.8.0-1 got installed too (same as libplasma-debug in Task 10). The running plasmashell still uses the old libraries until the restart in Task 13. Packages: ~/.cache/win12-kde/plasma-workspace/plasma-workspace-6.8.0-1-x86_64.pkg.tar.zst (+ -debug). No build job left running.
+next: Task 12 — Build + install patched plasma-desktop
+next-model: opus
