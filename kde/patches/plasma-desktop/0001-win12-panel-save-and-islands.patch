@@ -1,0 +1,395 @@
+diff --git a/applets/taskmanager/CMakeLists.txt b/applets/taskmanager/CMakeLists.txt
+index 6848151..3571539 100644
+--- a/applets/taskmanager/CMakeLists.txt
++++ b/applets/taskmanager/CMakeLists.txt
+@@ -28,6 +28,7 @@ plasma_add_applet(org.kde.plasma.taskmanager
+         backend.cpp
+         smartlauncherbackend.cpp
+         smartlauncheritem.cpp
++        win12islandregistry.cpp
+     RESOURCES
+         main.xml
+     GENERATE_APPLET_CLASS
+@@ -58,4 +59,9 @@ target_link_libraries(org.kde.plasma.taskmanager PRIVATE
+                       KSysGuard::ProcessCore
+                       KF6::Service
+                       KF6::WindowSystem
+-                      PW::LibNotificationManager)
++                      PW::LibNotificationManager
++                      PW::LibTaskManager) # Win12: appDataFromUrl for the island registry
++
++if(BUILD_TESTING)
++    add_subdirectory(autotests)
++endif()
+diff --git a/applets/taskmanager/autotests/CMakeLists.txt b/applets/taskmanager/autotests/CMakeLists.txt
+new file mode 100644
+index 0000000..d213940
+--- /dev/null
++++ b/applets/taskmanager/autotests/CMakeLists.txt
+@@ -0,0 +1,4 @@
++# Win12: the island registry (app id -> island) shared by every task manager in a plasmashell
++ecm_add_test(win12islandregistrytest.cpp ../win12islandregistry.cpp
++    TEST_NAME win12islandregistrytest
++    LINK_LIBRARIES Qt::Test Qt::Qml KF6::ConfigCore KF6::Service PW::LibTaskManager)
+diff --git a/applets/taskmanager/autotests/win12islandregistrytest.cpp b/applets/taskmanager/autotests/win12islandregistrytest.cpp
+new file mode 100644
+index 0000000..1786fe9
+--- /dev/null
++++ b/applets/taskmanager/autotests/win12islandregistrytest.cpp
+@@ -0,0 +1,42 @@
++// Win12: island registry — assign/query/persist, missing file = empty.  SPDX-License-Identifier: GPL-2.0-or-later
++#include <QSignalSpy>
++#include <QTemporaryDir>
++#include <QTest>
++
++#include "../win12islandregistry.h"
++
++class Win12IslandRegistryTest : public QObject
++{
++    Q_OBJECT
++private Q_SLOTS:
++    void assignQueryPersist()
++    {
++        QTemporaryDir dir;
++        const QString file = dir.filePath(QStringLiteral("win12islandsrc"));
++        Win12IslandRegistry r(file);
++        QSignalSpy spy(&r, &Win12IslandRegistry::changed);
++        QCOMPARE(r.islandOf(QStringLiteral("a.desktop")), QString());
++        r.assign(QStringLiteral("a.desktop"), QStringLiteral("tray"));
++        r.assign(QStringLiteral("b.desktop"), QStringLiteral("pinned"));
++        r.assign(QStringLiteral("b.desktop"), QStringLiteral("pinned")); // same value: no signal
++        QCOMPARE(spy.count(), 2);
++        QCOMPARE(r.appsFor(QStringLiteral("tray")), QStringList{QStringLiteral("a.desktop")});
++        QCOMPARE(r.appsNotFor(QStringLiteral("open")).size(), 2);
++        QCOMPARE(r.appsNotFor(QStringLiteral("tray")), QStringList{QStringLiteral("b.desktop")});
++        r.assignLaunchers({QStringLiteral("applications:c.desktop")}, QStringLiteral("pinned"));
++        QVERIFY(r.appsFor(QStringLiteral("pinned")).size() >= 1); // c resolves to an app id when installed, else the URL is the id
++        r.assign(QStringLiteral("a.desktop"), QString());
++        QCOMPARE(r.islandOf(QStringLiteral("a.desktop")), QString());
++        Win12IslandRegistry again(file);
++        QCOMPARE(again.islandOf(QStringLiteral("b.desktop")), QStringLiteral("pinned"));
++    }
++    void missingFileIsEmpty()
++    {
++        Win12IslandRegistry r(QStringLiteral("/nonexistent-win12/dir/win12islandsrc"));
++        QCOMPARE(r.appsNotFor(QStringLiteral("open")), QStringList());
++        QCOMPARE(r.islandOf(QStringLiteral("x")), QString());
++    }
++};
++
++QTEST_GUILESS_MAIN(Win12IslandRegistryTest)
++#include "win12islandregistrytest.moc"
+diff --git a/applets/taskmanager/main.xml b/applets/taskmanager/main.xml
+index 8c3b687..724f39a 100644
+--- a/applets/taskmanager/main.xml
++++ b/applets/taskmanager/main.xml
+@@ -106,6 +106,10 @@
+       <label>The list of launcher tasks on the widget. Usually .desktop file or executable URLs. Special URLs such as preferred://browser that expand to default applications are supported.</label>
+       <default>applications:systemsettings.desktop,applications:org.kde.discover.desktop,preferred://filemanager,preferred://browser</default>
+     </entry>
++    <entry name="win12Island" type="String">
++      <label>Win12: the island this task manager is (pinned | open | tray); empty = behave like stock</label>
++      <default></default>
++    </entry>
+     <entry name="middleClickAction" type="Enum">
+       <label>What to do on middle-mouse click on a task button.</label>
+       <choices>
+diff --git a/applets/taskmanager/qml/MouseHandler.qml b/applets/taskmanager/qml/MouseHandler.qml
+index 8f47537..810dec7 100644
+--- a/applets/taskmanager/qml/MouseHandler.qml
++++ b/applets/taskmanager/qml/MouseHandler.qml
+@@ -37,6 +37,13 @@ DropArea {
+             return;
+         }
+ 
++        // Win12: a drag from another island task manager never hover-activates a task here
++        if (!tasks.dragSource && tasks.win12Island && event.formats.indexOf("text/x-win12-appid") >= 0) {
++            hoveredItem = null;
++            activationTimer.stop();
++            return;
++        }
++
+         // RtL horizontal TaskLists do not include the spacer (which are initial in this
+         // configuration), if any, but the mouse event coordinates do. We need to subtract
+         // them, or we end thinking we're dragging way right of where we actually are.
+@@ -105,6 +112,40 @@ DropArea {
+     }
+ 
+     onDropped: event => {
++        // Win12: a task from another island task manager: give the app to this island (the registry re-filters
++        // every instance), add its launcher when it was pinned, put it at the drop position.
++        if (!tasks.dragSource && tasks.win12Island && event.formats.indexOf("text/x-win12-appid") >= 0) {
++            const appId = event.getDataAsString("text/x-win12-appid");
++            if (!appId) {
++                event.accepted = false;
++                return;
++            }
++            // same lookup as onPositionChanged
++            const rtlSpacerAdjustment = target.LayoutMirroring.enabled ? tasks.width - target.width : 0;
++            const above = isGroupDialog ? target.itemAt(event.x - rtlSpacerAdjustment, event.y)
++                                        : target.childAt(event.x - rtlSpacerAdjustment, event.y);
++            const insertAt = above && above.index !== undefined ? above.index : tasksModel.count;
++            TaskManagerApplet.Win12Islands.assign(appId, tasks.win12Island);
++            const url = event.getDataAsString("text/x-win12-launcher");
++            if (url) {
++                tasksModel.requestAddLauncher(url);
++            }
++            if (tasksModel.sortMode === TaskManager.TasksModel.SortManual) {
++                for (let i = 0; i < tasksModel.count; ++i) {
++                    const idx = tasksModel.index(i, 0);
++                    if (tasksModel.data(idx, TaskManager.AbstractTasksModel.AppId) === appId
++                        || String(tasksModel.data(idx, TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon)) === appId) {
++                        if (i !== insertAt) {
++                            tasksModel.move(i, Math.min(insertAt, tasksModel.count - 1));
++                        }
++                        break;
++                    }
++                }
++            }
++            event.accepted = true;
++            return;
++        }
++
+         // Reject internal drops.
+         if (event.formats.indexOf("application/x-orgkdeplasmataskmanager_taskbuttonitem") >= 0) {
+             event.accepted = false;
+diff --git a/applets/taskmanager/qml/Task.qml b/applets/taskmanager/qml/Task.qml
+index 1902cdc..5157015 100644
+--- a/applets/taskmanager/qml/Task.qml
++++ b/applets/taskmanager/qml/Task.qml
+@@ -513,6 +513,11 @@ PlasmaCore.ToolTipArea {
+                             "text/x-orgkdeplasmataskmanager_taskurl": backend.tryDecodeApplicationsUrl(model.LauncherUrlWithoutIcon).toString(),
+                             [model.MimeType]: model.MimeData,
+                             "application/x-orgkdeplasmataskmanager_taskbuttonitem": model.MimeData,
++                            // Win12: islands move the app (and its launcher when pinned) on a drop. Same ids as
++                            // the island registry: AppId, else the launcher URL.
++                            "text/x-win12-appid": model.AppId || String(model.LauncherUrlWithoutIcon),
++                            "text/x-win12-launcher": tasksModel.launcherPosition(model.LauncherUrlWithoutIcon) !== -1
++                                ? String(model.LauncherUrlWithoutIcon) : "",
+                         };
+                         dragHelper.Drag.active = dragHandler.active;
+                     });
+diff --git a/applets/taskmanager/qml/main.qml b/applets/taskmanager/qml/main.qml
+index 8d5a83c..e08b22d 100644
+--- a/applets/taskmanager/qml/main.qml
++++ b/applets/taskmanager/qml/main.qml
+@@ -30,7 +30,8 @@ PlasmoidItem {
+     // to fix that (see Task.qml and GroupDialog.qml).
+     rotation: Plasmoid.configuration.reverseMode && Plasmoid.formFactor === PlasmaCore.Types.Vertical ? 180 : 0
+ 
+-    readonly property bool shouldShrinkToZero: tasksModel.count === 0
++    // Win12: an empty island task manager keeps one slot so it stays a drop target
++    readonly property bool shouldShrinkToZero: tasksModel.count === 0 && !tasks.win12Island
+     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
+     readonly property bool iconsOnly: Plasmoid.pluginName === "org.kde.plasma.icontasks"
+ 
+@@ -98,6 +99,44 @@ PlasmoidItem {
+         }
+     }
+ 
++    // Win12 islands (config key win12Island): the shared registry (TaskManagerApplet.Win12Islands) says which app
++    // shows where. open = every app not given to another island; pinned/tray = the apps given to it. This instance's
++    // launchers are given to its island, so a pinned app always shows next to its launcher. Empty key = stock.
++    readonly property string win12Island: Plasmoid.configuration.win12Island
++    function win12Register(): void {
++        if (win12Island) {
++            TaskManagerApplet.Win12Islands.assignLaunchers(tasksModel.launcherList, win12Island);
++        }
++    }
++    function win12Refilter(): void {
++        const r = TaskManagerApplet.Win12Islands;
++        tasksModel.appIdFilterExclude = win12Island === "open";
++        if (!win12Island) {
++            tasksModel.appIdFilter = [];
++            return;
++        }
++        const ids = win12Island === "open" ? r.appsNotFor("open") : r.appsFor(win12Island);
++        // ponytail: an empty include list means "no filter" in TasksModel, so an empty island lists an id no app has
++        tasksModel.appIdFilter = ids.length > 0 || win12Island === "open" ? ids : ["win12-no-app"];
++        // a launcher the registry now gives to another island leaves this one (the drop target added its own)
++        for (const url of tasksModel.launcherList) {
++            const isl = r.islandOf(r.appIdOf(url));
++            if (isl && isl !== win12Island) {
++                tasksModel.requestRemoveLauncher(url);
++            }
++        }
++    }
++    onWin12IslandChanged: {
++        win12Register();
++        win12Refilter();
++    }
++    Connections {
++        target: TaskManagerApplet.Win12Islands
++        function onChanged(): void {
++            tasks.win12Refilter();
++        }
++    }
++
+     function windowsHovered(winIds: var, hovered: bool): DBus.DBusPendingReply {
+         if (!Plasmoid.configuration.highlightWindows) {
+             return;
+@@ -181,6 +220,7 @@ PlasmoidItem {
+ 
+         onLauncherListChanged: {
+             Plasmoid.configuration.launchers = launcherList;
++            tasks.win12Register();
+         }
+ 
+         onGroupingAppIdBlacklistChanged: {
+@@ -666,6 +706,8 @@ PlasmoidItem {
+     Component.onCompleted: {
+         TaskManagerApplet.TaskTools.taskManagerInstanceCount += 1;
+         requestLayout.connect(iconGeometryTimer.restart);
++        win12Register();
++        win12Refilter();
+     }
+ 
+     Component.onDestruction: {
+diff --git a/applets/taskmanager/win12islandregistry.cpp b/applets/taskmanager/win12islandregistry.cpp
+new file mode 100644
+index 0000000..10a06d7
+--- /dev/null
++++ b/applets/taskmanager/win12islandregistry.cpp
+@@ -0,0 +1,87 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++#include "win12islandregistry.h"
++
++#include <QUrl>
++
++#include <KConfigGroup>
++
++#include <tasktools.h>
++
++Win12IslandRegistry::Win12IslandRegistry(const QString &file, QObject *parent)
++    : QObject(parent)
++    , m_config(KSharedConfig::openConfig(file.isEmpty() ? QStringLiteral("win12islandsrc") : file, KConfig::SimpleConfig))
++{
++}
++
++Win12IslandRegistry *Win12IslandRegistry::create(QQmlEngine *, QJSEngine *)
++{
++    // ponytail: one plasmashell = one registry; a static keeps it shared even with several QML engines
++    static Win12IslandRegistry *instance = new Win12IslandRegistry();
++    QJSEngine::setObjectOwnership(instance, QJSEngine::CppOwnership);
++    return instance;
++}
++
++KConfigGroup Win12IslandRegistry::apps() const
++{
++    return m_config->group(QStringLiteral("Apps"));
++}
++
++QString Win12IslandRegistry::islandOf(const QString &appId) const
++{
++    return appId.isEmpty() ? QString() : apps().readEntry(appId, QString());
++}
++
++void Win12IslandRegistry::assign(const QString &appId, const QString &island)
++{
++    if (appId.isEmpty() || islandOf(appId) == island) {
++        return;
++    }
++    KConfigGroup g = apps();
++    if (island.isEmpty()) {
++        g.deleteEntry(appId);
++    } else {
++        g.writeEntry(appId, island);
++    }
++    m_config->sync();
++    Q_EMIT changed();
++}
++
++QStringList Win12IslandRegistry::appsFor(const QString &island) const
++{
++    QStringList out;
++    const auto map = apps().entryMap();
++    for (auto it = map.cbegin(); it != map.cend(); ++it) {
++        if (it.value() == island) {
++            out << it.key();
++        }
++    }
++    return out;
++}
++
++QStringList Win12IslandRegistry::appsNotFor(const QString &island) const
++{
++    QStringList out;
++    const auto map = apps().entryMap();
++    for (auto it = map.cbegin(); it != map.cend(); ++it) {
++        if (it.value() != island && !it.value().isEmpty()) {
++            out << it.key();
++        }
++    }
++    return out;
++}
++
++QString Win12IslandRegistry::appIdOf(const QString &launcherUrl) const
++{
++    // no app id (a plain executable URL): the URL itself, which the TasksModel appIdFilter also matches
++    const QString id = TaskManager::appDataFromUrl(QUrl(launcherUrl)).id;
++    return id.isEmpty() ? launcherUrl : id;
++}
++
++void Win12IslandRegistry::assignLaunchers(const QStringList &launcherUrls, const QString &island)
++{
++    for (const QString &url : launcherUrls) {
++        assign(appIdOf(url), island);
++    }
++}
++
++#include "moc_win12islandregistry.cpp"
+diff --git a/applets/taskmanager/win12islandregistry.h b/applets/taskmanager/win12islandregistry.h
+new file mode 100644
+index 0000000..036c6c1
+--- /dev/null
++++ b/applets/taskmanager/win12islandregistry.h
+@@ -0,0 +1,34 @@
++// Win12 islands: which app lives in which island, shared by every task manager of this plasmashell
++// (one QML singleton = one process-wide object). File ~/.config/win12islandsrc, group [Apps], appid=island.
++// SPDX-License-Identifier: GPL-2.0-or-later
++#pragma once
++
++#include <QObject>
++#include <QQmlEngine>
++#include <QStringList>
++
++#include <KSharedConfig>
++
++class Win12IslandRegistry : public QObject
++{
++    Q_OBJECT
++    QML_NAMED_ELEMENT(Win12Islands)
++    QML_SINGLETON
++public:
++    explicit Win12IslandRegistry(const QString &file = QString(), QObject *parent = nullptr);
++    static Win12IslandRegistry *create(QQmlEngine *, QJSEngine *);
++
++    Q_INVOKABLE QString islandOf(const QString &appId) const;
++    Q_INVOKABLE void assign(const QString &appId, const QString &island); // empty island = forget the app
++    Q_INVOKABLE QStringList appsFor(const QString &island) const;
++    Q_INVOKABLE QStringList appsNotFor(const QString &island) const; // assigned to any other island
++    Q_INVOKABLE QString appIdOf(const QString &launcherUrl) const; // appDataFromUrl(url).id, else the URL
++    Q_INVOKABLE void assignLaunchers(const QStringList &launcherUrls, const QString &island);
++
++Q_SIGNALS:
++    void changed();
++
++private:
++    KConfigGroup apps() const;
++    KSharedConfig::Ptr m_config;
++};
+diff --git a/containments/panel/main.qml b/containments/panel/main.qml
+index 15fc51a..2195f05 100644
+--- a/containments/panel/main.qml
++++ b/containments/panel/main.qml
+@@ -97,8 +97,8 @@ ContainmentItem {
+         LayoutManager.addApplet(applet, pos.x, pos.y);
+         root.checkLastSpacer();
+ 
+-        // When a new preset panel is added, avoid calling save() multiple times
+-        Qt.callLater(LayoutManager.save);
++        // Win12: save now, not through Qt.callLater, so a script reads the new AppletOrder in the same run
++        LayoutManager.save();
+     }
+ 
+     Containment.onAppletRemoved: (applet) => {
