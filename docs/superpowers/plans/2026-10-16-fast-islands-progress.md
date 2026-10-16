@@ -67,3 +67,11 @@ left: nothing
 notes: one change from the plan: the warning label and the long help label use `Layout.maximumWidth: Kirigami.Units.gridUnit * 24` + `wrapMode: Text.Wrap` (the repo's pattern in ConfigTaskbar.qml:236; `Layout.fillWidth` does not wrap inside a FormLayout). New i18n strings for Task 8 (all in TaskbarLayoutBox.qml): "3 Islands: pinned apps, open apps, tray", the new help text ("Split layouts put the tray, clock and weather into separate floating panels (islands). 3 Islands also splits pinned and open apps; drag an app icon to another island to move it there. Touching the bottom edge shows all of them."; it replaces the old help string), and the warning ("The taskbar layouts and the Start position need Win12's patched KDE packages. Run kde/build.sh from the Win12 source folder, then log out and in."). `pacman -T` says "not patched" on this machine now (expected until Task 12). Do NOT run install.sh before Task 12 on the live desktop: the gate would stop all island / Start-position syncs (panels stay as they are, no harm, but the user would see the warning).
 next: Task 8 — Translations
 next-model: sonnet
+
+## 2026-10-17 01:00 Task 8: Translations
+status: done
+done: po/template.pot refreshed, 3 new es.po entries translated (the changed help text lost its fuzzy mark), .mo rebuilt (f066605); `msgfmt --check` clean, "566 translated messages." with no fuzzy/untranslated.
+left: nothing
+notes: Messages.sh only moved line numbers elsewhere. The header `#, fuzzy` at es.po line 6 was already there (not counted by msgfmt).
+next: Task 9 — Live-test tools in `tests/tools/` + docs
+next-model: sonnet
