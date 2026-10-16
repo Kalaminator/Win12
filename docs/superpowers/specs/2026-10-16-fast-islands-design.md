@@ -1,0 +1,177 @@
+# Fast islands on a patched KDE, and 3 islands with movable app icons — design
+
+Date: 2026-10-16. Status: approved in chat (4 parts). The user then asked for unattended work ("work without asking me"),
+so this spec goes straight to planning without a separate written-spec review.
+Plasma version at design time: 6.8.0 (libplasma, plasma-workspace, plasma-desktop 6.8.0-1, Qt 6.12).
+
+## 1. Intent
+
+### What the user said
+- Taskbar layout switches and Start position changes (left, center, right) must be fast and smooth, not a
+  visible step-by-step shuffle. Changing KDE's own code is allowed.
+- Win12 needs the patched KDE. It does not have to work on a normal KDE (decision B).
+- One plan for everything (decision B): the fast switching and the movable app icons ship together.
+- A new layout with 3 islands. Any app icon (pinned or open) can move from any island to any other island.
+- On the island that holds the tray, the tray stays at the screen edge side; app icons go on the other side.
+- Start position decides what each island holds (table in 5.2). Right = full mirror of Left.
+- The layout menu keeps One bar, Split-left, Split-right and adds 3 Islands.
+- An empty island stays as a small island (a drop target).
+- Patch 3 KDE packages, libplasma included, so the tray can move normally (decision B).
+
+### What we assume (not said; correct us if wrong)
+- Arch Linux only. The patched packages are built with `makepkg` from Arch's own PKGBUILDs.
+- The user runs the build script after each Plasma update. The script is not automatic.
+- Islands are bottom-edge horizontal panels on one screen, as today. Multi-monitor and top/side islands are
+  out of scope.
+- Moving an icon is done by drag and drop only (no "Move to island" menu).
+
+## 2. Background: why it is slow today (from reading the 6.8.0 sources)
+
+- `Widget.index` get/set (plasma-workspace `shell/scripting/widget.cpp:102-110`, `:124-136`) work on the saved
+  `General/AppletOrder` string, not the live layout. The panel saves that string only through
+  `Qt.callLater(LayoutManager.save)` (plasma-desktop `containments/panel/main.qml:101`), which cannot run while
+  `evaluateScript` blocks. So after an `addWidget` in the same script, `index` reads -1 and `setIndex` reorders
+  from a stale list. Also: `widget.cpp:136` clamps to `order.length()-1` after removing the item (so
+  `index = last` lands second-to-last), and an empty `AppletOrder` splits to `[""]`, a fake id 0 that
+  `LayoutManager.js:109` counts. A moved widget gets an empty position (scripting `containment.cpp:213`) plus
+  the old panel's `positionBeforeDeletion` (`main.qml:91-94,108`), so `LayoutManager.js:45` drops it at the
+  slot under its old x.
+- Tray config nesting: libplasma `src/plasma/containment.cpp:387,393-394` takes `oldConfig = applet->config()`.
+  The tray is a Containment, so that is its whole `[Applets][id]` group (`applet.cpp:199`), and
+  `reparent(&c)` keeps the name: `[Applets][id][id]`. `containment.cpp:401-408` also rewrites the settings
+  prefix as `Containments<id>Applets` without the `\x1d` separators, and the tray's child applets keep
+  their old config paths. Result: missing tray icons until a restart.
+- Win12 works around both today: one move per `evaluateScript` call with a 0.3 s pause (5-8 s per switch),
+  and a fresh tray instead of a moved one (commit f70da6e).
+- Task managers: `launchers` is per instance (plasma-desktop `applets/taskmanager/main.xml:105`), but
+  libtaskmanager has no filter by app (`taskfilterproxymodel.cpp:549`, `tasksmodel.cpp:1972`), so every
+  instance shows every open window. Drops of a task button from another task manager are rejected
+  (`MouseHandler.qml:109-113`).
+
+## 3. Part 1 — Building and keeping the patched KDE
+
+- New folder `kde/` in the repo:
+  - `kde/patches/libplasma/*.patch`, `kde/patches/plasma-workspace/*.patch`, `kde/patches/plasma-desktop/*.patch`.
+  - `kde/build.sh`: for libplasma, then plasma-workspace, then plasma-desktop (dependency order):
+    1. Read the installed version (`pacman -Q`).
+    2. `git clone` `https://gitlab.archlinux.org/archlinux/packaging/packages/<pkg>.git` into a fresh build
+       dir and check out the tag of that version (e.g. `6.8.0-1`).
+    3. Add our patches to `source=` and apply them in `prepare()`; add
+       `provides+=("<pkg>-win12=<patch-version>")`.
+    4. Import the signing keys listed in the PKGBUILD (`validpgpkeys`). Never skip signature checks.
+    5. `makepkg -si`. Stop with a clear message if a patch does not apply.
+  - `kde/win12-kde.hook`, shipped inside the patched plasma-workspace package as
+    `/usr/share/libalpm/hooks/win12-kde.hook` (so no extra sudo step): after an upgrade of any of the 3
+    packages, if `pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12` reports something
+    missing, print "Win12: run kde/build.sh again".
+  - sudo: `makepkg -si` needs `sudo pacman`. For unattended runs the user may add a sudoers drop-in that
+    allows only `/usr/bin/pacman` without a password, and removes it afterwards.
+- Win12 runs the same `pacman -T` check at start (through `run()`); result in a property `kdePatched`.
+  - Not patched: no island or Start-position changes are made (existing panels are left as they are). The
+    Taskbar settings page shows a warning with the command to run.
+- Undo: `sudo pacman -S libplasma plasma-workspace plasma-desktop` puts the stock packages back.
+
+## 4. Part 2 — The KDE patches
+
+### 4.1 libplasma
+- `Containment::addApplet` (move case): move the applet's whole main config group
+  (`*applet->d->mainConfigGroup()`) into this containment's `Applets` group under the same id, so nothing
+  nests. This also fixes the upstream FIXME where `plugin=` is lost for ordinary widgets.
+- Write the settings-group prefix with the proper `\x1d` separators.
+- For an applet that is itself a containment (the tray): repoint each child applet's config group and
+  settings prefix to the new location. Only groups that start with the old prefix are touched.
+
+### 4.2 plasma-workspace
+- `shell/scripting/widget.cpp`: split `AppletOrder` with `Qt::SkipEmptyParts` (index get and set) and clamp
+  to `order.length()` after removing the item. Together with 4.3 (immediate save), one script can move and
+  order several widgets.
+- libtaskmanager `TasksModel`: new properties `appIdFilter` (`QStringList`) and `appIdFilterExclude`
+  (`bool`), modelled on `groupingAppIdBlacklist` (`tasksmodel.h:85`). In the row filter
+  (`tasksmodel.cpp:1972`, after the app id is read) a task is hidden when it is not in the list (include
+  mode) or is in the list (exclude mode). Matching like `appsMatch` (`tasktools.cpp:503`): `AppId`, falling
+  back to `LauncherUrlWithoutIcon`. Setter calls `invalidateFilter()`. Empty list + include mode = no filter.
+
+### 4.3 plasma-desktop
+- `containments/panel/contents/ui/main.qml:101`: call `LayoutManager.save()` directly, not through
+  `Qt.callLater`.
+- Task manager applet:
+  - Config key `win12Island` (String, default empty = behave exactly like stock).
+  - Island registry: one shared object in the applet's C++ plugin (one instance per plasmashell, used by
+    every task manager). It maps app id -> island name, saved in `~/.config/win12islandsrc` (`[Apps]`
+    group). Signal `changed()` makes every task manager re-filter at once.
+  - Filter binding: island `open` = exclude mode with all app ids assigned to other islands; any other
+    island = include mode with the app ids assigned to it. Pinned launchers of an instance always show in it.
+  - Drag and drop: the drag mime data gets `text/x-win12-appid` (and the launcher URL when pinned). A task
+    manager with a `win12Island` accepts a drop from another task manager (the stock code rejects it),
+    assigns the app to its island in the registry, adds the launcher at the drop position when it was pinned,
+    and orders the task at the drop position. The source task manager sees the registry change and removes its
+    own launcher for that app. The hover-activate timer is suppressed for these drags.
+
+## 5. Part 3 — Win12 changes
+
+### 5.1 Fast layout engine
+- `islands.js` and the Start-position script in `syncCenterPanel()` do all their moves, adds and index sets
+  in one `evaluateScript` call. Magnetic offsets need the new panel lengths, which Plasma computes after the
+  call, so a second call places the offsets. The retry loop stays as a safety net; the expected count is 2
+  calls. Goal: every switch under 1.5 s.
+- The tray is moved normally (4.1). One exception, as the one-time cleanup of configs nested before the
+  patch: the first tray move after the patch uses the current fresh-tray copy, then the host panel gets the
+  marker `win12TrayClean=true` and later moves are normal moves.
+
+### 5.2 The 3 Islands layout (`taskbarLayout` value `islands`)
+
+| Start position | Left island | Middle island | Right island |
+|---|---|---|---|
+| Left | Start + pinned | open apps | apps, weather, tray, clock, show desktop |
+| Center | pinned | Start + open apps | apps, weather, tray, clock, show desktop |
+| Right (full mirror) | show desktop, clock, tray, weather, apps | open apps | pinned + Start |
+
+- Each island has one task manager with `win12Island` = `pinned`, `open` or `tray`. The tray island's
+  task manager is empty at first and sits on the side away from the screen edge.
+- The Start widget stays in the host panel (the panel that holds Win12 and the `win12Layout` key). A Start
+  position change does not move widgets between panels: it re-places the panels (order, alignment, offsets),
+  swaps the `win12Island` names of the host's task manager and the other app island's task manager, and swaps
+  their `launchers` lists, so pinned apps stay in the pinned island.
+- Going from One bar to 3 Islands: the existing task manager's launchers become the pinned island's
+  launchers; the registry starts empty, so every open app shows in the open island (pinned apps that are
+  running show merged with their launcher in the pinned island, as icontasks does today).
+- An app never moved goes to the `open` island. A moved app stays in its island for all its windows, also
+  after a restart (registry file).
+- An empty island stays as a small island (a drop target).
+- Magnetic mode, the bottom gap (`taskbarGap`) and the show-together reveal (KWin script + `org.win12.reveal`
+  helper) cover all 3 islands.
+- Settings: `TaskbarLayoutBox.qml` gets a 4th entry "3 Islands"; the patched-KDE warning shows there too.
+  New strings go through `package/Messages.sh` and get Spanish translations.
+- Going back to One bar, Split-left or Split-right: the extra task managers are removed and the original
+  task manager gets back the full launcher list (pinned island first, then the others) and an empty
+  `win12Island`, so it behaves like stock.
+
+## 6. Error handling
+- `kde/build.sh`: `set -e`; stops with the failing package and step named. A patch that no longer applies
+  after a Plasma update stops the build before anything is installed for that package.
+- Win12 without the patch: warning, no layout changes (see 3).
+- Registry file missing or unreadable: empty registry (everything in the `open` island).
+- A drop of an app with no app id and no launcher URL: rejected (nothing changes).
+
+## 7. Part 4 — Testing
+- KDE: one QTest per patched behaviour, run in `check()` during the build: several moves + index sets in one
+  script give the right order; a moved containment-applet keeps one config level and its children; the
+  `appIdFilter` include/exclude modes filter the right rows.
+- Win12: layout logic checks in `tests/` in the style of `tests/test_tiles.js` (pure functions: which widget
+  goes to which island for each layout and Start position, launcher list swaps).
+- Live, on the user's desktop, with a backup of `plasma-org.kde.plasma.desktop-appletsrc` before each run:
+  every layout (One bar, Split-left, Split-right, 3 Islands) x every Start position; time each switch
+  (goal < 1.5 s); screenshot each result; check all tray icons show; drag an app across all 3 islands, restart
+  plasmashell, check the app is still in its island.
+
+## 8. Out of scope
+- Other distributions, multi-monitor islands, top/side islands, hiding empty islands, a "Move to island" menu.
+
+## 9. Risks and follow-ups
+- Every Plasma update (every few weeks) needs a rebuild of 3 packages (about 20-40 min). A patch may stop
+  applying on a new Plasma version and need an update first; until then the user runs stock KDE and Win12
+  shows its warning.
+- libplasma is used by all of Plasma: a mistake there can break more than Win12. The undo command in 3 always
+  works.
+- Follow-up idea: the `widget.cpp` index bugs, the delayed save and the tray config nesting are real KDE bugs.
+  Sending those fixes upstream would shrink our patch over time.
