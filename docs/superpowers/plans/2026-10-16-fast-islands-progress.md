@@ -83,3 +83,11 @@ left: nothing
 notes: drag mode was only syntax-checked, not run (needs /dev/uinput on the live desktop; Task 14). After a drag the script clears sys.argv so the old move loop does not run.
 next: Task 10 — Build + install patched libplasma
 next-model: opus
+
+## 2026-10-17 00:55 Task 10: Build + install patched libplasma
+status: done
+done: `kde/build.sh libplasma` (detached, log ~/.cache/win12-kde/libplasma.log) printed WIN12_BUILD_OK libplasma in 272 s; patch applied in prepare(), check() ran coronatest (1/1 passed, `100% tests passed out of 1`), install via sudo -n pacman -U. `pacman -Q libplasma` = 6.8.0-1, `pacman -T libplasma-win12` missing=0, Provides libplasma-win12=6.8.0-1. No repo change, so no code commit (only this log).
+left: nothing
+notes: check() needed no QT_QPA_PLATFORM here (the run's env has WAYLAND_DISPLAY=wayland-0 / DISPLAY=:0); an env without a display may need it. build.sh installs every *.pkg.tar.zst in the clone, so libplasma-debug 6.8.0-1 got installed too (makepkg's debug split; harmless). Task 15/README: the undo `sudo pacman -S libplasma ...` leaves libplasma-debug from the patched build; mention `pacman -R libplasma-debug` or skip -debug in build.sh. The running plasmashell still uses the old library until the restart in Task 13. Packages: ~/.cache/win12-kde/libplasma/libplasma-6.8.0-1-x86_64.pkg.tar.zst (+ -debug).
+next: Task 11 — Build + install patched plasma-workspace
+next-model: opus
