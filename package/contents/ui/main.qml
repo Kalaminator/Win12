@@ -641,6 +641,19 @@ ContainmentItem {
     // W5: split taskbar islands, Windows 12 style only (code/islands.js reads the style from this widget's config).
     readonly property string islandWant: win12Taskbar ? cfg.taskbarLayout : "single"
     onIslandWantChanged: syncIslands()
+    // W17: the layouts and the Start position need Win12's patched KDE (kde/build.sh): one script moves everything.
+    // Without it no panel is touched (the settings page shows the command). Checked once per start through pacman.
+    property bool kdePatched: false
+    P5Support.DataSource {
+        id: patchCheck
+        engine: "executable"
+        connectedSources: ["pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null 2>&1 && echo ok"]
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            root.kdePatched = String(data.stdout).trim() === "ok";
+        }
+    }
+    onKdePatchedChanged: if (kdePatched) { syncCenterPanel(); syncIslands(); }
     // W9: magnetic islands are placed from their widths: re-run when this panel's width changes (tasks opened or
     // closed) and every 30 s for the other islands (tray icons, weather), which this widget cannot watch.
     readonly property bool islandMagnetic: islandWant !== "single" && cfg.taskbarMagnetic
@@ -686,7 +699,7 @@ ContainmentItem {
         }
     }
     function syncIslands() {
-        if (!configReady) return;
+        if (!configReady || !kdePatched) return;
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
         const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
@@ -710,7 +723,7 @@ ContainmentItem {
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
     }
     function syncCenterPanel() {
-        if (!configReady) return;   // never act on default settings before migrateConfig is done
+        if (!configReady || !kdePatched) return;   // never act on default settings before migrateConfig is done
         const js = "const ID = " + Plasmoid.id + ", M = 'win12Centre'; let out = 'done';"
             + "const get = (w, g, k, d) => { w.currentConfigGroup = [g]; return String(w.readConfig(k, d)); };"
             + "for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue;"
