@@ -15,7 +15,7 @@ ColumnLayout {
         onActivated: index => box.cfgPage.cfg_taskbarLayout = box.values[index]
     }
     QQC2.Label {
-        text: i18n("Split layouts put the tray, clock and weather into separate floating panels (islands). Touching the bottom edge shows all of them. Plasma restarts once after the tray moves, so all its icons show.")
+        text: i18n("Split layouts put the tray, clock and weather into separate floating panels (islands). Touching the bottom edge shows all of them.")
         enabled: false
     }
     QQC2.CheckBox {

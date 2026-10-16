@@ -15,10 +15,15 @@ const get = (o, g, k, d) => { o.currentConfigGroup = [g]; return String(o.readCo
 const fix = (q, order) => { const ws = live(q), cur = ws.slice().sort((a, b) => a.index - b.index).map(w => w.id), i = order.findIndex((id, k) => cur[k] !== id);
  if (i >= 0) ws.find(w => w.id === order[i]).index = i; return i >= 0; };
 const put = (o, k, v) => { o.currentConfigGroup = ['General']; o.writeConfig(k, v); };
-// W16: a live-moved system tray shows only some icons (Plasma nests its config on a move) until plasmashell restarts:
-// mark the move, the last pass prints 'restart' once and main.qml restarts plasmashell.
-let host = null; const tray = (q, w) => { if (/systemtray/.test(w.type)) put(host, 'win12TrayMoved', 'true'); q.addWidget(w); };
-let gone = []; const live = q => q.widgets().filter(w => gone.indexOf(w.id) < 0);
+let host = null, gone = []; const live = q => q.widgets().filter(w => gone.indexOf(w.id) < 0);
+// W16: a live-moved system tray nests its config one level deeper per move (Plasma 6.8) and shows only some icons
+// until plasmashell restarts. So a tray is never moved: a fresh one takes the old one's settings and its id in the
+// layout, the old one is removed (it stays listed for undo, hence win12Gone).
+const tray = (q, w, s) => { if (!/systemtray/.test(w.type)) return q.addWidget(w);
+ const n = q.addWidget(w.type); w.currentConfigGroup = n.currentConfigGroup = ['General'];
+ for (const k of w.configKeys) n.writeConfig(k, w.readConfig(k)); n.reloadConfig();
+ const re = a => a.map(i => i === w.id ? n.id : i); s.moved = re(s.moved); s.order = re(s.order); put(host, 'win12Layout', JSON.stringify(s));
+ gone.push(w.id); put(host, 'win12Gone', gone.filter(i => i).join(';')); w.remove(); };
 for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue; host = p;
  const want = WANT;   // main.qml islandWant: the taskbar look (T43 taskbarLook or the style) is Windows 12
  // W15: wait until syncPanelLook has put the gap mode's thickness back (islands copy the panel height and layout)
@@ -31,7 +36,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   const hs = [p, isl('L'), isl('R')].filter(q => q).map(q => q.widgets(HELPER)).reduce((a, b) => a.concat(b), []);
   if (hs.length) { hs.forEach(w => w.remove()); continue; }
   const back = s.moved.map(id => ['L', 'R'].map(isl).filter(q => q).map(q => q.widgets().find(w => w.id === id)).find(w => w)).filter(w => w);
-  if (back.length) { tray(p, back[0]); continue; }
+  if (back.length) { tray(p, back[0], s); continue; }
   const L = isl('L'), R = isl('R'); if (L || R) { if (L) L.remove(); if (R) R.remove(); continue; }
   const ids = live(p).map(w => w.id); if (fix(p, s.order.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => s.order.indexOf(i) < 0)))) continue;
   // a switch between the two splits keeps the first saved values (read-backs right after a restore can be stale)
@@ -48,7 +53,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  if (out === 'again') continue;
  const R = isl('R'), lost = live(R).find(w => w.index < 0);   // a move into a just-made empty panel can leave it unplaced: move it out and in again
  if (lost) { p.addWidget(lost); out = 'again'; continue; }
- const w = s.moved.map(id => p.widgets().find(w => w.id === id)).find(w => w); if (w) { tray(R, w); out = 'again'; continue; }
+ const w = s.moved.map(id => p.widgets().find(w => w.id === id)).find(w => w); if (w) { tray(R, w, s); out = 'again'; continue; }
  const own = live(R).filter(w => s.moved.indexOf(w.id) < 0).sort((a, b) => a.index - b.index).map(w => w.id); if (fix(R, own.concat(s.moved))) { out = 'again'; continue; }
  // islands look like the panel; floating/hiding from the keys (syncPanelLook may not have reached the panel yet).
  const W = { floating: get(me, 'XP', 'taskbarFloating', true) !== 'false', hiding: [get(me, 'XP', 'taskbarFloating', true) !== 'false' ? 'autohide' : p.hiding, 'dodgewindows', 'autohide'][Number(get(me, 'XP', 'taskbarHiding', 0))] || p.hiding, height: p.height };
@@ -67,5 +72,4 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   x += q.length + GAP;
   if (q.lengthMode !== lm || q.alignment !== al || MAG && (q.minimumLength > 0 || q.offset !== o)) {
    q.lengthMode = lm; q.alignment = al; if (MAG) { q.minimumLength = 0; q.offset = o; } out = 'again'; break; } } }
-if (out === 'done' && host && get(host, 'General', 'win12TrayMoved', '') === 'true') { put(host, 'win12TrayMoved', ''); out = 'restart'; }
 print(out);

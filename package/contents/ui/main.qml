@@ -686,9 +686,7 @@ ContainmentItem {
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
             + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ " + Tiles.shQuote(file) + ")\"";
-        // W16: "restart" = the tray was moved live (islands.js): one plasmashell restart brings all its icons back.
-        const loop = "for i in $(seq 40); do r=\"$(" + dbus + ")\"; [ \"$r\" = restart ] && systemctl --user --no-block restart plasma-plasmashell;"
-            + " [ \"$r\" = done ] || [ \"$r\" = restart ] && break; sleep 1; done";
+        const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done";
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(loop));
     }
     function syncPanelLook() {

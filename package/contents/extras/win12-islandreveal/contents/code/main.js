@@ -18,7 +18,9 @@ workspace.cursorPosChanged.connect(() => {
     const c = workspace.cursorPos, s = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop), bottom = s.y + s.height;
     if (c.y >= bottom - 1 && !(workspace.activeWindow && workspace.activeWindow.fullScreen)) { timer.stop(); reveal(true); return; }
     if (!on) return;
-    const top = Math.min(...workspace.stackingOrder.filter(w => w.dock && w.frameGeometry.y + w.frameGeometry.height >= bottom - 1).map(w => w.frameGeometry.y));
+    // horizontal docks only: a full-height side panel also reaches the bottom and would put top at 0 (never hide)
+    const top = Math.min(...workspace.stackingOrder.filter(w => w.dock && w.frameGeometry.width > w.frameGeometry.height
+        && w.frameGeometry.y + w.frameGeometry.height >= bottom - 1).map(w => w.frameGeometry.y));
     if (c.y < top - MARGIN) { if (!timer.active) timer.start(); } else timer.stop();
 });
 reveal(false);   // a helper left "on" by a crash
