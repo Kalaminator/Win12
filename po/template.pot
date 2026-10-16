@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 23:05+0200\n"
+"POT-Creation-Date: 2026-10-17 00:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -138,7 +138,7 @@ msgstr ""
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:1005
+#: package/contents/ui/main.qml:1024
 #: package/contents/ui/styles/windows7.qml:300
 #: package/contents/ui/styles/xp.qml:411
 msgid "Rename"
@@ -373,7 +373,7 @@ msgstr ""
 #: package/contents/ui/common/Places.qml:41
 #: package/contents/ui/config/ConfigButton.qml:25
 #: package/contents/ui/config/ConfigRail.qml:39
-#: package/contents/ui/main.qml:1413
+#: package/contents/ui/main.qml:1432
 msgid "File Explorer"
 msgstr ""
 
@@ -386,7 +386,7 @@ msgstr ""
 #: package/contents/ui/config/ConfigButton.qml:25
 #: package/contents/ui/config/ConfigRail.qml:41
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:1407
+#: package/contents/ui/main.qml:1426
 #: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr ""
@@ -394,21 +394,21 @@ msgstr ""
 #: package/contents/ui/common/Places.qml:44
 #: package/contents/ui/config/ConfigButton.qml:26
 #: package/contents/ui/config/ConfigRail.qml:42
-#: package/contents/ui/main.qml:1425
+#: package/contents/ui/main.qml:1444
 msgid "Terminal"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:45
 #: package/contents/ui/config/ConfigButton.qml:25
 #: package/contents/ui/config/ConfigRail.qml:43
-#: package/contents/ui/main.qml:1419
+#: package/contents/ui/main.qml:1438
 msgid "System Monitor"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:46
 #: package/contents/ui/config/ConfigButton.qml:26
 #: package/contents/ui/config/ConfigRail.qml:44
-#: package/contents/ui/main.qml:1431
+#: package/contents/ui/main.qml:1450
 msgid "Run…"
 msgstr ""
 
@@ -426,13 +426,13 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:63
 #: package/contents/ui/config/ConfigRail.qml:49
-#: package/contents/ui/main.qml:1460
+#: package/contents/ui/main.qml:1479
 msgid "Lock"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:64
 #: package/contents/ui/config/ConfigRail.qml:49
-#: package/contents/ui/main.qml:1466
+#: package/contents/ui/main.qml:1485
 msgid "Sign out"
 msgstr ""
 
@@ -443,7 +443,7 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:66
 #: package/contents/ui/config/ConfigRail.qml:50
-#: package/contents/ui/main.qml:1472
+#: package/contents/ui/main.qml:1491
 msgid "Sleep"
 msgstr ""
 
@@ -454,13 +454,13 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:68
 #: package/contents/ui/config/ConfigRail.qml:50
-#: package/contents/ui/main.qml:1478
+#: package/contents/ui/main.qml:1497
 msgid "Restart"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:69
 #: package/contents/ui/config/ConfigRail.qml:51
-#: package/contents/ui/main.qml:1484
+#: package/contents/ui/main.qml:1503
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr ""
@@ -480,17 +480,17 @@ msgid "Search apps and files"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1437
+#: package/contents/ui/main.qml:1456
 msgid "Show desktop"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1443
+#: package/contents/ui/main.qml:1462
 msgid "Edit panel"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1449
+#: package/contents/ui/main.qml:1468
 msgid "Auto-hide panel"
 msgstr ""
 
@@ -697,12 +697,12 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigLook.qml:52
 #: package/contents/ui/config/ConfigLook.qml:59
-#: package/contents/ui/main.qml:889 package/contents/ui/main.qml:896
+#: package/contents/ui/main.qml:908 package/contents/ui/main.qml:915
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr ""
 
 #: package/contents/ui/config/ConfigLook.qml:58
-#: package/contents/ui/main.qml:888
+#: package/contents/ui/main.qml:907
 msgid "Pick tile image…"
 msgstr ""
 
@@ -1079,7 +1079,7 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigMenu.qml:174
 #: package/contents/ui/config/ConfigRail.qml:175
-#: package/contents/ui/main.qml:1019
+#: package/contents/ui/main.qml:1038
 msgid "Name:"
 msgstr ""
 
@@ -1105,7 +1105,7 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigMenu.qml:190
 #: package/contents/ui/config/ConfigStyle.qml:284
-#: package/contents/ui/main.qml:1388 package/contents/ui/win10/Tile.qml:282
+#: package/contents/ui/main.qml:1407 package/contents/ui/win10/Tile.qml:282
 msgid "Reset"
 msgstr ""
 
@@ -2002,29 +2002,40 @@ msgstr ""
 msgid "Edit panel…"
 msgstr ""
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:12
-msgid "One floating bar"
-msgstr ""
-
-#: package/contents/ui/config/TaskbarLayoutBox.qml:12
-msgid "Split: widgets left, apps centre, tray right"
-msgstr ""
-
-#: package/contents/ui/config/TaskbarLayoutBox.qml:13
-msgid "Split: Start and apps left, tray right"
-msgstr ""
-
-#: package/contents/ui/config/TaskbarLayoutBox.qml:18
+#: package/contents/ui/config/TaskbarLayoutBox.qml:25
 msgid ""
-"Split layouts put the tray, clock and weather into separate floating panels "
-"(islands). Touching the bottom edge shows all of them."
-msgstr ""
-
-#: package/contents/ui/config/TaskbarLayoutBox.qml:23
-msgid "Magnetic islands"
+"The taskbar layouts and the Start position need Win12's patched KDE "
+"packages. Run kde/build.sh from the Win12 source folder, then log out and in."
 msgstr ""
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:28
+msgid "One floating bar"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:28
+msgid "Split: widgets left, apps centre, tray right"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+msgid "Split: Start and apps left, tray right"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+msgid "3 Islands: pinned apps, open apps, tray"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:34
+msgid ""
+"Split layouts put the tray, clock and weather into separate floating panels "
+"(islands). 3 Islands also splits pinned and open apps; drag an app icon to "
+"another island to move it there. Touching the bottom edge shows all of them."
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:41
+msgid "Magnetic islands"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:46
 msgid ""
 "On: the islands sit close together in the middle of the screen. Off: pushed "
 "to the screen edges."
@@ -2046,107 +2057,107 @@ msgstr ""
 msgid "Pin to taskbar"
 msgstr ""
 
-#: package/contents/ui/main.qml:895 package/contents/ui/win10/Tile.qml:302
+#: package/contents/ui/main.qml:914 package/contents/ui/win10/Tile.qml:302
 msgid "Choose picture…"
 msgstr ""
 
-#: package/contents/ui/main.qml:902 package/contents/ui/win10/Tile.qml:303
+#: package/contents/ui/main.qml:921 package/contents/ui/win10/Tile.qml:303
 msgid "Choose folder…"
 msgstr ""
 
-#: package/contents/ui/main.qml:959
+#: package/contents/ui/main.qml:978
 msgid "Pin file to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:965
+#: package/contents/ui/main.qml:984
 msgid "Add a folder as group"
 msgstr ""
 
-#: package/contents/ui/main.qml:965
+#: package/contents/ui/main.qml:984
 msgid "Pin folder to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:971
+#: package/contents/ui/main.qml:990
 msgid "Pin website to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:986
+#: package/contents/ui/main.qml:1005
 msgid "Web address:"
 msgstr ""
 
-#: package/contents/ui/main.qml:996
+#: package/contents/ui/main.qml:1015
 msgid "Pin"
 msgstr ""
 
-#: package/contents/ui/main.qml:997 package/contents/ui/main.qml:1029
+#: package/contents/ui/main.qml:1016 package/contents/ui/main.qml:1048
 msgid "Cancel"
 msgstr ""
 
-#: package/contents/ui/main.qml:1019
+#: package/contents/ui/main.qml:1038
 msgid "Name (empty = original):"
 msgstr ""
 
-#: package/contents/ui/main.qml:1028
+#: package/contents/ui/main.qml:1047
 msgid "OK"
 msgstr ""
 
-#: package/contents/ui/main.qml:1044
+#: package/contents/ui/main.qml:1063
 msgid "Pin website…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1045
+#: package/contents/ui/main.qml:1064
 msgid "Pin file…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1046
+#: package/contents/ui/main.qml:1065
 msgid "Pin folder…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1050 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1069 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
 msgstr ""
 
-#: package/contents/ui/main.qml:1050 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1069 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
 msgstr ""
 
-#: package/contents/ui/main.qml:1050 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1069 package/contents/ui/win10/Tile.qml:57
 msgid "System monitor"
 msgstr ""
 
-#: package/contents/ui/main.qml:1051 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1070 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
 msgstr ""
 
-#: package/contents/ui/main.qml:1051 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1070 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
 msgstr ""
 
-#: package/contents/ui/main.qml:1051 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1070 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
 msgstr ""
 
-#: package/contents/ui/main.qml:1051 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1070 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
 msgstr ""
 
-#: package/contents/ui/main.qml:1053
+#: package/contents/ui/main.qml:1072
 msgid "KDE widgets…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1383
+#: package/contents/ui/main.qml:1402
 msgid "Design mode — drag the dividers"
 msgstr ""
 
-#: package/contents/ui/main.qml:1393
+#: package/contents/ui/main.qml:1412
 msgid "Done"
 msgstr ""
 
-#: package/contents/ui/main.qml:1493
+#: package/contents/ui/main.qml:1512
 msgid "Edit menu layout"
 msgstr ""
 
-#: package/contents/ui/main.qml:1498
+#: package/contents/ui/main.qml:1517
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr ""
