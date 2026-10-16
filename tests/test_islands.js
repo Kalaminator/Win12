@@ -88,7 +88,7 @@ assert.deepStrictEqual(types(T).filter(t => t !== "w12:reveal"), ["icontasks", "
 const tmA = A.widgets("org.kde.plasma.icontasks")[0], tmT = T.widgets("org.kde.plasma.icontasks")[0];
 assert.strictEqual(cfgOf(sh.tm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
 assert.strictEqual(cfgOf(tmA, "win12Island"), "open"); assert.strictEqual(cfgOf(tmA, "launchers"), "");
-assert.strictEqual(cfgOf(tmT, "win12Island"), "tray");
+assert.strictEqual(cfgOf(tmT, "win12Island"), "tray"); assert.ok("launchers" in tmT.cfg.General, "tray island TM has no explicit pins");
 assert.strictEqual(cfgOf(sh.host, "win12TrayClean"), "true");   // the one-time fresh tray happened
 assert.ok(sh.host.offset < A.offset && A.offset < T.offset, "magnetic row host, A, T");
 // Center: roles and launchers swap, nothing moves between panels, row A, host, T

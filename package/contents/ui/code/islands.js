@@ -64,8 +64,11 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
    moved: side.filter(w => w.id !== ID && w.type !== HELPER && !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
  const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); s[k] = q.id; out = 'again'; return q; };
  if (mode === 'islands') {
-  if (!isl('A')) s.atm = mk('A', 'center').addWidget(tm.type).id;
-  if (!isl('T')) { const q = mk('T', 'right'); s.ttm = q.addWidget(tm.type).id; s.weather = q.addWidget('org.kde.plasma.weather').id; }
+  // a new island task manager gets an explicit empty pin list: with no key it shows KDE's default pins, and its
+  // island would claim those apps from the pinned island
+  const fresh = q => { const w = q.addWidget(tm.type); put(w, 'launchers', ''); return w.id; };
+  if (!isl('A')) s.atm = fresh(mk('A', 'center'));
+  if (!isl('T')) { const q = mk('T', 'right'); s.ttm = fresh(q); s.weather = q.addWidget('org.kde.plasma.weather').id; }
  } else for (const k of mode === 'split-left' ? ['L', 'R'] : ['R']) if (!isl(k)) { const q = mk(k, k === 'L' ? 'left' : 'right'); if (k === 'L' || mode === 'split-right') q.addWidget('org.kde.plasma.weather'); }
  put(p, 'win12Layout', JSON.stringify(s));
  const dst = mode === 'islands' ? isl('T') : isl('R');
