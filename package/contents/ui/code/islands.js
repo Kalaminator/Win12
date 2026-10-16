@@ -14,7 +14,8 @@
 // (0 px) that the win12islandreveal KWin script uses to show all the islands together.
 const ID = @ID@, WANT = '@WANT@', POS = @POS@, MAG = @MAG@, GAP = @GAP@, HELPER = 'org.win12.reveal'; let out = 'done';
 const get = (o, g, k, d) => { o.currentConfigGroup = [g]; return String(o.readConfig(k, d)); };
-const put = (o, k, v) => { o.currentConfigGroup = ['General']; o.writeConfig(k, v); };
+// launchers go out as a list: a comma-joined string reaches the task manager's QML as ONE launcher
+const put = (o, k, v) => { o.currentConfigGroup = ['General']; o.writeConfig(k, k === 'launchers' ? String(v).split(',').filter(s => s) : v); };
 // a removed widget stays listed until the script ends (a tray even longer, W16): its id goes in gone
 let host = null, gone = []; const live = q => q.widgets().filter(w => gone.indexOf(w.id) < 0);
 const isTM = w => /icontasks|taskmanager/.test(w.type), byId = (q, id) => live(q).find(w => w.id === id);

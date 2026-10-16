@@ -25,7 +25,8 @@ function shell(screenW = 1920) {
     let nextId = 1; const panels = [];
     const cfg = o => { o.cfg = {}; o.currentConfigGroup = ["General"];
         o.readConfig = function (k, d = "") { const g = this.cfg[this.currentConfigGroup[0]] || {}; return k in g ? g[k] : d; };
-        o.writeConfig = function (k, v) { (this.cfg[this.currentConfigGroup[0]] = this.cfg[this.currentConfigGroup[0]] || {})[k] = v; };
+        // like the real scripting API: a string written to the StringList "launchers" reaches QML as ONE launcher
+        o.writeConfig = function (k, v) { assert.ok(k !== "launchers" || Array.isArray(v), "launchers written as a string: " + v); (this.cfg[this.currentConfigGroup[0]] = this.cfg[this.currentConfigGroup[0]] || {})[k] = v; };
         o.reloadConfig = () => {}; return o; };
     const widget = (type, panel) => cfg({ id: nextId++, type, panel,
         get configKeys() { return Object.keys(this.cfg.General || {}); },
@@ -46,7 +47,7 @@ function shell(screenW = 1920) {
     const sh = { Panel, panels: () => panels.slice(), screenGeometry: () => ({ x: 0, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)) };
     // the user's bar: Start, task manager with two pins, separator, tray, clock, show desktop
     const p = new Panel(); const me = p.addWidget("org.win12.menu"); const tm = p.addWidget("org.kde.plasma.icontasks");
-    tm.writeConfig("launchers", "a.desktop,b.desktop");
+    tm.writeConfig("launchers", ["a.desktop", "b.desktop"]);
     for (const t of ["marginsseparator", "systemtray", "digitalclock", "showdesktop"]) p.addWidget("org.kde.plasma." + t);
     sh.host = p; sh.me = me; sh.tm = tm; return sh;
 }
@@ -103,7 +104,7 @@ assert.deepStrictEqual(types(T).filter(t => t !== "w12:reveal"), ["showdesktop",
 assert.strictEqual(cfgOf(sh.tm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
 assert.ok(T.offset < sh.host.offset && sh.host.offset < A.offset, "magnetic row T, host, A");
 // back to One bar: one panel, old order, the pins merged back, stock task manager again
-tmT.writeConfig("launchers", "z.desktop");   // a pin dropped into the tray island comes back too (pinned first)
+tmT.writeConfig("launchers", ["z.desktop"]);   // a pin dropped into the tray island comes back too (pinned first)
 assert.ok(passes(sh, sub(sh, "single")) <= 3, "single converges fast");
 assert.strictEqual(sh.panels().length, 1);
 assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
