@@ -109,9 +109,27 @@ next: Task 13 — Live test A — every layout x Start position, timing, screens
 next-model: opus
 
 ## 2026-10-17 01:45 Task 13: Live test A — every layout x Start position, timing, screenshots, tray
-status: partial
-done: appletsrc backup ~/.config/plasma-org.kde.plasma.desktop-appletsrc.bak-fastislands-20261017-0144; install.sh --restart (plasmashell 01:44:04 maps the patched /usr/lib libs)
-left: Step 3 matrix, Step 4 table, Step 5
-notes: USER VALUES TO RESTORE (Task 14 Step 5): taskbarLayout=split-right, taskbarLook= (empty), menuPosition=0, menuStyle=windows12 -> restore with `tests/tools/setlayout.sh split-right 0` (no look argument). Before the test: panel 2 (host: pager, icontasks, marginsseparator, win12 menu, reveal) + panel 242 isl=R (weather, systemtray 244 extra=19, clock, showdesktop, reveal).
-next: Task 13 — Live test A — every layout x Start position, timing, screenshots, tray (resume at Step 3)
+status: done
+done: appletsrc backup ~/.config/plasma-org.kde.plasma.desktop-appletsrc.bak-fastislands-20261017-0144; install.sh --restart (plasmashell maps the patched libs). First matrix run CRASHED plasmashell (see notes); root cause fixed in islands.js + 2 harness cases (f0a5a86; test failed before, `test_islands OK` + `tiles.js: all checks passed` after), reinstalled, matrix re-run clean. Desktop left in islands pos 0 for Task 14.
+left: visual check of the islands in screenshots (panels hidden under the full-screen terminal; see notes) -> do it in Task 14 Step 1.
+notes: USER VALUES TO RESTORE (Task 14 Step 5): taskbarLayout=split-right, taskbarLook= (empty), menuPosition=0, menuStyle=windows12 -> `tests/tools/setlayout.sh split-right 0` (no look argument). If the desktop is ever broken: copy the backup above over ~/.config/plasma-org.kde.plasma.desktop-appletsrc, `systemctl --user reset-failed plasma-plasmashell; systemctl --user start plasma-plasmashell`.
+ CRASH (fixed): matrix row single pos 2 -> split-left pos 0. One bar with Start at Right is mirrored, so islands.js `moved` (= widgets after the last task manager) held the pager AND the Win12 widget itself; Start went into island R, R then counted as host (no win12Layout) and split again every pass: 130 panels, "Too many open files", plasmashell core-dumped 3x and hit start-limit. Restored from the backup. Fix: on a mirrored bar moved = the widgets before the first task manager, reversed (Start-left order); moved never holds this widget or the reveal helper; a panel with win12Island is never a host. Broken appletsrc kept at <scratchpad>/live/appletsrc-broken.
+ Matrix (after the fix; each row from the row above, 12 rows in this order):
+ | layout | pos | ms | panels | tray extra | ok? |
+ | single | 0 | 1104 | 1 | 19 | ok (from split-right 0; fresh tray 278 = one-time cleanup, win12Gone 244) |
+ | single | 1 | 486 | 1 | 19 | ok (2 panelspacers) |
+ | single | 2 | 447 | 1 | 19 | ok (mirrored) |
+ | split-left | 0 | 1608 | 3 (L weather, R tray/clock/desk) | 19 | SLOW (layout + pos change at once, from mirrored single) |
+ | split-left | 1 | 489 | 3 | 19 | ok |
+ | split-left | 2 | 424 | 3 | 19 | ok |
+ | split-right | 0 | 1884 | 2 (R weather/tray/clock/desk) | 19 | SLOW (restore split-left + build) |
+ | split-right | 1 | 488 | 2 | 19 | ok |
+ | split-right | 2 | 425 | 2 | 19 | ok |
+ | islands | 0 | 2447 | 3 (A tm; T tm,weather,tray,clock,desk) | 19 | SLOW (restore split-right + build) |
+ | islands | 1 | 920 | 3 | 19 | ok, T order as Left |
+ | islands | 2 | 877 | 3 | 19 | ok, T reversed: desk,clock,tray,weather,tm |
+ Second run with the screen on: islands 0/1/2 = 806/921/888 ms, single 0 = 1162, single 0 -> islands 0 = 1048 ms. So only switches BETWEEN two non-single layouts (restore + rebuild) or layout+pos at once go over 1.5 s (1.6-2.4 s); pass counts not visible in journalctl (no evaluateScript lines). Task 15: maybe skip the full restore when going split <-> islands, or accept. Tray: 19 extraItems in every row, tray island order matches the spec at Left/Center/Right.
+ Seen in state (for Task 15): at pos 1 the host holds 2 panelspacers (syncCenterPanel) also in split/islands modes; at pos 2 one spacer. Not checked visually.
+ SCREENSHOTS: the monitor was in DPMS off, so the first 12 shots are empty (transparent). `kscreen-doctor --dpms on` fixed that, but a full-screen terminal (zellij) covers the bottom edge, so shot-{single-0,islands-0,1,2}.png show no panel. Task 14: before each spectacle run `kscreen-doctor --dpms on` and `qdbus6 org.kde.KWin /KWin org.kde.KWin.showDesktop true` (false after), and `kscreen-doctor --dpms off` at the end. Shots: /tmp/claude-1000/-home-kalaminator-Documents-Start12/b88e81db-1485-4a3f-ae50-6c8c3972125b/scratchpad/live/.
+next: Task 14 — Live test B — drag an app across the 3 islands, restart persistence, restore
 next-model: opus
