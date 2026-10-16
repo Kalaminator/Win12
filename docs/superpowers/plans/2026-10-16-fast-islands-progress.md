@@ -75,3 +75,11 @@ left: nothing
 notes: Messages.sh only moved line numbers elsewhere. The header `#, fuzzy` at es.po line 6 was already there (not counted by msgfmt).
 next: Task 9 — Live-test tools in `tests/tools/` + docs
 next-model: sonnet
+
+## 2026-10-17 01:10 Task 9: Live-test tools in `tests/tools/` + docs
+status: done
+done: tests/tools/{w16mouse.py (+ drag mode), state.sh, setlayout.sh}, README section "Patched KDE for the taskbar layouts (Arch)", HANDOFF entry (d6f0b8b). python ast parse + `sh -n` pass; usage line mentions drag.
+left: nothing
+notes: drag mode was only syntax-checked, not run (needs /dev/uinput on the live desktop; Task 14). After a drag the script clears sys.argv so the old move loop does not run.
+next: Task 10 — Build + install patched libplasma
+next-model: opus
