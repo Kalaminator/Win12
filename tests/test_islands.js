@@ -59,18 +59,58 @@ function runIslands(sh, subs) {
     sh.out = []; new Function("panels", "Panel", "screenGeometry", "print", src)(sh.panels, sh.Panel, sh.screenGeometry, sh.print);
     return sh.out[0];
 }
-// passes until the script prints done (-1 = never)
-function passes(sh, subs, max = 10) { for (let i = 1; i <= max; i++) if (runIslands(sh, subs) === "done") return i; return -1; }
+// passes until the script prints done (Infinity = never, so "<= n" asserts fail on a loop that never ends)
+function passes(sh, subs, max = 10) { for (let i = 1; i <= max; i++) if (runIslands(sh, subs) === "done") return i; return Infinity; }
 const types = q => q.widgets().filter(w => w.panel === q).map(w => w.type.replace("org.kde.plasma.", "").replace("org.win12.", "w12:"));
 const sub = (sh, WANT, POS = 0, MAG = true) => ({ ID: sh.me.id, WANT, POS, MAG, GAP: 8 });
 
 // split-left today (one step per pass, so up to 40 passes): 3 panels, tray/clock/show desktop in the right island
 // after the fresh tray, helpers everywhere
-let sh = shell(); assert.ok(passes(sh, sub(sh, "split-left"), 40) > 0, "split-left converges");
+let sh = shell(); assert.ok(passes(sh, sub(sh, "split-left"), 40) <= 40, "split-left converges");
 assert.strictEqual(sh.panels().length, 3);
 const R = sh.panels().find(q => q.readConfig("win12Island") === "R");
 assert.deepStrictEqual(types(R).filter(t => t !== "w12:reveal"), ["systemtray", "digitalclock", "showdesktop"]);
 // back to single: one panel, the order as before (the tray is a fresh id, same place)
-assert.ok(passes(sh, sub(sh, "single"), 40) > 0, "single converges"); assert.strictEqual(sh.panels().length, 1);
+assert.ok(passes(sh, sub(sh, "single"), 40) <= 40, "single converges"); assert.strictEqual(sh.panels().length, 1);
 assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
+
+// ---- fast engine + islands (patched KDE): a switch converges in <= 3 passes ----
+const isl = (sh, k) => sh.panels().find(q => q.readConfig("win12Island") === k);
+const cfgOf = (w, k) => { w.currentConfigGroup = ["General"]; return String(w.readConfig(k, "")); };
+sh = shell();
+assert.ok(passes(sh, sub(sh, "islands", 0)) <= 3, "islands Left converges fast");
+assert.strictEqual(sh.panels().length, 3);
+let A = isl(sh, "A"), T = isl(sh, "T");
+assert.deepStrictEqual(types(sh.host).filter(t => t !== "w12:reveal"), ["w12:menu", "icontasks", "marginsseparator"]);
+assert.deepStrictEqual(types(A).filter(t => t !== "w12:reveal"), ["icontasks"]);
+assert.deepStrictEqual(types(T).filter(t => t !== "w12:reveal"), ["icontasks", "weather", "systemtray", "digitalclock", "showdesktop"]);
+const tmA = A.widgets("org.kde.plasma.icontasks")[0], tmT = T.widgets("org.kde.plasma.icontasks")[0];
+assert.strictEqual(cfgOf(sh.tm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
+assert.strictEqual(cfgOf(tmA, "win12Island"), "open"); assert.strictEqual(cfgOf(tmA, "launchers"), "");
+assert.strictEqual(cfgOf(tmT, "win12Island"), "tray");
+assert.strictEqual(cfgOf(sh.host, "win12TrayClean"), "true");   // the one-time fresh tray happened
+assert.ok(sh.host.offset < A.offset && A.offset < T.offset, "magnetic row host, A, T");
+// Center: roles and launchers swap, nothing moves between panels, row A, host, T
+const before = [sh.host, A, T].map(q => q.widgetIds.join());
+assert.ok(passes(sh, sub(sh, "islands", 1)) <= 3, "Center converges fast");
+assert.deepStrictEqual([sh.host, A, T].map(q => q.widgetIds.join()), before);
+assert.strictEqual(cfgOf(sh.tm, "win12Island"), "open"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "");
+assert.strictEqual(cfgOf(tmA, "win12Island"), "pinned"); assert.strictEqual(cfgOf(tmA, "launchers"), "a.desktop,b.desktop");
+assert.ok(A.offset < sh.host.offset && sh.host.offset < T.offset, "magnetic row A, host, T");
+// Right: full mirror, tray island reversed
+assert.ok(passes(sh, sub(sh, "islands", 2)) <= 3, "Right converges fast");
+assert.deepStrictEqual(types(T).filter(t => t !== "w12:reveal"), ["showdesktop", "digitalclock", "systemtray", "weather", "icontasks"]);
+assert.strictEqual(cfgOf(sh.tm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
+assert.ok(T.offset < sh.host.offset && sh.host.offset < A.offset, "magnetic row T, host, A");
+// back to One bar: one panel, old order, the pins merged back, stock task manager again
+tmT.writeConfig("launchers", "z.desktop");   // a pin dropped into the tray island comes back too (pinned first)
+assert.ok(passes(sh, sub(sh, "single")) <= 3, "single converges fast");
+assert.strictEqual(sh.panels().length, 1);
+assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
+assert.strictEqual(cfgOf(sh.tm, "win12Island"), ""); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop,z.desktop");
+// splits still converge fast, and islands -> split-left goes through the restore
+sh = shell(); assert.ok(passes(sh, sub(sh, "split-left")) <= 3); assert.ok(passes(sh, sub(sh, "islands", 0)) <= 5); assert.ok(passes(sh, sub(sh, "split-left")) <= 6);
+// no task manager in the host (taken out for real, not a lingering removal): islands does nothing
+sh = shell(); sh.host.ws.splice(sh.host.ws.indexOf(sh.tm), 1); sh.tm.panel = null;
+assert.strictEqual(runIslands(sh, sub(sh, "islands", 0)), "done"); assert.strictEqual(sh.panels().length, 1);
 console.log("test_islands OK");

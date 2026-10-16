@@ -595,7 +595,8 @@ ContainmentItem {
     // wanted order with the panel's and only touches what differs, printing "done" when nothing was left to do.
     // The shell loop runs it again until "done" (checks the result of the pass before); flock keeps two syncs
     // from interleaving. So the panelMode change at every plasmashell start (config load) is a no-op.
-    // Widget.index set = live reorder (AppletOrder writes alone do not). A removed widget stays in p.widgets()
+    // Widget.index set = live reorder (AppletOrder writes alone do not). On Win12's patched KDE (kde/) all index
+    // sets land in one pass (immediate panel save, Widget.index fixes); the next pass only verifies. A removed widget stays in p.widgets()
     // for undo (its config already reads empty), so removed ids are listed in the panel's win12Gone key
     // and ignored (ids are never reused; the list drops ids no longer in the panel).
     readonly property int panelMode: !cfg.centerTaskbar ? 0 : cfg.menuPosition === 1 ? 1 : cfg.menuPosition === 2 ? 2 : 0
@@ -647,6 +648,9 @@ ContainmentItem {
     // W16: the space between magnetic islands = the bottom gap (islands.js @GAP@).
     readonly property int islandGap: islandWant !== "single" ? cfg.taskbarGap : -1
     onIslandGapChanged: syncIslands()
+    // W17: the 3 Islands layout follows the Start position (roles + launchers swap, panels re-placed).
+    readonly property int islandPos: islandWant === "islands" ? cfg.menuPosition : -1
+    onIslandPosChanged: syncIslands()
     // W16: auto-hidden split islands show and hide together: KWin script extras/win12-islandreveal (installed by
     // setup.sh) watches the pointer and sets the org.win12.reveal helpers islands.js puts in every split panel.
     readonly property bool islandReveal: islandWant !== "single" && JSON.parse(panelWant).hiding !== "none"
@@ -684,8 +688,10 @@ ContainmentItem {
     function syncIslands() {
         if (!configReady) return;
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
+        const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
-            + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ " + Tiles.shQuote(file) + ")\"";
+            + "/ -e s/@POS@/" + cfg.menuPosition + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ "
+            + Tiles.shQuote(logic) + " " + Tiles.shQuote(file) + ")\"";
         const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done";
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(loop));
     }
@@ -727,11 +733,11 @@ ContainmentItem {
             + " if (mode === 2) { const t = want.findIndex(isTask); want.splice(t < 0 ? want.indexOf(ID) : t, 0, mine[0].id); }"
             + " const all = others.concat(mine), byId = id => all.find(w => w.id === id);"
             + " const cur = all.slice().sort((a, b) => a.index - b.index).map(w => w.id);"
-            // one move per pass (several index sets in one script land out of order), the next pass checks it (a just-added spacer reads index -1).
-            + " const i = want.findIndex((id, k) => byId(id).index < 0 || cur[k] !== id);"
+            // all index sets in one pass (patched KDE: each set is saved at once), the next pass checks them.
+            + " const bad = want.some((id, k) => byId(id).index < 0 || cur[k] !== id);"
             // the saved order goes only once it is back (each pass rebuilds the wanted order from it).
-            + " if (i < 0 && mode !== 2 && saved.length) { p.currentConfigGroup = ['General']; p.writeConfig('win12PanelOrder', ''); }"
-            + " if (i >= 0) { byId(want[i]).index = i;"
+            + " if (!bad && mode !== 2 && saved.length) { p.currentConfigGroup = ['General']; p.writeConfig('win12PanelOrder', ''); }"
+            + " if (bad) { want.forEach((id, k) => { if (byId(id).index !== k) byId(id).index = k; });"
             // the spacers' optimalSize binding misses the move: flip "expanding" so it recomputes.
             + "  for (const s of mine) { s.currentConfigGroup = ['General']; s.writeConfig('expanding', false); s.reloadConfig(); s.writeConfig('expanding', true); s.reloadConfig(); } out = 'again'; }"
             + " for (const id of tasks) { const w = byId(id), f = get(w, 'General', 'win12Fill', '');"

@@ -378,7 +378,7 @@
       <default>8</default>
     </entry>
     <entry name="taskbarLayout" type="String">
-      <label>Windows 12 taskbar layout: single | split-left | split-right (split is stored only until the island panels exist)</label>
+      <label>Windows 12 taskbar layout: single | split-left | split-right | islands (3 islands: pinned, open apps, tray)</label>
       <default>single</default>
     </entry>
     <entry name="taskbarMagnetic" type="Bool">
