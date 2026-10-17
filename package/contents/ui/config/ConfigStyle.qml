@@ -65,7 +65,7 @@ KCM.SimpleKCM {
 
         Kirigami.Heading {
             level: 2
-            text: i18n("Which style would you prefer?")
+            text: i18n("Style")
         }
         QQC2.Label {
             Layout.fillWidth: true
@@ -121,6 +121,7 @@ KCM.SimpleKCM {
         Kirigami.FormLayout {
             Layout.fillWidth: true
 
+            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Mix and match") }
             // T43: [value, label]; "" = same as the style, "none" = KDE Plasma (default), Plasma's own look.
             QQC2.ComboBox {
                 Kirigami.FormData.label: i18n("Start menu:")
@@ -147,7 +148,7 @@ KCM.SimpleKCM {
                 }
             }
             QQC2.ComboBox {
-                Kirigami.FormData.label: i18n("Windows:")
+                Kirigami.FormData.label: i18n("Window title bars:")
                 // main.qml windowDecoration(): the other styles use the Windows 11 title bars.
                 readonly property var items: [["", i18n("Same as the style")], ["none", i18n("KDE Plasma (default)")],
                     ["xp", i18n("Windows XP style")], ["windows7", i18n("Windows 7 style")], ["windows10", i18n("Windows 10 style")],
@@ -164,11 +165,11 @@ KCM.SimpleKCM {
                 text: i18n("KDE Plasma (default): your own Plasma Style and title bars come back.")
                 enabled: false
             }
-            Item { Kirigami.FormData.isSection: true }
+            Kirigami.Separator { visible: kinds.win7Family; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Windows 7") }
 
             QQC2.ComboBox {
                 visible: kinds.menuKind === "windows7" || kinds.menuKind === "modern"
-                Kirigami.FormData.label: i18n("Look:")
+                Kirigami.FormData.label: i18n("Menu look:")
                 model: [i18n("Classic"), i18n("Modern")]
                 currentIndex: kinds.menuKind === "modern" ? 1 : 0
                 onActivated: index => page.setMenu(index === 1 ? "modern" : "windows7")
@@ -176,20 +177,21 @@ KCM.SimpleKCM {
             QQC2.ComboBox {
                 id: subBox
                 visible: kinds.menuKind === "windows7"
-                Kirigami.FormData.label: i18n("Substyle:")
+                Kirigami.FormData.label: i18n("Windows 7 list:")
                 model: [i18n("Windows 7 style"), i18n("Windows 7 style with icons"), i18n("Compact Windows 7 style"),
                         i18n("Grid Windows 7 style"), i18n("Grid Windows 7 style with icons"), i18n("Compact Grid Windows 7 style")]
             }
             QQC2.ComboBox {
                 id: modernSubBox
                 visible: kinds.menuKind === "modern"
-                Kirigami.FormData.label: i18n("Substyle:")
+                Kirigami.FormData.label: i18n("Modern list:")
                 model: [i18n("Modern style"), i18n("Modern style with icons"), i18n("Compact Modern style"),
                         i18n("Grid Modern style"), i18n("Grid Modern style with icons"), i18n("Compact Grid Modern style")]
             }
+            Kirigami.Separator { visible: kinds.anyXp; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Windows XP") }
             QQC2.ComboBox {
                 visible: kinds.anyXp
-                Kirigami.FormData.label: i18n("Substyle:")
+                Kirigami.FormData.label: i18n("XP theme:")
                 // Ids stay "classic"/"modern" for saved configs; "luna" = the real XP look.
                 readonly property var ids: ["luna", "classic", "modern"]
                 model: [i18n("Classic XP"), i18n("Modern classic"), i18n("Modern")]
