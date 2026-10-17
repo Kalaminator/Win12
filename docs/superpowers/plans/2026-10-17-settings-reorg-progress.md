@@ -51,3 +51,11 @@ left: nothing
 notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass. Screenshot row 3 (SY=489) OK: Start button + Right-click menu groups seen (Menu shortcuts/Power are below the fold, not scrolled). XP colour row hidden for the user's menu. Sidebar rows now: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Look, 5 Colours, 6 Search, 7 Taskbar, 8 Icons. Only grep hit for old names is a code comment ("Start11's list").
 next: Task 6 — Windows page (new ConfigWindows.qml) from the Taskbar page
 next-model: sonnet
+
+## 2026-10-17 09:30 Task 6: Windows page (new ConfigWindows.qml) from the Taskbar page
+status: done
+done: `ConfigWindows.qml` (6 read-only keys + 9 moved keys, picture dialog, XP Firefox row); block, dialog and 10 declarations removed from ConfigTaskbar; config.qml "Windows" (preferences-system-windows) after Taskbar (commit e04e32f)
+left: nothing
+notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass. Screenshot row 8 (SY=829) OK: one group "Title bars and frames"; hint label hidden because the user's windowTheme is on; picture rows disabled until a picture is set. Sidebar rows now: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Look, 5 Colours, 6 Search, 7 Taskbar, 8 Windows, 9 Icons (scrolls).
+next: Task 7 — Appearance (git mv ConfigLook.qml ConfigAppearance.qml, Colours merged, 12 sliders from Taskbar)
+next-model: opus
