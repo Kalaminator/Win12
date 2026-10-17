@@ -19,9 +19,9 @@ ConfigModel {
         source: "config/ConfigAppsList.qml"
     }
     ConfigCategory {
-        name: i18n("Shortcuts")
-        icon: "bookmarks"
-        source: "config/ConfigRail.qml"
+        name: i18n("Start button & shortcuts")
+        icon: "start-here-kde"
+        source: "config/ConfigButton.qml"
     }
     ConfigCategory {
         name: i18n("Look")
@@ -47,10 +47,5 @@ ConfigModel {
         name: i18n("Icons")
         icon: "preferences-desktop-icons"
         source: "config/ConfigIcons.qml"
-    }
-    ConfigCategory {
-        name: i18n("Start Button")
-        icon: "start-here-kde"
-        source: "config/ConfigButton.qml"
     }
 }
