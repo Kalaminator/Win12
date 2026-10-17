@@ -35,3 +35,11 @@ left: nothing
 notes: key guard unchanged (5 duplicates, OK 141 keys); qmllint, tiles, stylekinds pass. Screenshot row 1 OK (Size and position + Tiles groups; Windows 12 group hidden for the user's menu). Sidebar rows now: 0 Style 285, 1 Start menu 353, 2 Layout 421, 3 Shortcuts 489, 4 Look 557, 5 Colours 625, 6 Search 693, 7 Taskbar 761, 8 Icons 829, 9 Start Button (scrolls; check). ConfigMenu.qml dropped cfg_menuStyle (unused); Task 4 renames it and may add `kinds` for the recentHideFolders/All Programs rules.
 next: Task 4 — Apps list page (git mv ConfigMenu.qml ConfigAppsList.qml), groups, hide-list rule, All Programs visibility
 next-model: sonnet
+
+## 2026-10-17 08:58 Task 4: Apps list page (git mv ConfigMenu.qml ConfigAppsList.qml), groups, hide-list rule, All Programs visibility
+status: done
+done: ConfigMenu.qml -> ConfigAppsList.qml (git mv, rename in ce02205, content in d0c17f9); six read-only keys + StyleKinds; labels renamed; hideRecentFolders only for windows11/windows12; "All Programs (Windows 7 and XP)" group only for win7Family/xp; config.qml row "Apps list" (commit d0c17f9)
+left: nothing
+notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass; grep for old tags = 0. Screenshot row 2 (SY=421) OK for the user's style: Apps list, Hidden apps, Filtered folders; All Programs hidden. Every row except the Hide box has enabled: !hideList.checked (foldersBottom/allAppsAsMenu also need folders.checked).
+next: Task 5 — Start button & shortcuts (ConfigRail merged into ConfigButton; XP Start colour from Style)
+next-model: sonnet
