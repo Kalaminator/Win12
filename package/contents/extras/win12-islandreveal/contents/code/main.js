@@ -10,7 +10,7 @@ function reveal(name) {
     on = name;
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript",
         "const sid = " + (name === null ? "-1" : "screenForConnector('" + name.replace(/[^A-Za-z0-9_-]/g, "") + "')")
-        + "; for (const p of panels()) for (const w of p.widgets('org.win12.reveal')) { w.currentConfigGroup = ['General']; w.writeConfig('reveal', p.screen === sid); }");
+        + "; for (const p of panels()) for (const w of p.widgets('org.win12.reveal')) { w.currentConfigGroup = ['General']; w.writeConfig('reveal', sid >= 0 && p.screen === sid); }");   // a panel off-screen (unplugged) also reads -1
 }
 const timer = new QTimer();
 timer.singleShot = true;
