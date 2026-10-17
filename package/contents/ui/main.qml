@@ -640,7 +640,7 @@ ContainmentItem {
     }
     // W5: split taskbar islands, Windows 12 style only (code/islands.js reads the style from this widget's config).
     readonly property string islandWant: win12Taskbar ? cfg.taskbarLayout : "single"
-    onIslandWantChanged: syncIslands()
+    onIslandWantChanged: { syncCenterPanel(); syncIslands(); }
     // W17: the layouts and the Start position need Win12's patched KDE (kde/build.sh): one script moves everything.
     // Without it no panel is touched (the settings page shows the command). Checked once per start through pacman.
     property bool kdePatched: false
@@ -728,7 +728,8 @@ ContainmentItem {
             + "const get = (w, g, k, d) => { w.currentConfigGroup = [g]; return String(w.readConfig(k, d)); };"
             + "for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue;"
             + " const pos = Number(get(me, 'Style', 'menuPosition', 0)), on = get(me, 'Style', 'centerTaskbar', false) === 'true';"
-            + " const mode = !on ? 0 : pos === 1 ? 1 : pos === 2 ? 2 : 0, n = [0, 2, 1][mode];"
+            // a split host is an island that fits its content: an expanding spacer would make it screen-wide
+            + " const mode = !on ? 0 : pos === 1 ? 1 : pos === 2 ? 2 : 0, n = " + (islandWant !== "single" ? "0" : "[0, 2, 1][mode]") + ";"
             + " p.currentConfigGroup = ['General']; const goneWas = String(p.readConfig('win12Gone', ''));"
             + " const gone = goneWas.split(';').map(Number).filter(i => p.widgetIds.indexOf(i) >= 0), live = () => p.widgets().filter(w => gone.indexOf(w.id) < 0);"
             + " const mark = w => w.type === 'org.kde.plasma.panelspacer' ? get(w, 'General', M, '') : '';"
@@ -742,8 +743,8 @@ ContainmentItem {
             + " const base = saved.length ? saved.concat(ids.filter(i => saved.indexOf(i) < 0)) : ids;"
             + " if (mode === 2 && !saved.length) p.writeConfig('win12PanelOrder', base.join(';'));"
             + " const want = mode === 2 ? base.slice().reverse() : base.slice();"
-            + " if (mode === 1) { want.splice(want.indexOf(ID), 0, mine[0].id); let e = want.indexOf(ID); want.forEach((id, i) => { if (isTask(id)) e = Math.max(e, i); }); want.splice(e + 1, 0, mine[1].id); }"
-            + " if (mode === 2) { const t = want.findIndex(isTask); want.splice(t < 0 ? want.indexOf(ID) : t, 0, mine[0].id); }"
+            + " if (mode === 1 && n) { want.splice(want.indexOf(ID), 0, mine[0].id); let e = want.indexOf(ID); want.forEach((id, i) => { if (isTask(id)) e = Math.max(e, i); }); want.splice(e + 1, 0, mine[1].id); }"
+            + " if (mode === 2 && n) { const t = want.findIndex(isTask); want.splice(t < 0 ? want.indexOf(ID) : t, 0, mine[0].id); }"
             + " const all = others.concat(mine), byId = id => all.find(w => w.id === id);"
             + " const cur = all.slice().sort((a, b) => a.index - b.index).map(w => w.id);"
             // all index sets in one pass (patched KDE: each set is saved at once), the next pass checks them.

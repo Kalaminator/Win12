@@ -4,7 +4,7 @@
 // A = the other app island, T = the tray island. Table in the spec (5.2): Center puts Start with the open apps.
 function roles(pos) {
     return { host: pos === 1 ? "open" : "pinned", other: pos === 1 ? "pinned" : "open",
-             row: pos === 2 ? ["T", "host", "A"] : pos === 1 ? ["A", "host", "T"] : ["host", "A", "T"] };
+             row: pos === 2 ? ["T", "A", "host"] : pos === 1 ? ["A", "host", "T"] : ["host", "A", "T"] };
 }
 // The tray island's widget order: its task manager on the side away from the screen edge, then weather, then the
 // widgets moved out of the host (tray, clock, show desktop) in the user's order; Right = full mirror.

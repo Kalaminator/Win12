@@ -102,9 +102,12 @@ patches for three packages and rebuilds them from Arch's own PKGBUILDs:
 
     kde/build.sh            # libplasma, plasma-workspace, plasma-desktop; 20-40 min; asks for sudo to install
 
-Without the patched packages the Taskbar page shows a warning and Win12 leaves your panels alone. After a Plasma
-update pacman prints "Win12: run kde/build.sh again" (a hook shipped by the patched plasma-workspace). Undo at any
-time: `sudo pacman -S libplasma plasma-workspace plasma-desktop`. Patches: `kde/patches/`; what they change is in
+Without the patched packages the Taskbar page shows a warning and Win12 leaves your panels alone, so after each
+Plasma update that warning is the sign to run `kde/build.sh` again (a pacman hook in the patched plasma-workspace
+also prints "Run kde/build.sh again" when only libplasma or plasma-desktop got replaced). Undo at any time:
+`sudo pacman -S libplasma plasma-workspace plasma-desktop`, then
+`sudo pacman -R libplasma-debug plasma-workspace-debug plasma-desktop-debug` (makepkg also built and installed
+those). Patches: `kde/patches/`; what they change is in
 `docs/superpowers/specs/2026-10-16-fast-islands-design.md`.
 
 ## Uninstall

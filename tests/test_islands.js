@@ -8,7 +8,7 @@ const L = new Function(read("islandlogic.js") + "; return { roles, trayOrder, li
 // roles: host (holds Start) is pinned at Left/Right, open at Center; row order left -> right (spec 5.2)
 assert.deepStrictEqual(L.roles(0), { host: "pinned", other: "open", row: ["host", "A", "T"] });
 assert.deepStrictEqual(L.roles(1), { host: "open", other: "pinned", row: ["A", "host", "T"] });
-assert.deepStrictEqual(L.roles(2), { host: "pinned", other: "open", row: ["T", "host", "A"] });
+assert.deepStrictEqual(L.roles(2), { host: "pinned", other: "open", row: ["T", "A", "host"] });
 // tray island order: apps TM on the side away from the screen edge; Right = full mirror
 assert.deepStrictEqual(L.trayOrder(0, 9, 8, [1, 2, 3]), [9, 8, 1, 2, 3]);
 assert.deepStrictEqual(L.trayOrder(2, 9, 8, [1, 2, 3]), [3, 2, 1, 8, 9]);
@@ -102,7 +102,7 @@ assert.ok(A.offset < sh.host.offset && sh.host.offset < T.offset, "magnetic row 
 assert.ok(passes(sh, sub(sh, "islands", 2)) <= 3, "Right converges fast");
 assert.deepStrictEqual(types(T).filter(t => t !== "w12:reveal"), ["showdesktop", "digitalclock", "systemtray", "weather", "icontasks"]);
 assert.strictEqual(cfgOf(sh.tm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
-assert.ok(T.offset < sh.host.offset && sh.host.offset < A.offset, "magnetic row T, host, A");
+assert.ok(T.offset < A.offset && A.offset < sh.host.offset, "magnetic row T, A, host");
 // back to One bar: one panel, old order, the pins merged back, stock task manager again
 tmT.writeConfig("launchers", ["z.desktop"]);   // a pin dropped into the tray island comes back too (pinned first)
 assert.ok(passes(sh, sub(sh, "single")) <= 3, "single converges fast");
