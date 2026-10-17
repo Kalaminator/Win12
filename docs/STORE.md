@@ -4,13 +4,13 @@ Create the product at https://store.kde.org (log in → *Add Product*).
 
 - **Category:** Plasma 6 Applets / Application Launchers
 - **Name:** Win12
-- **Summary:** Start11-style start menu for KDE Plasma 6, eight menu styles with matching taskbar and windows
+- **Summary:** Start11-style start menu for KDE Plasma 6, nine menu styles with matching taskbar and windows
 - **License:** MIT
 - **Link / source:** https://github.com/Kalaminator/Win12
 - **Description:**
 
-  > A start menu for KDE Plasma 6 inspired by Stardock Start11. Eight menu styles: Windows 10 (live-tile
-  > style groups), Windows 11, Windows 7, XP, Modern, App, Pro and Launcher, all switchable from one settings
+  > A start menu for KDE Plasma 6 inspired by Stardock Start11. Nine menu styles: Windows 10 (live-tile
+  > style groups), Windows 11, Windows 12, Windows 7, XP, Modern, App, Pro and Launcher, all switchable from one settings
   > window. Optional matching taskbar style, title bars, window colours and window glass (transparency, blur,
   > rounded corners) that are undone when you turn them off. Pinned apps, websites, files and folders,
   > grouped search, keyboard navigation, custom Start button, transparency and textures. Translated into
