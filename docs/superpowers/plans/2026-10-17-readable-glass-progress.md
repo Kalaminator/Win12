@@ -58,3 +58,11 @@ left: nothing
 notes: Standalone test from the PATCHED pristine v6.8.0 clone: 6 passed, 0 failed, no -Wall warnings (needs moc first: `/usr/lib/qt6/moc <test.cpp> -o <dir>/win12_blur_colormatrix_test.moc` and `-I<dir>`; inside the kwin build AUTOMOC does it). `patch -Np1 --dry-run` on a clean clone: rc 0, no fuzz. `sh tests/test_pkgbuild.sh` OK; a mutated provides makes it print "FAIL: kwin edit". blur.cpp itself was NOT compiled (needs the full kwin tree: that is Task 6). Uses `EffectWindow::isDock()`/`windowClass()` (effectwindow.h l.453/l.439). kwin installed = 6.8.0-1, qt6-base 6.12.0-3. Scratch clone: `/tmp/claude-1000/scratch-kwin/kwin` (reset to pristine).
 next: Task 6 — Build `kwin-win12` (no install)
 next-model: sonnet
+
+## 2026-10-17 16:58 Task 6: Build `kwin-win12` (no install)
+status: done
+done: no commit (nothing in the repo changed). `kde/build.sh kwin` built OK in 44 min (2655 s): patch applied in prepare(), compiled with tests, `check()` ran `win12-blur-colormatrix`: 1 Passed line in the log.
+left: nothing
+notes: kwin 6.8.0-1 installed and built; deps check (`pacman -T`) printed nothing missing. Package: `/home/kalaminator/.cache/win12-kde/kwin/kwin-6.8.0-1-x86_64.pkg.tar.zst` (plus `kwin-debug-...`). The build also made the hook package: `/home/kalaminator/.cache/win12-kde/hook/*.pkg.tar.zst`. User install (Task 8): `sudo pacman -U /home/kalaminator/.cache/win12-kde/kwin/kwin-6.8.0-1-x86_64.pkg.tar.zst`, then log out and in. Log: `/tmp/claude-1000/-home-kalaminator-Documents-Start12/../scratch-kwin/kwin-build.log` = `/tmp/claude-1000/scratch-kwin/kwin-build.log`. Nested run recipe not done (spec 12.4). Nothing left running.
+next: Task 7 — Whole-change review + ELI5
+next-model: opus
