@@ -107,3 +107,33 @@ left: nothing
 notes: msgfmt --check: 580 translated messages, no untranslated, no fuzzy. install.sh prints settings keys OK (141 keys). Other po/*.po were not touched by Messages.sh. Method: msgattrib --translated --no-fuzzy, msgcat --use-first with a new translation file, msgmerge --no-fuzzy-matching against template.pot (no polib here). Stray untracked messages.mo in the repo root is not ours; left alone.
 next: Task 13 — Review against the proposal, fixes, ELI5 + hand-check list for the user
 next-model: opus
+
+## 2026-10-17 08:30 Task 13: Review against the proposal, fixes, ELI5 + hand-check list for the user
+status: done
+done: review of all 9 pages against proposal sections 3-4; fixes (commit 5fbb074): Taskbar — with a Windows taskbar (taskbarFollowsStyle on) the Colour..Task buttons rows and the "Available with a custom taskbar colour." hint now hide with the Override check (before: greyed rows + a hint pointing at a hidden control); Search — Results rows in the proposal order (group, classic, filter icons, web); Apps list — one stray indent
+left: nothing required. Optional, not done (spec gaps, not deviations): (1) Appearance texture rows (Placement/Fade/Darken/Recolour) and Taskbar Placement/Texture opacity/Tint are disabled until a texture is picked with no hint line (spec lists none; the picker sits right above); a hint needs a new msgid + Spanish. (2) "All Programs (Windows 7 and XP)" group title keeps a style tag because the proposal's own heading has it; drop to "All Programs" only if the user wants (msgid change).
+notes: Step 1: strict guard `settings keys OK (141 keys)`; stylekinds OK; qmllint no errors; TaskbarLayoutBox only in ConfigTaskbar.qml:1; no question labels (only dialog titles); es.po 580 translated. Gating grep hits only ConfigStyle.qml:86-87 (the style cards' own "chosen" state, not gating: fine). Appearance hint keeps the old msgid with \"Plasma's own\" quotes (proposal says "kept"). colorMode modes [2,1,0,3] both ways and Menu/Text colour only for Custom: confirmed. Style combos Taskbar:/Window title bars: write taskbarFollowsStyle/xpTaskbarTheme/windowTheme (so the Mix rows are there). Screenshots after install: Taskbar (colour group goes straight to Gradient for the user's Windows taskbar) and Search (new order) OK; Cancel closed the dialog; journal clean.
+(a) ELI5 for the user:
+- Win12 Settings now has 9 pages: Style, Start menu, Apps list, Start button & shortcuts, Taskbar, Windows, Appearance, Search, Advanced.
+- Each setting lives on ONE page only. Before, some were on two pages and fought each other.
+- Style = pick your Windows look. Start menu = size, place, tiles. Apps list = what the list of programs shows.
+- Start button & shortcuts = the button, its right-click menu, the side shortcuts, power.
+- Taskbar = bar layout, islands, colour, behaviour. Windows = title bars and frames.
+- Appearance = colours, see-through, corners, textures, fonts (old Look + Colours together).
+- Advanced = icon theme, wallpaper, backup, reset.
+- Rows that do not fit your style are hidden. Rows that wait for another switch are grey, with a short line that says why.
+- Your saved settings did not change. Only where the switches sit changed. Spanish is complete.
+(b) Hand-check list (open Win12 Settings, change, OK, reopen: it stuck; then put it back):
+- Style: change "Menu look:", OK, reopen: it stuck.
+- Start menu: tick "Full screen menu", OK, reopen: it stuck.
+- Apps list: tick "Show recently added apps", OK, reopen: it stuck. Tick "Hide the apps list (tiles only)": the rows below go grey, not gone.
+- Start button & shortcuts: switch Start button "Icon"/"Picture", OK, reopen: it stuck.
+- Taskbar: tick "Floating bar", OK, reopen: it stuck.
+- Windows: move "Opacity:", OK, reopen: it stuck (needs a Windows title bar picked on Style).
+- Appearance: tick "Solid Start menu", OK, reopen: it stuck. Colour mode "Custom" shows Menu colour and Text colour; other modes hide them.
+- Search: tick "Classic search…", OK, reopen: it stuck.
+- Advanced: pick an icon theme: it changes at once (no OK needed); pick the old one back.
+- Mix: with Style card Windows 12 and "Menu look:" Windows 7, the Windows 7 group shows on Style and the All Programs group shows on Apps list.
+(c) docs/FEATURES.md still names old pages (follow-up, not done): l.18 "Start Menu page" (now Style + Start menu), l.29 "Layout page" (-> Apps list / Start menu), l.42 "Shortcuts page" (-> Start button & shortcuts), l.50 "Look page" and l.61 "Colours page" (-> Appearance), l.63 "from the Look page" (-> Appearance), l.89 "Start Button page" and l.99 (-> Start button & shortcuts), l.103 "Open it from the Layout page" (the Edit menu layout button is now on Start menu); Icons page section, if any, -> Advanced.
+next: none
+next-model: none
