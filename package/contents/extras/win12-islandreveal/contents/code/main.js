@@ -1,26 +1,30 @@
-// W16: Plasma reveals each auto-hidden panel only from the edge strip under it. With split Windows 12 islands this
-// script shows them all: the pointer on the bottom pixel row sets "reveal" on every org.win12.reveal helper (islands.js
-// puts one in each split panel; NeedsAttention keeps an auto-hidden panel shown); DELAY ms with the pointer above
-// the islands' top - MARGIN clears it and Plasma hides them as usual. Loaded by main.qml syncIslandReveal().
+// W16/10: Plasma reveals each auto-hidden panel only from the edge strip under it. With split Windows 12 islands this
+// script shows them together, per monitor: the pointer on the bottom pixel row of a monitor sets "reveal" on the
+// org.win12.reveal helpers of that monitor's panels (islands.js puts one in each island; NeedsAttention keeps an
+// auto-hidden panel shown) and clears the others; DELAY ms with the pointer above the islands' top - MARGIN, or on
+// another monitor, clears it and Plasma hides them as usual. Loaded by main.qml syncIslandReveal().
 const MARGIN = 16, DELAY = 700;
-let on = true;
-function reveal(v) {
-    if (on === v) return;
-    on = v;
+let on;   // connector name of the revealed monitor, null = none; undefined at load so the first reveal(null) runs
+function reveal(name) {
+    if (on === name) return;
+    on = name;
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript",
-        "for (const p of panels()) for (const w of p.widgets('org.win12.reveal')) { w.currentConfigGroup = ['General']; w.writeConfig('reveal', " + v + "); }");
+        "const sid = " + (name === null ? "-1" : "screenForConnector('" + name.replace(/[^A-Za-z0-9_-]/g, "") + "')")
+        + "; for (const p of panels()) for (const w of p.widgets('org.win12.reveal')) { w.currentConfigGroup = ['General']; w.writeConfig('reveal', p.screen === sid); }");
 }
 const timer = new QTimer();
 timer.singleShot = true;
 timer.interval = DELAY;
-timer.timeout.connect(() => reveal(false));
+timer.timeout.connect(() => reveal(null));
 workspace.cursorPosChanged.connect(() => {
-    const c = workspace.cursorPos, s = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop), bottom = s.y + s.height;
-    if (c.y >= bottom - 1 && !(workspace.activeWindow && workspace.activeWindow.fullScreen)) { timer.stop(); reveal(true); return; }
-    if (!on) return;
-    // horizontal docks only: a full-height side panel also reaches the bottom and would put top at 0 (never hide)
-    const top = Math.min(...workspace.stackingOrder.filter(w => w.dock && w.frameGeometry.width > w.frameGeometry.height
+    // the pointer's monitor (not workspace.activeScreen = the focused window's)
+    const c = workspace.cursorPos, out = workspace.screenAt(c) || workspace.activeScreen, name = out.name;
+    const s = workspace.clientArea(KWin.FullScreenArea, out, workspace.currentDesktop), bottom = s.y + s.height;
+    if (c.y >= bottom - 1 && !(workspace.activeWindow && workspace.activeWindow.fullScreen)) { timer.stop(); reveal(name); return; }
+    if (on === null) return;
+    // horizontal docks of this monitor only: a full-height side panel also reaches the bottom and would put top at 0 (never hide)
+    const top = Math.min(...workspace.stackingOrder.filter(w => w.dock && w.output && w.output.name === name && w.frameGeometry.width > w.frameGeometry.height
         && w.frameGeometry.y + w.frameGeometry.height >= bottom - 1).map(w => w.frameGeometry.y));
-    if (c.y < top - MARGIN) { if (!timer.active) timer.start(); } else timer.stop();
+    if (on !== name || c.y < top - MARGIN) { if (!timer.active) timer.start(); } else timer.stop();
 });
-reveal(false);   // a helper left "on" by a crash
+reveal(null);   // a helper left "on" by a crash
