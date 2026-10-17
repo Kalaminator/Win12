@@ -14,9 +14,9 @@ ConfigModel {
     }
 
     ConfigCategory {
-        name: i18n("Layout")
+        name: i18n("Apps list")
         icon: "view-list-details"
-        source: "config/ConfigMenu.qml"
+        source: "config/ConfigAppsList.qml"
     }
     ConfigCategory {
         name: i18n("Shortcuts")

@@ -7,9 +7,20 @@ import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
 import "../code/tiles.js" as Tiles
 
-// Start11Config "Configure menu": tiles and the apps list (Windows 10 style).
+// Apps list page: what the list shows, its sizes, the 7/XP All Programs options, hidden apps, filtered folders (proposal 3.3).
 KCM.SimpleKCM {
     id: page
+    property string cfg_menuStyle   // read only
+    property string cfg_menuLook   // read only
+    property string cfg_taskbarLook   // read only
+    property bool cfg_taskbarFollowsStyle   // read only
+    property string cfg_windowLook   // read only
+    property bool cfg_windowTheme   // read only
+    StyleKinds {
+        id: kinds
+        menuStyle: page.cfg_menuStyle; menuLook: page.cfg_menuLook; taskbarLook: page.cfg_taskbarLook
+        taskbarFollowsStyle: page.cfg_taskbarFollowsStyle; windowLook: page.cfg_windowLook; windowTheme: page.cfg_windowTheme
+    }
     property alias cfg_listIconSize: listIcon.value
     property alias cfg_listRowHeight: rowHeight.value
     property alias cfg_showRecentlyAdded: recent.checked
@@ -31,7 +42,7 @@ KCM.SimpleKCM {
         QQC2.CheckBox { id: hideList; text: i18n("Hide the apps list (tiles only)") }
         QQC2.SpinBox {
             id: listIcon
-            Kirigami.FormData.label: i18n("Shortcut icons should be sized:")
+            Kirigami.FormData.label: i18n("Icon size:")
             enabled: !hideList.checked
             from: 12
             to: 64
@@ -48,14 +59,24 @@ KCM.SimpleKCM {
             valueFromText: t => parseInt(t) || 36
         }
         QQC2.CheckBox { id: recent; enabled: !hideList.checked; text: i18n("Show recently added apps") }
-        QQC2.CheckBox { id: hideRecentFolders; text: i18n("Hide folders in the recent list (Windows 11 style)") }
-        QQC2.CheckBox { id: mostUsed; enabled: !hideList.checked; text: i18n("Show my most used applications") }
+                QQC2.CheckBox { id: mostUsed; enabled: !hideList.checked; text: i18n("Show my most used applications") }
         QQC2.CheckBox { id: highlightNew; enabled: !hideList.checked; text: i18n("Highlight new applications") }
         QQC2.CheckBox { id: folders; enabled: !hideList.checked; text: i18n("Show app categories as folders") }
+        QQC2.CheckBox {
+            id: hideRecentFolders
+            visible: kinds.menuKind === "windows11" || kinds.menuKind === "windows12"
+            enabled: !hideList.checked
+            text: i18n("Hide folders in the recent list")
+        }
         QQC2.CheckBox { id: foldersBottom; enabled: !hideList.checked && folders.checked; text: i18n("Place folders at the bottom of the list") }
-        QQC2.CheckBox { id: autoExpand; enabled: !hideList.checked; text: i18n("Auto expand folders on hover (Windows 7, XP)") }
-        QQC2.CheckBox { id: desktopInTree; enabled: !hideList.checked; text: i18n("Show the Desktop folder in All Programs (Windows 7, XP)") }
-        QQC2.CheckBox { id: allAppsAsMenu; enabled: !hideList.checked && folders.checked; text: i18n("Show categories as a cascading menu (Windows 7, XP)") }
+        Kirigami.Separator {
+            visible: kinds.win7Family || kinds.menuKind === "xp"
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("All Programs (Windows 7 and XP)")
+        }
+        QQC2.CheckBox { id: autoExpand; visible: kinds.win7Family || kinds.menuKind === "xp"; enabled: !hideList.checked; text: i18n("Auto expand folders on hover") }
+        QQC2.CheckBox { id: desktopInTree; visible: kinds.win7Family || kinds.menuKind === "xp"; enabled: !hideList.checked; text: i18n("Show the Desktop folder in All Programs") }
+        QQC2.CheckBox { id: allAppsAsMenu; visible: kinds.win7Family || kinds.menuKind === "xp"; enabled: !hideList.checked && folders.checked; text: i18n("Show categories as a cascading menu") }
 
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Hidden apps") }
 
