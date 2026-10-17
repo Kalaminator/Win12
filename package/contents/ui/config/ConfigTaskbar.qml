@@ -23,7 +23,7 @@ KCM.SimpleKCM {
     property string cfg_windowImageMode
     property alias cfg_windowImageAlpha: winImageAlpha.value
     property alias cfg_windowImageTint: winImageTint.checked
-    property bool cfg_taskbarFollowsStyle
+    property bool cfg_taskbarFollowsStyle   // read only
     property string cfg_taskbarTheme
     property alias cfg_taskbarColor: tbColor.color
     property alias cfg_taskbarAlpha: tbAlpha.value

@@ -10,7 +10,7 @@ import org.kde.kcmutils as KCM
 KCM.SimpleKCM {
     id: page
 
-    property string cfg_menuStyle
+    property string cfg_menuStyle   // read only
     property int cfg_colorMode
     property int cfg_accentMode
     property color cfg_accentColor

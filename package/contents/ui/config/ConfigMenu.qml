@@ -32,7 +32,7 @@ KCM.SimpleKCM {
     property var cfg_hiddenApps: []
     property string cfg_filteredFolders
     property string cfg_resetRequest
-    property string cfg_menuStyle
+    property string cfg_menuStyle   // read only
     property alias cfg_win12ListSide: listSide.currentIndex
     property alias cfg_win12Greeting: greeting.currentIndex
     property alias cfg_win12Chips: chips.checked
