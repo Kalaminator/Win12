@@ -26,12 +26,7 @@ const order = (q, ids) => { let ch = false; ids.filter(id => byId(q, id)).forEac
 // W16/W17: a tray moved before the patch nested its config one level per move. The first tray move after the patch
 // still uses a fresh tray (takes the old one's settings and its id in the layout) as the one-time cleanup; the host
 // then gets win12TrayClean=true and later moves are normal moves (libplasma patch keeps one config level).
-// A moved widget lands at its old x,y; past the target's widgets that hits the panel's lastSpacer, whose index is the
-// widget count, and Plasma's indexAtCoordinates adds 1: ListModel insert out of range, widget off the bar (index -1).
-// Out and in again: the new container in the old panel sits at 0,0 until it is laid out, so the second insert is at
-// the start (order() places it). ponytail: real fix = clamp indexAtCoordinates in plasma-desktop's LayoutManager.js.
-const move = (q, w) => { const src = panels().find(x => x !== q && byId(x, w.id)); q.addWidget(w); if (w.index < 0 && src) { src.addWidget(w); q.addWidget(w); } return w; };
-const tray = (q, w, s) => { if (!/systemtray/.test(w.type) || get(host, 'General', 'win12TrayClean', '') === 'true') return move(q, w);
+const tray = (q, w, s) => { if (!/systemtray/.test(w.type) || get(host, 'General', 'win12TrayClean', '') === 'true') return q.addWidget(w);
  const n = q.addWidget(w.type); w.currentConfigGroup = n.currentConfigGroup = ['General'];
  for (const k of w.configKeys) n.writeConfig(k, w.readConfig(k)); n.reloadConfig();
  const re = a => a.map(i => i === w.id ? n.id : i); s.moved = re(s.moved); s.order = re(s.order); put(host, 'win12Layout', JSON.stringify(s));
