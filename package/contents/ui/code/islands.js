@@ -47,6 +47,8 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  gone = get(p, 'General', 'win12Gone', '').split(';').map(Number);
  const raw = get(p, 'General', 'win12Layout', ''); let s = raw ? JSON.parse(raw) : null;
  const isl = k => s && s[k] ? panels().find(q => q.id === s[k]) : null, isls = () => ['L', 'R', 'A', 'T'].map(isl).filter(q => q);
+ // 10: copies for the other monitors live in s.mon[connector] = { h: host copy panel, me: Start copy, tm, A: app island, atm }
+ const byPid = id => panels().find(q => q.id === id), monPanels = () => !s || !s.mon ? [] : Object.keys(s.mon).map(n => [s.mon[n].h, s.mon[n].A]).reduce((a, b) => a.concat(b), []).map(byPid).filter(q => q);
  const tm = live(p).find(isTM), mode = want;
  // leaving 3 Islands: one pin list again for the original task manager (pinned island first), stock again; island TMs go
  const unisland = () => { if (!tm || !s.atm) return; const tms = [tm].concat([s.atm, s.ttm].map(id => isls().map(q => byId(q, id)).find(w => w)).filter(w => w));
@@ -55,7 +57,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  if (mode === 'single') { if (!s) continue; out = 'again';
   // everything back in one pass: helpers out, pins merged, moved widgets home in their old order, island panels
   // removed (also on a switch to another look)
-  const qs = isls();
+  const qs = isls().concat(monPanels());
   for (const q of [p].concat(qs)) q.widgets(HELPER).forEach(w => { gone.push(w.id); w.remove(); });
   unisland();
   for (const id of s.moved) { const w = qs.map(q => byId(q, id)).find(w => w); if (w) tray(p, w, s); }
@@ -82,7 +84,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   const side = t >= 0 && ws.findIndex(w => w.id === ID) > t ? ws.slice(0, tms.indexOf(true)).reverse() : ws.slice(t + 1);
   s = { mode: want, scr: p.screen, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: po.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => po.indexOf(i) < 0)),
    moved: side.filter(w => w.id !== ID && w.type !== HELPER && !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
- const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); s[k] = q.id; out = 'again'; return q; };
+ const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); if (k !== 'M') s[k] = q.id; out = 'again'; return q; };
  if (mode === 'islands') {
   // a new island task manager gets an explicit empty pin list: with no key it shows KDE's default pins, and its
   // island would claim those apps from the pinned island
@@ -107,17 +109,41 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   if (atm && ttm && cur !== R.host) {   // roles (and the pins with them) follow the Start position (setTM: registry-safe order)
    const [lh, la] = listsFor(cur, R.host, get(tm, 'General', 'launchers', ''), get(atm, 'General', 'launchers', ''));
    setTM(tm, R.host, lh); setTM(atm, R.other, la); put(ttm, 'win12Island', 'tray'); ttm.reloadConfig(); out = 'again'; } }
+ // 10: All monitors: every other connected screen gets a copy of the host (a Start copy with this widget's settings +
+ // a task manager like the host's: same win12Island role and pins) and, in 3 Islands, the other app island; the tray
+ // island stays on the main screen. Marks: panel win12Island = 'M' (never a host, like any island), Start copy
+ // win12Mirror = this id (main.qml: no engine, no panel or theme syncs). Pins are one-way (main monitor wins).
+ const copyCfg = (a, b) => { let ch = false; a.currentConfigGroup = [];
+  for (const g of a.configGroups.slice()) { a.currentConfigGroup = b.currentConfigGroup = [g];
+   for (const k of a.configKeys.slice()) { if (/Request$|^win12Mirror$/.test(k)) continue; const v = a.readConfig(k, ''); if (String(b.readConfig(k, '')) !== String(v)) { b.writeConfig(k, v); ch = true; } } }
+  if (get(b, 'General', 'win12Mirror', '') !== String(ID)) { put(b, 'win12Mirror', ID); ch = true; }
+  if (ch) b.reloadConfig(); };   // a copy is complete in one pass: never 'again' for it
+ const likeTM = (src, dst) => { const k = get(src, 'General', 'win12Island', ''), l = get(src, 'General', 'launchers', '');
+  if (get(dst, 'General', 'win12Island', '') !== k || get(dst, 'General', 'launchers', '') !== l) { setTM(dst, k, l); out = 'again'; }
+  if (get(dst, 'General', 'showOnlyCurrentScreen', '') !== String(!ALLAPPS)) { put(dst, 'showOnlyCurrentScreen', !ALLAPPS); dst.reloadConfig(); out = 'again'; } };
+ s.mon = s.mon || {}; const mons = ALLMON ? NAMES.filter(n => sid(n) >= 0 && sid(n) !== MAIN) : [];
+ for (const n in s.mon) if (mons.indexOf(n) < 0) { for (const id of [s.mon[n].h, s.mon[n].A]) { const q = byPid(id); if (q) q.remove(); } delete s.mon[n]; out = 'again'; }
+ for (const n of mons) { const m = s.mon[n] = s.mon[n] || {}, k = sid(n), at = q => { if (q.screen !== k) { q.screen = k; out = 'again'; } return q; };
+  const h = at(byPid(m.h) || mk('M', 'center')); m.h = h.id;
+  let mw = byId(h, m.me); if (!mw) { mw = h.addWidget(me.type); m.me = mw.id; out = 'again'; } copyCfg(me, mw);
+  if (tm) { let mt = byId(h, m.tm); if (!mt) { mt = h.addWidget(tm.type); put(mt, 'launchers', ''); m.tm = mt.id; out = 'again'; } likeTM(tm, mt);
+   if (order(h, POS === 2 ? [mt.id, mw.id] : [mw.id, mt.id])) out = 'again'; }
+  if (mode === 'islands') { const a = at(byPid(m.A) || mk('M', 'center')); m.A = a.id;
+   let mat = byId(a, m.atm); if (!mat) { mat = a.addWidget(tm.type); put(mat, 'launchers', ''); m.atm = mat.id; out = 'again'; } likeTM(byId(isl('A'), s.atm), mat); }
+  else if (m.A) { const a = byPid(m.A); if (a) a.remove(); delete m.A; delete m.atm; out = 'again'; } }
+ put(p, 'win12Layout', JSON.stringify(s));
  // islands look like the panel; floating/hiding from the keys (syncPanelLook may not have reached the panel yet).
  const W = { floating: get(me, 'XP', 'taskbarFloating', true) !== 'false', hiding: [get(me, 'XP', 'taskbarFloating', true) !== 'false' ? 'autohide' : p.hiding, 'dodgewindows', 'autohide'][Number(get(me, 'XP', 'taskbarHiding', 0))] || p.hiding, height: p.height };
- const others = ['L', 'R', 'A', 'T'].map(isl).filter(q => q);
+ const others = ['L', 'R', 'A', 'T'].map(isl).filter(q => q).concat(monPanels());
  for (const q of [p].concat(others)) if (!q.widgets(HELPER).length) { q.addWidget(HELPER); out = 'again'; }
  // W16: Plasma re-checks "a non-normal panel never de-floats" only when floating changes (W7): nudge after a change.
  for (const q of others) { let ch = false; for (const k in W) if (q[k] !== W[k]) { q[k] = W[k]; ch = true; } if (ch && q.floating) { q.floating = false; q.floating = true; } }
- // placement: lengths are read back (a floating window adds 8 px padding each side); the pass after a change re-checks them
  for (const q of [p].concat(isls())) if (q.screen !== MAIN) { q.screen = MAIN; out = 'again'; }   // 10: all on the chosen monitor
- const row = mode === 'islands' ? R.row.map(k => k === 'host' ? p : isl(k)) : mode === 'split-left' ? [isl('L'), p, isl('R')] : [p, isl('R')], sw = screenGeometry(MAIN).width;
- let x = Math.round((sw - row.reduce((t, q) => t + q.length, 0) - GAP * (row.length - 1)) / 2);
- row.forEach((q, i) => { const lm = MAG ? 'custom' : 'fit', al = MAG ? 'left' : ['left', 'center', 'right'][row.length === 2 ? i * 2 : i], o = Math.max(0, x - (q.floating ? 8 : 0));
-  x += q.length + GAP;
-  if (q.lengthMode !== lm || q.alignment !== al || MAG && (q.minimumLength > 0 || q.offset !== o)) { q.lengthMode = lm; q.alignment = al; if (MAG) { q.minimumLength = 0; q.offset = o; } out = 'again'; } }); }
+ // placement per screen: lengths are read back (a floating window adds 8 px padding each side); the pass after a change re-checks them
+ const place = (k, row) => { const sw = screenGeometry(k).width; let x = Math.round((sw - row.reduce((t, q) => t + q.length, 0) - GAP * (row.length - 1)) / 2);
+  row.forEach((q, i) => { const lm = MAG ? 'custom' : 'fit', al = MAG ? 'left' : ['left', 'center', 'right'][row.length === 2 ? i * 2 : i], o = Math.max(0, x - (q.floating ? 8 : 0));
+   x += q.length + GAP;
+   if (q.lengthMode !== lm || q.alignment !== al || MAG && (q.minimumLength > 0 || q.offset !== o)) { q.lengthMode = lm; q.alignment = al; if (MAG) { q.minimumLength = 0; q.offset = o; } out = 'again'; } }); };
+ place(MAIN, mode === 'islands' ? R.row.map(k => k === 'host' ? p : isl(k)) : mode === 'split-left' ? [isl('L'), p, isl('R')] : [p, isl('R')]);
+ for (const n of mons) { const m = s.mon[n]; place(sid(n), mode === 'islands' ? R.row.filter(k => k !== 'T').map(k => byPid(k === 'host' ? m.h : m.A)) : [byPid(m.h)]); } }
 print(out);

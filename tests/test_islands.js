@@ -34,7 +34,7 @@ function shell(screenW = 1920, screens = ["HDMI-A-2"]) {
                 if (s.win12Island) for (const l of s.launchers || []) reg[l] = s.win12Island; } };
         return o; };
     const widget = (type, panel) => cfg({ id: nextId++, type, panel,
-        get configKeys() { return Object.keys(this.cfg.General || {}); },
+        get configKeys() { return Object.keys(this.cfg[this.currentConfigGroup[0]] || {}); }, get configGroups() { return Object.keys(this.cfg); },
         get index() { return this.panel ? this.panel.ws.indexOf(this) : -1; },
         set index(i) { const ws = this.panel.ws; ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); },
         remove() { this.panel.ws.splice(this.panel.ws.indexOf(this), 1); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
@@ -173,4 +173,48 @@ assert.ok(passes(sh, sub(sh, "single", 0)) <= 3); assert.strictEqual(sh.host.scr
 sh = shell(1920, ["HDMI-A-2", "DP-1"]); sh.host.screen = 1;
 assert.ok(passes(sh, sub(sh, "islands", 0, true, "DP-9")) <= 4); assert.deepStrictEqual(sh.panels().map(q => q.screen), [0, 0, 0]);
 sh.screens.pop(); assert.ok(passes(sh, sub(sh, "single", 0)) <= 3); assert.strictEqual(sh.host.screen, 0, "no restore to a missing screen");
+// ---- spec 10: All monitors ----
+// every other screen gets a host copy (Start copy + task manager, same role and pins) and the other app island; no tray
+sh = shell(1920, ["HDMI-A-2", "DP-1", "DP-2"]);
+assert.ok(passes(sh, sub(sh, "islands", 0, true, "all")) <= 5, "all monitors converge");
+const onScr = (sh, k) => sh.panels().filter(q => q.screen === k);
+assert.deepStrictEqual([0, 1, 2].map(k => onScr(sh, k).length), [3, 2, 2]);
+let mh = onScr(sh, 1).find(q => q.widgets("org.win12.menu").length), ma = onScr(sh, 1).find(q => q !== mh);
+assert.deepStrictEqual(types(mh).filter(t => t !== "w12:reveal"), ["w12:menu", "icontasks"]);
+assert.deepStrictEqual(types(ma).filter(t => t !== "w12:reveal"), ["icontasks"]);
+let mme = mh.widgets("org.win12.menu")[0], mtm = mh.widgets("org.kde.plasma.icontasks")[0], matm = ma.widgets("org.kde.plasma.icontasks")[0];
+assert.strictEqual(cfgOf(mme, "win12Mirror"), String(sh.me.id), "Start copy marked");
+assert.strictEqual(cfgOf(mh, "win12Island"), "M"); assert.strictEqual(cfgOf(ma, "win12Island"), "M");
+assert.strictEqual(cfgOf(mtm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(mtm, "launchers"), "a.desktop,b.desktop", "pins on every monitor");
+assert.strictEqual(cfgOf(matm, "win12Island"), "open"); assert.strictEqual(cfgOf(matm, "launchers"), "");
+assert.strictEqual(cfgOf(mtm, "showOnlyCurrentScreen"), "true", "only that monitor's windows by default");
+assert.ok(mh.offset < ma.offset, "copy row host, A at Left");
+// the copy gets this widget's settings (all groups) in one pass, and the script still prints done at once
+sh.me.currentConfigGroup = ["Style"]; sh.me.writeConfig("menuStyle", "windows12");
+assert.strictEqual(runIslands(sh, sub(sh, "islands", 0, true, "all")), "done");
+mme.currentConfigGroup = ["Style"]; assert.strictEqual(mme.readConfig("menuStyle"), "windows12", "settings reach the copy");
+// a pin made on a copy is undone (one-way from the main monitor)
+mtm.writeConfig("launchers", ["a.desktop", "b.desktop", "z.desktop"]); passes(sh, sub(sh, "islands", 0, true, "all"));
+assert.strictEqual(cfgOf(mtm, "launchers"), "a.desktop,b.desktop");
+// Center: the copies' roles follow (host copy = open, its island = pinned); All apps on every monitor clears the filter
+assert.ok(passes(sh, sub(sh, "islands", 1, true, "all", true)) <= 4, "Center on all monitors converges");
+assert.strictEqual(cfgOf(mtm, "win12Island"), "open"); assert.strictEqual(cfgOf(matm, "win12Island"), "pinned"); assert.strictEqual(cfgOf(matm, "launchers"), "a.desktop,b.desktop");
+assert.strictEqual(cfgOf(mtm, "showOnlyCurrentScreen"), "false"); assert.ok(ma.offset < mh.offset, "copy row A, host at Center");
+// a monitor unplugged loses its copies; plugged again gets them back; one monitor again, then One bar: no copies left
+sh.screens.pop(); assert.ok(passes(sh, sub(sh, "islands", 1, true, "all", true)) <= 3); assert.strictEqual(sh.panels().length, 5);
+sh.screens.push("DP-2"); assert.ok(passes(sh, sub(sh, "islands", 1, true, "all", true)) <= 4); assert.strictEqual(sh.panels().length, 7);
+assert.ok(passes(sh, sub(sh, "islands", 1, true, "")) <= 3); assert.strictEqual(sh.panels().length, 3);
+assert.ok(passes(sh, sub(sh, "single", 1)) <= 3); assert.strictEqual(sh.panels().length, 1);
+assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
+// a Start copy never becomes a host: the script run with the copy's id does nothing
+sh = shell(1920, ["HDMI-A-2", "DP-1"]); passes(sh, sub(sh, "islands", 0, true, "all"));
+const copy = onScr(sh, 1).find(q => q.widgets("org.win12.menu").length).widgets("org.win12.menu")[0];
+assert.strictEqual(runIslands(sh, Object.assign(sub(sh, "islands", 0, true, "all"), { ID: copy.id })), "done"); assert.strictEqual(sh.panels().length, 5);
+// a split layout on all monitors: the host copy only (Start + a stock task manager with the pins)
+sh = shell(1920, ["HDMI-A-2", "DP-1"]); assert.ok(passes(sh, sub(sh, "split-right", 0, true, "all")) <= 4);
+assert.strictEqual(onScr(sh, 1).length, 1); mtm = onScr(sh, 1)[0].widgets("org.kde.plasma.icontasks")[0];
+assert.strictEqual(cfgOf(mtm, "win12Island"), ""); assert.strictEqual(cfgOf(mtm, "launchers"), "a.desktop,b.desktop");
+// Right mirrors the copy too: task manager before Start
+assert.ok(passes(sh, sub(sh, "split-right", 2, true, "all")) <= 4);
+assert.deepStrictEqual(types(onScr(sh, 1)[0]).filter(t => t !== "w12:reveal"), ["icontasks", "w12:menu"]);
 console.log("test_islands OK");

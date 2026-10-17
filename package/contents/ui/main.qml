@@ -460,7 +460,7 @@ ContainmentItem {
     readonly property bool firefoxSystemTitle: xpTheme !== "" && cfg.xpFirefoxTitlebar
     onFirefoxSystemTitleChanged: syncDesktopTheme()
     function syncDesktopTheme() {
-        if (!configReady) return;   // never act on default settings before migrateConfig is done
+        if (!configReady || isMirror) return;   // 10: W15, two generator runs delete each other's theme   // never act on default settings before migrateConfig is done
         // Firefox draws its own title bar: with an XP theme it gets the system one (user.js, takes effect on its next start).
         root.run("sh " + Tiles.shQuote(decodeURIComponent(Qt.resolvedUrl("code/firefox-titlebar.sh").toString().replace("file://", "")))
                  + (firefoxSystemTitle ? " on" : " off"));
@@ -639,7 +639,10 @@ ContainmentItem {
             : plug + "--delete; " + fx("unloadEffect")));
     }
     // W5: split taskbar islands, Windows 12 style only (code/islands.js reads the style from this widget's config).
-    readonly property string islandWant: win12Taskbar ? cfg.taskbarLayout : "single"
+    // 10: a Start copy on another monitor (islands.js sets win12Mirror): same menu, but no island engine (its panel is
+    // an island: the engine would ignore it anyway), no centre spacers, no panel look, theme or reveal syncs (the host does them)
+    readonly property bool isMirror: cfg.win12Mirror > 0
+    readonly property string islandWant: win12Taskbar && !isMirror ? cfg.taskbarLayout : "single"
     // back to One bar: syncIslands puts the bar's own order back first, then runs the Start position sync (centerLoop)
     onIslandWantChanged: { if (islandWant !== "single") syncCenterPanel(); syncIslands(); }
     // W17: the layouts and the Start position need Win12's patched KDE (kde/build.sh): one script moves everything.
@@ -678,7 +681,7 @@ ContainmentItem {
     readonly property bool islandReveal: islandWant !== "single" && JSON.parse(panelWant).hiding !== "none"
     onIslandRevealChanged: syncIslandReveal()
     function syncIslandReveal() {
-        if (!configReady) return;
+        if (!configReady || isMirror) return;   // 10: a copy's islandWant is single: it would unload the host's reveal script
         const sc = f => Tiles.QDBUS + " org.kde.KWin /Scripting org.kde.kwin.Scripting." + f;
         const plug = "kwriteconfig6 --file kwinrc --group Plugins --key win12islandrevealEnabled ";
         run("sh -c " + Tiles.shQuote(islandReveal ? plug + "true && " + sc("start")
@@ -687,6 +690,8 @@ ContainmentItem {
     readonly property int panelWidth: Window.window ? Window.window.width : 0
     onPanelWidthChanged: if (islandMagnetic) islandTimer.restart()
     Timer { id: islandTimer; interval: 1000; onTriggered: syncIslands() }
+    // 10: the copies get this widget's settings from the engine: any settings change re-runs it while All monitors is on
+    Connections { target: root.cfg; enabled: root.islandScreen === "all"; function onValueChanged(key, value) { islandTimer.restart(); } }
     Timer { interval: 30000; repeat: true; running: root.islandMagnetic; onTriggered: syncIslands() }
     // Tray icons come and go through the StatusNotifierWatcher: wait for its (Un)Registered signal and re-place
     // the islands 1 s later (the tray island has resized by then). Re-armed after each signal or 10 min timeout.
@@ -708,7 +713,7 @@ ContainmentItem {
         }
     }
     function syncIslands() {
-        if (!configReady || !kdePatched) return;
+        if (!configReady || !kdePatched || isMirror) return;
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
         const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
@@ -721,7 +726,7 @@ ContainmentItem {
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(loop));
     }
     function syncPanelLook() {
-        if (!configReady) return;
+        if (!configReady || isMirror) return;
         const js = "const ID = " + Plasmoid.id + ", W = " + panelWant + ";"
             + "for (const p of panels()) { if (!p.widgets().some(w => w.id === ID)) continue; const h = p.hiding;"
             + " for (const k in W) { p.currentConfigGroup = ['General']; const key = 'win12Saved_' + k, s = String(p.readConfig(key, ''));"
@@ -735,7 +740,7 @@ ContainmentItem {
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
     }
     function syncCenterPanel() {
-        if (!configReady || !kdePatched) return;   // never act on default settings before migrateConfig is done
+        if (!configReady || !kdePatched || isMirror) return;   // never act on default settings before migrateConfig is done
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(centerLoop()));
     }
     function centerLoop() {
