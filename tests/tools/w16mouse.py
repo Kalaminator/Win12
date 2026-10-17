@@ -1,5 +1,5 @@
 # usage: w16mouse.py x,y[,hold_s] ...  moves a virtual absolute pointer (never clicks)
-#        w16mouse.py drag x1,y1 x2,y2 [steps]  press left button at 1, move to 2 in steps (default 20), release
+#        w16mouse.py drag x1,y1 x2,y2 [steps]  press left button at 1, move to 2 in steps (default 20), release (W16_HOLD=s: hold before release, default 0.15)
 import fcntl, os, struct, sys, time
 UI_SET_EVBIT, UI_SET_KEYBIT, UI_SET_ABSBIT = 0x40045564, 0x40045565, 0x40045567
 UI_DEV_CREATE, UI_DEV_DESTROY = 0x5501, 0x5502
@@ -18,7 +18,7 @@ if sys.argv[1] == "drag":
     (x1, y1), (x2, y2) = (map(int, a.split(',')) for a in sys.argv[2:4]); n = int(sys.argv[4]) if len(sys.argv) > 4 else 20
     mv(x1, y1); time.sleep(0.3); ev(EV_KEY, BTN_LEFT, 1); ev(EV_SYN, 0, 0)
     for i in range(1, n + 1): mv(x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n); time.sleep(0.025)
-    time.sleep(0.15); ev(EV_KEY, BTN_LEFT, 0); ev(EV_SYN, 0, 0); time.sleep(0.2); sys.argv = sys.argv[:1]
+    time.sleep(float(os.environ.get("W16_HOLD", "0.15"))); ev(EV_KEY, BTN_LEFT, 0); ev(EV_SYN, 0, 0); time.sleep(0.2); sys.argv = sys.argv[:1]
 for a in sys.argv[1:]:
     x, y, *h = a.split(','); mv(int(x), int(y))
     time.sleep(float(h[0]) if h else 0.3)
