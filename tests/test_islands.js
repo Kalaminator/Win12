@@ -282,4 +282,15 @@ assert.deepStrictEqual(types(sh.host), BAR, "stock unmirrored"); assert.strictEq
 sh = shell(1920, ["HDMI-A-2"], true); startPos(sh, 2); passes(sh, ssub(sh, "split-left", 2), 40); center(sh, "split-left");
 assert.ok(passes(sh, ssub(sh, "single", 2), 40) <= 40); n = center(sh, "single");
 assert.ok(n <= 25, "stock Start position sync converges after the restore: " + n); assert.deepStrictEqual(types(sh.host), MIR);
+// an app dragged to another island (new Icon widget) leaves the other islands' task managers on that screen only
+// (extras/win12-reveal/contents/code/unpin.js); urls match by desktop file name
+sh = shell(1920, ["HDMI-A-2", "DP-1"]); passes(sh, sub(sh, "split-right", 0, true, "all"));
+{ const icon = sh.panels().find(q => q.id !== sh.host.id && q.screen === 0).addWidget("org.kde.plasma.icon");
+  icon.currentConfigGroup = []; icon.writeConfig("url", "file:///usr/share/applications/b.desktop");
+  const tms = sh.panels().flatMap(q => q.widgets("org.kde.plasma.icontasks")); assert.strictEqual(tms.length, 2);
+  for (const t of tms) t.writeConfig("launchers", ["applications:a.desktop", "applications:b.desktop?iconData=x", "file:///x/ab.desktop"]);
+  const src = fs.readFileSync(path.join(__dirname, "../package/contents/extras/win12-reveal/contents/code/unpin.js"), "utf8").split("@ID@").join(icon.id);
+  new Function("panels", src)(sh.panels);
+  assert.deepStrictEqual(tms.map(t => t.panel.screen + ":" + t.readConfig("launchers").join()),
+      ["0:applications:a.desktop,file:///x/ab.desktop", "1:applications:a.desktop,applications:b.desktop?iconData=x,file:///x/ab.desktop"]); }
 console.log("test_islands OK");
