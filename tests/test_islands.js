@@ -36,17 +36,19 @@ function shell(screenW = 1920) {
     const widget = (type, panel) => cfg({ id: nextId++, type, panel,
         get configKeys() { return Object.keys(this.cfg.General || {}); },
         get index() { return this.panel ? this.panel.ws.indexOf(this) : -1; },
-        set index(i) { const ws = this.panel.ws; ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); },
+        set index(i) { const ws = this.panel.ws; if (ws.indexOf(this) < 0) return; ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); },
         remove() { this.panel.ws.splice(this.panel.ws.indexOf(this), 1); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
     class Panel {
-        constructor() { cfg(this); this.id = nextId++; this.ws = []; this.gone = []; this.location = "bottom"; this.height = 44;
+        constructor() { cfg(this); this.id = nextId++; this.ws = []; this.gone = []; this.lost = []; this.orphan = new Set(); this.location = "bottom"; this.height = 44;
             this.lengthMode = "fill"; this.alignment = "left"; this.minimumLength = 0; this.maximumLength = 0; this.offset = 0;
             this.floating = true; this.hiding = "none"; this.screen = 0; panels.push(this); }
         get length() { return this.lengthMode === "fill" ? 1920 : this.ws.length * 40 + 16; }
-        widgets(type) { const all = this.ws.concat(this.gone); return type ? all.filter(w => w.type === type && w.panel === this) : all; }
+        widgets(type) { const all = this.ws.concat(this.lost, this.gone); return type ? all.filter(w => w.type === type && w.panel === this) : all; }
         get widgetIds() { return this.widgets().map(w => w.id); }
         addWidget(x) { if (typeof x === "string") { const w = widget(x, this); this.ws.push(w); return w; }
-            x.panel.ws.splice(x.panel.ws.indexOf(x), 1); x.panel = this; this.ws.push(x); return x; }
+            // orphan: Plasma's insert out of range (old x past the target's widgets): in the panel, not in the layout
+            const o = x.panel, i = o.ws.indexOf(x); if (i >= 0) o.ws.splice(i, 1); else o.lost.splice(o.lost.indexOf(x), 1);
+            x.panel = this; (this.orphan.delete(x.id) ? this.lost : this.ws).push(x); return x; }
         remove() { panels.splice(panels.indexOf(this), 1); for (const w of this.ws) w.panel = null; }
     }
     const sh = { Panel, panels: () => panels.slice(), screenGeometry: () => ({ x: 0, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)) };
@@ -148,4 +150,8 @@ assert.strictEqual(cfgOf(sh.tm, "win12Island"), ""); assert.strictEqual(cfgOf(sh
 sh = shell(); sh.host.currentConfigGroup = ["General"]; sh.host.writeConfig("win12PanelOrder", sh.host.widgetIds.join(";")); sh.host.ws.reverse();
 passes(sh, sub(sh, "split-left", 2)); assert.ok(passes(sh, sub(sh, "single", 0)) <= 3);
 assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"], "mirrored bar restored unmirrored");
+// a widget moved home lands off the bar (Plasma insert out of range, index -1): it goes out and in again
+sh = shell(); passes(sh, sub(sh, "islands", 2)); const desk = sh.panels().map(q => q.widgets("org.kde.plasma.showdesktop")[0]).find(w => w);
+sh.host.orphan.add(desk.id); assert.ok(passes(sh, sub(sh, "single", 2)) <= 3);
+assert.strictEqual(desk.index, 5, "orphaned widget back on the bar, last");
 console.log("test_islands OK");
