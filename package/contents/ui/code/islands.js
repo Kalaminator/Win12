@@ -62,7 +62,9 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   for (const q of qs) q.remove();
   const ids = live(p).map(w => w.id); order(p, s.order.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => s.order.indexOf(i) < 0)));
   p.lengthMode = s.lm; p.alignment = s.al; if (s.mx) { p.maximumLength = s.mx; p.minimumLength = s.mn; p.offset = s.off; }
-  put(p, 'win12Layout', ''); continue; }
+  // the bar now has its unmirrored order: the Start position sync (centerLoop) saves it afresh. Its old saved order
+  // was written while this was an island (no moved widgets), and mirroring that flipped them every pass.
+  put(p, 'win12Layout', ''); put(p, 'win12PanelOrder', ''); continue; }
  if (mode === 'islands' && !tm) continue;   // no task manager in the bar: nothing to split into islands
  // layout to layout in this pass, no restore: the panel with the moved widgets (R in splits, T in islands) and the
  // other one (L in split-left, A in islands) are kept and re-keyed; a panel no layout needs goes (its weather stays)

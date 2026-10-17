@@ -154,4 +154,13 @@ assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparat
 sh = shell(); passes(sh, sub(sh, "islands", 2)); const desk = sh.panels().map(q => q.widgets("org.kde.plasma.showdesktop")[0]).find(w => w);
 sh.host.orphan.add(desk.id); assert.ok(passes(sh, sub(sh, "single", 2)) <= 3);
 assert.strictEqual(desk.index, 5, "orphaned widget back on the bar, last");
+// back to One bar at Start=Right: main.qml's centerLoop mirrors the restored bar from win12PanelOrder. A saved order
+// written while the host was an island lacked the moved widgets, so each pass flipped them (25 passes, wrong order).
+const qml = fs.readFileSync(path.join(__dirname, "../package/contents/ui/main.qml"), "utf8"), c0 = qml.indexOf("function centerLoop() {");
+const center = (sh, want) => { const js = new Function("Plasmoid", "islandWant", qml.slice(qml.indexOf("{", c0) + 1, qml.indexOf("const dbus", c0)) + "return js;")({ id: sh.me.id }, want);
+    for (let i = 1; i <= 10; i++) { sh.out = []; new Function("panels", "print", js)(sh.panels, sh.print); if (sh.out[0] === "done") return i; } return Infinity; };
+sh = shell(); sh.me.currentConfigGroup = ["Style"]; sh.me.writeConfig("centerTaskbar", "true"); sh.me.writeConfig("menuPosition", 2);
+passes(sh, sub(sh, "islands", 2)); center(sh, "islands"); assert.ok(passes(sh, sub(sh, "single", 2)) <= 3);
+assert.ok(center(sh, "single") <= 3, "Start position sync converges after the restore");
+assert.deepStrictEqual(types(sh.host), ["showdesktop", "digitalclock", "systemtray", "marginsseparator", "panelspacer", "icontasks", "w12:menu"], "mirrored");
 console.log("test_islands OK");
