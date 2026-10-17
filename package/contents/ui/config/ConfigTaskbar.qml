@@ -46,6 +46,8 @@ KCM.SimpleKCM {
         && w12Windows.currentIndex === 1 && cfg_taskbarLayout === "single"
     property alias cfg_taskbarRound: w12Round.value
     property string cfg_taskbarLayout
+    property string cfg_islandScreen
+    property bool cfg_islandAllApps
     property int cfg_win12Light
     property int cfg_win12Dark
     property int cfg_win12Transparency
@@ -251,6 +253,32 @@ KCM.SimpleKCM {
             }
             QQC2.Label { text: i18n("Taskbar layout:") }
             TaskbarLayoutBox { cfgPage: page }
+            // spec 10: islands on one monitor (by connector name; "" follows the main one) or on all of them
+            QQC2.Label { text: i18n("Show islands on:"); visible: screenBox.visible }
+            QQC2.ComboBox {
+                id: screenBox
+                visible: page.cfg_taskbarLayout !== "single"
+                readonly property var names: Array.prototype.map.call(Qt.application.screens, s => s.name)
+                readonly property var values: [""].concat(names.slice(1), ["all"])   // index 0 = the main monitor, saved as ""
+                model: [i18n("%1 (main)", names[0] || "")].concat(names.slice(1), [i18n("All monitors")])
+                currentIndex: Math.max(0, values.indexOf(page.cfg_islandScreen === names[0] ? "" : page.cfg_islandScreen))
+                onActivated: index => page.cfg_islandScreen = values[index]
+            }
+            QQC2.Label { text: i18n("Open apps on other monitors:"); visible: appsBox.visible }
+            QQC2.ComboBox {
+                id: appsBox
+                visible: screenBox.visible && page.cfg_islandScreen === "all"
+                model: [i18n("Only apps on that monitor"), i18n("All apps on every monitor")]
+                currentIndex: page.cfg_islandAllApps ? 1 : 0
+                onActivated: index => page.cfg_islandAllApps = index === 1
+            }
+            QQC2.Label {
+                visible: screenBox.visible
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 24
+                wrapMode: Text.WordWrap
+                enabled: false
+                text: i18n("All monitors: every monitor gets Start and the app islands; the tray island stays on the main monitor. Moving an app icon to another island moves it on every monitor. Pin apps from the main monitor.")
+            }
         }
         Item { Kirigami.FormData.isSection: true }
         QQC2.CheckBox {

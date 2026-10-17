@@ -110,6 +110,11 @@ Plasma update that warning is the sign to run `kde/build.sh` again (`kde/build.s
 those). Patches: `kde/patches/`; what they change is in
 `docs/superpowers/specs/2026-10-16-fast-islands-design.md`.
 
+Multi-monitor (extended desktops): Taskbar page → *Show islands on* picks the monitor (default: the main one) or
+*All monitors* (Start and the app islands on every monitor, the tray island on the main one; *Open apps on other
+monitors* chooses that monitor's windows or all). Pin apps from the main monitor; a monitor plugged or unplugged
+rebuilds the islands. Mirrored screens need nothing.
+
 ## Uninstall
 
 ```sh
