@@ -9,14 +9,17 @@
 #                             [gradient=none|left-right|right-left|top-bottom|bottom-top strength=30] (W14)
 import argparse, base64, json, os, re, struct
 
-def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4), gid="g", center="", under=None, img="", horiz=False, vpad=0):
+def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4), gid="g", center="", under=None, img="", horiz=False, vpad=0, edge=None):
     """9 pieces of a rounded box. stops: [(offset, color, opacity)] vertical gradient.
     border: (color, opacity) or None. hi: top highlight (color, opacity) or None.
+    edge: (outer colour, opacity, inner colour, opacity) = border + a 1 px inner ring on all four sides (readable glass).
     under: (color, opacity, height, full) bar on the bottom edge (T34 task indicator); full = also in the
     corners, else only the stretched middle piece with round ends (Win11 pill, inset by c).
     W14: img = a second fill (e.g. 'fill="url(#img)" fill-opacity=".5"') painted over every body shape; horiz = the
     gradient runs x0 -> x0 + W instead of top -> bottom."""
     p = (prefix + "-") if prefix else ""
+    if edge:
+        border = edge[:2]
     y0 += vpad  # W15 vpad: the top and bottom pieces get vpad px of transparent space (task buttons inside the gap ring)
     defs = '<linearGradient id="%s" gradientUnits="userSpaceOnUse" x1="%d" y1="%d" x2="%d" y2="%d">%s</linearGradient>' % (
         gid, *((x0, 0, x0 + W, 0) if horiz else (0, y0, 0, y0 + H)), "".join('<stop offset="%s" stop-color="%s" stop-opacity="%s"/>' % s for s in stops))
@@ -25,6 +28,7 @@ def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4),
     def FF(s):  # the body shape, then the same shape again in the img fill
         return s + (s.replace(F, img) if img else "")
     B = ('fill="%s" fill-opacity="%s"' % border) if border else ""
+    E = ('fill="%s" fill-opacity="%s"' % edge[2:]) if edge else ""
     x1, y1, x2, y2 = x0 + c, y0 + c, x0 + W - c, y0 + H - c
     out = []
     ext = {"topleft": (x0, c, -1), "top": (x1, W - 2 * c, -1), "topright": (x2, c, -1),
@@ -49,11 +53,15 @@ def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4),
             pass
         # transparent box keeps the element size exactly c x c
         body += rect(bx, by, c, c, 'fill="none"')
+        sw = 0 if sx * sy < 0 else 1
+        def ring(ro, ri, f):  # quarter ring between radii ro and ri
+            return '<path d="M %s,%s A %s %s 0 0 %d %s,%s L %s,%s A %s %s 0 0 %d %s,%s Z" %s/>' % (
+                cx + sx * ro, cy, ro, ro, sw, cx, cy + sy * ro, cx, cy + sy * ri, ri, ri, 1 - sw, cx + sx * ri, cy, f)
         if border:  # quarter ring, so translucent fills do not double up
-            sw = 0 if sx * sy < 0 else 1
-            body += '<path d="M %s,%s A %s %s 0 0 %d %s,%s L %s,%s A %s %s 0 0 %d %s,%s Z" %s/>' % (
-                cx + sx * c, cy, c, c, sw, cx, cy + sy * c, cx, cy + sy * (c - b), c - b, c - b, 1 - sw, cx + sx * (c - b), cy, B)
+            body += ring(c, c - b, B)
         body += FF(corner(cx, cy, sx, sy, c - b, F))
+        if edge:  # readable glass: the dark outer line shows over white, this light inner one over black
+            body += ring(c - b, max(0, c - b - 1), E)
         if under and under[3] and sy > 0:
             body += rect(bx, by + c - under[2], c, under[2], 'fill="%s" fill-opacity="%s"' % under[:2])
         g(name, body)
@@ -62,22 +70,45 @@ def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4),
     piece_corner("bottomleft", x1, y2, -1, 1, x0, y2)
     piece_corner("bottomright", x2, y2, 1, 1, x2, y2)
     top = (rect(x1, y0, W - 2 * c, b, B) if border else "") + FF(rect(x1, y0 + b, W - 2 * c, c - b, F))
-    if hi:
+    if edge:
+        top += rect(x1, y0 + b, W - 2 * c, 1, E)
+    elif hi:
         top += rect(x1, y0 + b, W - 2 * c, 1, 'fill="%s" fill-opacity="%s"' % hi)
     g("top", top)
     bar = ""
     if under:
         bar = '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" fill="%s" fill-opacity="%s"/>' % (
             x1, y0 + H - under[2], W - 2 * c, under[2], 0 if under[3] else under[2] / 2, under[0], under[1])
-    g("bottom", FF(rect(x1, y2, W - 2 * c, c - b, F)) + (rect(x1, y0 + H - b, W - 2 * c, b, B) if border else "") + bar)
-    g("left", (rect(x0, y1, b, H - 2 * c, B) if border else "") + FF(rect(x0 + b, y1, c - b, H - 2 * c, F)))
-    g("right", FF(rect(x2, y1, c - b, H - 2 * c, F)) + (rect(x0 + W - b, y1, b, H - 2 * c, B) if border else ""))
+    g("bottom", FF(rect(x1, y2, W - 2 * c, c - b, F)) + (rect(x1, y0 + H - b - 1, W - 2 * c, 1, E) if edge else "") + (rect(x1, y0 + H - b, W - 2 * c, b, B) if border else "") + bar)
+    g("left", (rect(x0, y1, b, H - 2 * c, B) if border else "") + FF(rect(x0 + b, y1, c - b, H - 2 * c, F))
+      + (rect(x0 + b, y1, 1, H - 2 * c, E) if edge else ""))
+    g("right", FF(rect(x2, y1, c - b, H - 2 * c, F)) + (rect(x0 + W - b - 1, y1, 1, H - 2 * c, E) if edge else "") + (rect(x0 + W - b, y1, b, H - 2 * c, B) if border else ""))
     g("center", FF(rect(x1, y1, W - 2 * c, H - 2 * c, F)) + center)
     l, t, r, bm = margins
     t, bm, hy = t + vpad, bm + vpad, y0 + H + vpad + 2
     for i, (side, w, h) in enumerate([("left", l, 1), ("top", 1, t), ("right", r, 1), ("bottom", 1, bm)]):
         out.append('<rect id="%shint-%s-margin" x="%d" y="%d" width="%g" height="%g" fill="none"/>' % (p, side, x0 + i * 10, hy, w, h))
     return defs, "".join(out)
+
+def shadow_tiles(x0, y0, S=12, op=.3):
+    """Readable glass: Breeze-style shadow-* tiles (a 3x3 grid without its center, black op -> 0 going outward;
+    corners radial) and the 4 shadow-hint-*-margin elements. plasmashell hands them to KWin as the panel's shadow
+    (plasma-workspace shell/panelshadows.cpp); a floating panel's negative shadow margins make them hug the bar."""
+    st = '<stop offset="0" stop-color="#000000" stop-opacity="%s"/><stop offset="1" stop-color="#000000" stop-opacity="0"/>' % op
+    defs, out = [], []
+    for name, col, row in (("topleft", 0, 0), ("top", 1, 0), ("topright", 2, 0), ("left", 0, 1),
+                           ("right", 2, 1), ("bottomleft", 0, 2), ("bottom", 1, 2), ("bottomright", 2, 2)):
+        dx, dy = col - 1, row - 1
+        ix, iy = x0 + S * (1 + (dx > 0)), y0 + S * (1 + (dy > 0))  # where the tile touches the panel
+        if dx and dy:
+            defs.append('<radialGradient id="sh-%s" gradientUnits="userSpaceOnUse" cx="%d" cy="%d" r="%d">%s</radialGradient>' % (name, ix, iy, S, st))
+        else:
+            defs.append('<linearGradient id="sh-%s" gradientUnits="userSpaceOnUse" x1="%d" y1="%d" x2="%d" y2="%d">%s</linearGradient>' % (
+                name, ix, iy, ix + dx * S, iy + dy * S, st))
+        out.append('<g id="shadow-%s"><rect x="%d" y="%d" width="%d" height="%d" fill="url(#sh-%s)"/></g>' % (name, x0 + col * S, y0 + row * S, S, S, name))
+    out += ['<rect id="shadow-hint-%s-margin" x="%d" y="%d" width="%d" height="%d" fill="none"/>' % (sd, x0 + i * (S + 10), y0 + 3 * S + 10, S, S)
+            for i, sd in enumerate(("top", "right", "bottom", "left"))]
+    return "".join(defs), "".join(out)
 
 def svg(path, frames, extra="", size=(400, 0)):
     defs, body = zip(*frames)
@@ -228,17 +259,20 @@ def imgsize(data):
 
 def taskbar(base, colour="#101010", alpha="0.8", radius="0", line="0", fallback="default",
             image="", mode="tile", imagealpha="1", tint="", buttons="win10", accent="", solid="0", gap="",
-            gradient="none", strength="30", ring="0", size=""):
+            gradient="none", strength="30", ring="0", size="", edge="0"):
     """Plasma Style that only replaces panel-background (plain, opaque/ and translucent/ for blur), tasks
     and colors; everything else comes from FallbackTheme (the user's own style).
     T33 texture: image (PNG/JPEG) in the 9-slice center; mode tile (native size, hint-tile-center) | stretch |
     top/middle/bottom (scaled to cover a panel-shaped box, cropped at that edge); tint = colour multiplied over.
     W14: the texture is a userSpace <pattern> painted over every piece (rounded corners clip it, Qt >= 6.7);
-    gradient left-right|right-left|top-bottom|bottom-top = bar colour -> strength % toward white (dark bar) / black."""
+    gradient left-right|right-left|top-bottom|bottom-top = bar colour -> strength % toward white (dark bar) / black.
+    Readable glass: edge=1 = a two-tone 1 px edge (black .35 outside, white .25 inside: one shows on any background)
+    and a soft shadow (shadow-* tiles; gap mode paints it into the ring, its docked panel has no shadow margin)."""
     B = "#" + colour.lstrip("#")[-6:]
     rgb(B)
     a, r = max(0.0, min(1.0, float(alpha))), max(2, min(40, int(radius)))
     hi = (mix(B, W, .35), 1) if line not in ("0", "", "false") else None
+    ed = (K, .35, W, .25) if edge not in ("0", "", "false") else None
     fw, fh, tex, hints = max(60, 2 * r + 20), max(40, 2 * r + 2), "", '<rect id="hint-stretch-borders" x="200" y="10" width="1" height="1" fill="none"/>'
     pat = ""
     if image:
@@ -271,16 +305,27 @@ def taskbar(base, colour="#101010", alpha="0.8", radius="0", line="0", fallback=
     n = int(ring or 0)
     if n > 0:  # W15 gap mode: docked panel, the island inside a transparent ring of n px
         RW, RH = (max(2 * n + 4, int(v or 0)) for v in (size.split("x") + ["", ""])[:2])
-        def ring_frame(prefix, x0, y0, st, gid, img=""):
+        def ring_frame(prefix, x0, y0, st, gid, img="", edge=None):
             """The whole island in the center piece at the exact panel size RW x RH: a docked bottom panel drops
             its bottom/left/right edge pieces (enabledBorders), so a 9-slice ring cannot be drawn."""
             p = prefix + "-" if prefix else ""
             ix, iy, iw, ih = x0 + n, y0 + n, RW - 2 * n, RH - 2 * n
             defs = '<linearGradient id="%s" gradientUnits="userSpaceOnUse" x1="%d" y1="%d" x2="%d" y2="%d">%s</linearGradient>' % (
                 gid, *((ix, 0, ix + iw, 0) if horiz else (0, iy, 0, iy + ih)), "".join('<stop offset="%s" stop-color="%s" stop-opacity="%s"/>' % x for x in st))
-            box = '<rect x="%d" y="%d" width="%d" height="%d" rx="%d" %%s/>' % (ix, iy, iw, ih, min(r, ih // 2))
-            body = '<g id="%scenter"><rect x="%d" y="%d" width="%d" height="%d" fill="none"/>%s%s</g>' % (
-                p, x0, y0, RW, RH, box % ('fill="url(#%s)"' % gid), box % img if img else "")
+            rr = min(r, ih // 2)
+            box = '<rect x="%d" y="%d" width="%d" height="%d" rx="%d" %%s/>' % (ix, iy, iw, ih, rr)
+            def outline(d, rx, col, o):  # 1 px stroke d px outside (d < 0: inside) the island
+                return '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" fill="none" stroke="%s" stroke-opacity="%s" stroke-width="1"/>' % (
+                    ix - d, iy - d, iw + 2 * d, ih + 2 * d, rx, col, o)
+            sh = ln = ""
+            if edge:
+                # shadow: 1 px rings outside the island, each as dark as k nested .05 black rects would make it
+                # (rings, not filled rects: the stack would show through the glass and darken it)
+                k = min(6, n - 1)
+                sh = "".join(outline(i - .5, rr + i - .5, K, "%.3f" % (1 - .95 ** (k + 1 - i))) for i in range(1, k + 1))
+                ln = outline(-.5, max(0, rr - .5), *edge[:2]) + outline(-1.5, max(0, rr - 1.5), *edge[2:])
+            body = '<g id="%scenter"><rect x="%d" y="%d" width="%d" height="%d" fill="none"/>%s%s%s%s</g>' % (
+                p, x0, y0, RW, RH, sh, box % ('fill="url(#%s)"' % gid), box % img if img else "", ln)
             m = max(2, r - 10)
             body += "".join('<rect id="%shint-%s-margin" x="%d" y="%d" width="%d" height="%d" fill="none"/>' % (p, sd, x0 + i * 40, y0 + RH + 2, w, h)
                             for i, (sd, w, h) in enumerate([("left", n + m, 1), ("top", 1, n + 2), ("right", n + m, 1), ("bottom", 1, n + 2)]))
@@ -289,16 +334,17 @@ def taskbar(base, colour="#101010", alpha="0.8", radius="0", line="0", fallback=
         t = 'fill="url(#img)" fill-opacity="%.3f"' % (op * max(0.0, min(1.0, float(imagealpha)))) if pat else ""
         if n > 0:
             svg(os.path.join(base, pre + "widgets/panel-background.svg"),
-                [(pat, ""), ring_frame("", 10, 10, stops(op), "panel", t), ring_frame("mask", 10, RH + 50, [(0, K, 1), (1, K, 1)], "mask")],
+                [(pat, ""), ring_frame("", 10, 10, stops(op), "panel", t, ed), ring_frame("mask", 10, RH + 50, [(0, K, 1), (1, K, 1)], "mask")],
                 size=(RW + 20, 2 * RH + 100))
             continue
         svg(os.path.join(base, pre + "widgets/panel-background.svg"),
-            [(pat, ""), frame("", 10, 10, fw, fh, r, None, stops(op), hi=hi, margins=(max(2, r - 10), 2, max(2, r - 10), 2), gid="panel", img=t, horiz=horiz),
+            [(pat, ""), frame("", 10, 10, fw, fh, r, None, stops(op), hi=hi, margins=(max(2, r - 10), 2, max(2, r - 10), 2), gid="panel", img=t, horiz=horiz, edge=ed),
              frame("mask", 10, 20 + fh, fw, fh, r, None, [(0, K, 1), (1, K, 1)], gid="mask")]
             # W12 gap: Plasma reads a floating panel's margins from the "floating" prefix (else 8 px each side);
             # a 0-high hint is "missing" to KSvg (it then uses the 4 px edge piece), .01 rounds to 0
-            + ([frame("floating", 10, 30 + 2 * fh, 60, 40, 4, None, [(0, K, 0), (1, K, 0)], margins=(8, 8, 8, int(gap) or .01), gid="float")] if gap else []),
-            hints.replace('x="200"', 'x="%d"' % (fw + 40)), size=(fw + 60, 2 * fh + 100))
+            + ([frame("floating", 10, 30 + 2 * fh, 60, 40, 4, None, [(0, K, 0), (1, K, 0)], margins=(8, 8, 8, int(gap) or .01), gid="float")] if gap else [])
+            + ([shadow_tiles(10, 30 + 2 * fh + 60)] if ed else []),  # below the floating frame and its hints
+            hints.replace('x="200"', 'x="%d"' % (fw + 40)), size=(fw + 60, 2 * fh + (180 if ed else 100)))
     ink = "#000000" if light(B) else W
     acc = "#" + (accent.lstrip("#")[-6:] or "3d8ee6")
     fa = 2 if solid not in ("0", "", "false") else 1  # T34 Start11 "Paint focused item backgrounds less transparent"
