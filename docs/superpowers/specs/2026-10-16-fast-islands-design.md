@@ -197,3 +197,67 @@ Approved in chat. Mirrored screens need nothing: Plasma sees them as one screen.
 - Monitor plugged or unplugged: Win12 rebuilds the islands for the new set of monitors.
 - Testing: only one monitor is connected on the dev machine, so the multi-monitor logic is covered by the node
   fake-shell harness with 2-3 fake screens; the real 2-monitor check is left to the user.
+
+## 11. Addendum (2026-10-17): Stock KDE mode
+
+Decision A (user, 2026-10-17): one widget, two modes, picked at runtime. This replaces section 1's "does not have
+to work on a normal KDE" and section 3's "Not patched: no island or Start-position changes are made".
+
+### 11.1 Modes
+- **Patched** (`pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12` reports nothing missing):
+  today's engine, unchanged: every add, move and index set in one `evaluateScript` pass, 2-3 passes per switch.
+- **Stock** (anything else: a stock Arch, another distro without `pacman`, a Plasma update that dropped the
+  patched packages until `kde/build.sh` runs again): One bar, Split-left, Split-right and the Start position
+  (Left, Centre, Right; the mirrored bar) work the old way (commit f70da6e and before): **one layout step per
+  pass**, a pass every 0.3 s, so a switch takes 5-10 s and icons visibly jump. Accepted.
+- **3 Islands** (and dragging apps between islands) stays patched-only: the task-manager filter, the island
+  registry and the drop handling live in the plasma-desktop/plasma-workspace patches and have no stock
+  equivalent. On stock KDE, with `taskbarLayout = islands`, Win12 touches no panel (whatever is there stays,
+  also three islands made while patched) and the Taskbar page says why.
+- Win12 never restarts plasmashell (the user unit has `KillMode=control-group`, a restart kills the apps
+  started from the menu, and `StartLimitBurst=3`). Live tests by agents restart it only through
+  `./install.sh --restart`, as every earlier live task did, and say so in the progress log.
+
+### 11.2 Detection
+- One check per plasmashell start, the executable `Tiles.PATCH_CHECK` (code/tiles.js), used by `main.qml` and
+  by the Taskbar settings page: `pacman -T <3 provides> >/dev/null 2>&1 && [ ! -e
+  "${XDG_CONFIG_HOME:-$HOME/.config}/win12-force-stock" ] && echo ok`. No `pacman` (another distro) = stock.
+- `main.qml`: `kdePatched` (true = fast engine) and `kdeChecked` (the check has answered). No sync runs before
+  the answer; when it arrives both syncs run once (`onKdeChecked`). `islandsNeedPatch = !kdePatched &&
+  cfg.taskbarLayout === "islands"` gates `syncIslands()` and `syncCenterPanel()`.
+- The marker file `~/.config/win12-force-stock` forces stock mode on a patched machine. It exists for the live
+  test on the dev PC (section 11.5); it is not a user setting and is not documented in the settings UI.
+
+### 11.3 What depends on which patch (read from `kde/patches/*` and the engine at 1f009d0)
+| Patch | Stock KDE behaviour it removes | Engine code that relies on it | Stock-mode rule |
+|---|---|---|---|
+| libplasma `Containment::addApplet` keeps the moved applet's config group | a system tray moved live ends as `[Applets][id][id]`: icons missing until a restart | `islands.js tray()`: a live move once the host has `win12TrayClean=true` | `STOCK` ignores `win12TrayClean`: every tray move is a fresh copy of the General group (f70da6e) |
+| plasma-workspace `widget.cpp` index fixes (SkipEmptyParts, clamp after removal) | `index = last` lands second-to-last; an empty `AppletOrder` is a fake id 0 | `order()` sets every mismatching index in one pass; `centerLoop()` "all index sets in one pass" | one index set per pass, always the first mismatch (never the last item): the old `fix()` |
+| plasma-desktop panel saves `AppletOrder` at once (not `Qt.callLater`) | inside one script `Widget.index` reads -1 for a widget added or moved in that script and a stale list after a removal | the whole one-pass design: adds, moves, removes and index reads in the same pass | the pass ends after its first layout mutation (add, move, remove or index set); the next pass reads a saved order |
+| plasma-desktop `LayoutManager.js` insert fix | a widget moved past the target's widgets is in the containment but not in the layout (`index` -1) | nothing since bdd2d2a; the `lost` safety net (`islands.js` ~103) remains | the net is the cross-pass bounce: out to the host, in again next pass (lands at 0, then `order()`) |
+| plasma-workspace `TasksModel.appIdFilter`, plasma-desktop `win12Island`, registry, drag/drop | per-island task managers, app moves between islands | 3 Islands roles (`setTM`, `win12Island`, `islands.js` ~108+) | none: 3 Islands locked on stock (11.1) |
+| none (stock scripting API) | — | `Panel.screen`, `screenForConnector`, `reloadConfig`, `configKeys`, `widgetIds`, `lengthMode`/`offset`, `win12*` config keys, the reveal helper and KWin script | unchanged |
+
+### 11.4 Engine rules in stock mode (`STOCK = @STOCK@` in `islands.js`, `STOCK` constant in `centerLoop()`)
+- One layout mutation per pass: after the first add, move, remove or index set the pass prints `again`; the
+  rest of the pass runs next time. Config writes (`writeConfig`, `reloadConfig`, panel geometry, offsets) are
+  not layout mutations and may share a pass.
+- `order()` sets only the first mismatching index. `tray()` always makes a fresh copy. The `lost` net stays.
+- The pass loop keeps its caps (`seq 130` x 0.3 s for islands, `seq 25` for the Start position): a stock split
+  needs about 15-20 passes, a mirror about 8.
+- With `STOCK = false` the engine is byte-for-byte the patched one: the harness's patched cases do not change.
+
+### 11.5 Testing
+- `tests/test_islands.js`: `shell(screenW, screens, stock)`. The stock fake models what the patches remove:
+  `Widget.index` reads a per-panel `saved` order snapshotted only at the end of a pass (`endPass()`), the setter
+  clamps to `saved.length - 1` after removing the id, a moved widget is inserted at its old slot (`x`, the
+  laid-out index; 0 right after an add or move) and goes to `lost` (in `widgets()`, index -1) when that slot is
+  past the target's widgets. Cases: split-left, split-right and One bar converge in <= 40 passes and need more
+  than 3; a fresh tray on every split (the clean marker is ignored); patch lost after a Plasma update (three
+  islands made patched, then split-left on stock: one task manager with the merged pins, no `lost` widget); the
+  Start position mirror and its undo converge on stock; the patched cases are unchanged.
+- Live on the dev PC (patched): only through the marker file. It proves the stock code path runs without
+  script errors, converges, never restarts plasmashell and shows the settings note; it cannot prove stock
+  index semantics (the patched `Widget.index` is always fresh) or the real tray-icon loss. Those are harness-only.
+- The user's live stock test: stock packages, log out/in, the checklist in the plan, patched packages back from
+  `~/.cache/win12-kde/<pkg>/*.pkg.tar.zst`.
