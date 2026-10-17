@@ -59,3 +59,11 @@ left: nothing
 notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass. Screenshot row 8 (SY=829) OK: one group "Title bars and frames"; hint label hidden because the user's windowTheme is on; picture rows disabled until a picture is set. Sidebar rows now: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Look, 5 Colours, 6 Search, 7 Taskbar, 8 Windows, 9 Icons (scrolls).
 next: Task 7 — Appearance (git mv ConfigLook.qml ConfigAppearance.qml, Colours merged, 12 sliders from Taskbar)
 next-model: opus
+
+## 2026-10-17 09:50 Task 7: Appearance (git mv ConfigLook.qml ConfigAppearance.qml, Colours merged, 12 sliders from Taskbar)
+status: done
+done: ConfigLook.qml -> ConfigAppearance.qml (6 read-only keys + StyleKinds, 31 keys, groups Colours / Windows 12 shade / Transparency and corners / Texture / Fonts / Effects); ConfigColours.qml deleted; 5 win12* declarations, their 5 slider rows and the hint removed from ConfigTaskbar; config.qml "Look" -> "Appearance", "Colours" gone (commit 780832e)
+left: nothing
+notes: key guard: `2 duplicates: taskbarLayout (ConfigStyle.qml, ConfigTaskbar.qml); taskbarMagnetic (ConfigStyle.qml, ConfigTaskbar.qml)` + OK 141 keys, no LOST; tiles, stylekinds, qmllint pass. ConfigLook's model order confirmed (0 Automatic, 1 Dark, 2 Light, 3 Custom) so modes = [2, 1, 0, 3]; user's colorMode=0 shows "Automatic (Plasma colours)". Dropped `pragma ComponentBehavior: Bound` (the Swatch inline component reads `page`, as in ConfigColours). XP: the "Colours" section title stays, the one hint line replaces its rows. None of the 5 sliders was tied to w12GapMode. Taskbar's Windows 12 GridLayout now holds only Bottom spacing / Windows / Menu gap. Git records the rename as D+A (big content change). Screenshot row 4 (SY=557) OK, all 6 groups seen (user's menuStyle windows12, so shade + 3 Windows 12 rows show); only journal line is the old "not placed in the graphics scene" warning. Scroll a page: `drag 1354,382 1354,552 1`, then +170 per step. Sidebar rows now: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Appearance, 5 Search, 6 Taskbar (693), 7 Windows (761), 8 Icons (829).
+next: Task 8 — Taskbar page: groups, one TaskbarLayoutBox, island settings placed, merged colour rows, shared rules
+next-model: opus
