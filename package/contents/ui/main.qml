@@ -429,8 +429,13 @@ ContainmentItem {
     // 30 % of the background's contrast kept, pulled toward 85 % under a light bar, 20 % under a dark or accent one
     // (the theme's light/dark ink rule). ponytail: no slider; the two kwinrc keys are the knob.
     readonly property int win12Contrast: win12Glass && cfg.win12ReadableGlass ? 30 : -1
-    readonly property int win12Target: win12Contrast < 0 ? -1
-        : Kirigami.ColorUtils.brightnessForColor("#" + win12Hex) === Kirigami.ColorUtils.Light ? 85 : 20
+    // xptheme.py light() (luma > 150), not Kirigami's brightnessForColor (> 127.5): they disagree on mid colours
+    // such as the default accent 3d8ee6 (white ink), and a light background under white ink is unreadable.
+    readonly property int win12Target: {
+        if (win12Contrast < 0) return -1;
+        const c = Qt.color("#" + win12Hex);
+        return 0.299 * c.r + 0.587 * c.g + 0.114 * c.b > 150 / 255 ? 85 : 20;
+    }
     // A style switch flips these through several values at once: wait for the final state, then one run under
     // the panel lock, so an older "restore" run cannot reload KWin after the newer one.
     onWin12BlurChanged: blurTimer.restart()
