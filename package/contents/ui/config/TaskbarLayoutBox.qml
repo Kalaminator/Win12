@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasma5support as P5Support
 
-// Windows 12 taskbar layout (keys taskbarLayout, taskbarMagnetic), shown on the Style and Taskbar pages.
+// Windows 12 taskbar layout (keys taskbarLayout, taskbarMagnetic), shown on the Taskbar page (one instance).
 // `cfgPage` is the config page holding cfg_taskbarLayout and cfg_taskbarMagnetic.
 ColumnLayout {
     id: box

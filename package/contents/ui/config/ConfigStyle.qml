@@ -27,8 +27,6 @@ KCM.SimpleKCM {
     property bool cfg_taskbarFollowsStyle
     property bool cfg_xpTaskbarTheme
     property bool cfg_windowTheme
-    property string cfg_taskbarLayout
-    property bool cfg_taskbarMagnetic
     function setMenu(v) { if (cfg_menuLook) cfg_menuLook = v; else cfg_menuStyle = v; }
 
     StyleKinds {
@@ -154,11 +152,6 @@ KCM.SimpleKCM {
             QQC2.Label {
                 text: i18n("KDE Plasma (default): your own Plasma Style and title bars come back.")
                 enabled: false
-            }
-            TaskbarLayoutBox {
-                visible: kinds.taskbarKind === "windows12"
-                Kirigami.FormData.label: i18n("Taskbar layout:")
-                cfgPage: page
             }
             Item { Kirigami.FormData.isSection: true }
 
