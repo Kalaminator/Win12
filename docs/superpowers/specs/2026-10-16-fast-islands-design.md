@@ -175,3 +175,25 @@ Plasma version at design time: 6.8.0 (libplasma, plasma-workspace, plasma-deskto
   works.
 - Follow-up idea: the `widget.cpp` index bugs, the delayed save and the tray config nesting are real KDE bugs.
   Sending those fixes upstream would shrink our patch over time.
+
+## 10. Addendum (2026-10-17): islands on extended multi-monitor setups
+
+Approved in chat. Mirrored screens need nothing: Plasma sees them as one screen.
+
+- New setting **Show islands on**: one entry per connected monitor (by output name) plus **All monitors**.
+  Default: the main (primary) monitor.
+  - One monitor: all Win12 islands (host + island panels) live on the chosen monitor; the other monitors get
+    no Win12 taskbar.
+  - All monitors: every monitor gets the Start island and the app islands. The tray island (weather, tray,
+    clock, show desktop) is only on the main monitor (like Windows 11). Pinned apps show on every monitor.
+- New setting **Open apps on other monitors** (used with All monitors): **Only apps on that monitor**
+  (default; the task managers' stock "show only tasks from the current screen" filter) or **All apps on every
+  monitor**.
+- Moving an app icon to another island moves it on all monitors (the registry maps app -> island role, it is
+  not per monitor).
+- Show-together reveal (KWin script): only the islands of the monitor where the pointer touches the bottom
+  edge are revealed (today every monitor's islands are revealed; this also fixes that review finding). The
+  script measures that monitor (the pointer's screen), not `workspace.activeScreen`.
+- Monitor plugged or unplugged: Win12 rebuilds the islands for the new set of monitors.
+- Testing: only one monitor is connected on the dev machine, so the multi-monitor logic is covered by the node
+  fake-shell harness with 2-3 fake screens; the real 2-monitor check is left to the user.
