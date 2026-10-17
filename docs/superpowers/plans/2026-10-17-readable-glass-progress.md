@@ -34,3 +34,11 @@ left: nothing
 notes: Checks: settings keys `--strict` OK (142 keys), test_tiles + test_islands pass, qmllint error count 0 before and after on both files. The `sh -c` string was evaluated in node with mocks: on = `kwriteconfig6 ... Win12Contrast 30` + `Win12Target 85`, off = two `--delete`; both pass `sh -n`. New strings for Task 3 (both in ConfigAppearance.qml): "Readable glass: edge, shadow and an even background" and "The even background needs Win12's KWin patch: run kde/build.sh kwin from the Win12 source folder, then log out and in. Edge and shadow work without it." Not live-tested (Task 4).
 next: Task 3 — i18n + docs
 next-model: sonnet
+
+## 2026-10-17 16:10 Task 3: i18n + docs
+status: done
+done: feaddb9 — `package/Messages.sh`; the 2 new strings translated in all 10 `po/*.po` (the long one had a fuzzy guess from msgmerge: flag removed and text written); `.mo` rebuilt with the install.sh msgfmt line (582 messages each, 0 fuzzy); README paragraph on `kde/build.sh kwin` under the patched-KDE section; `docs/FEATURES.md` l.97 (the file is in `docs/`, not the repo root) gains the readable-glass text; `kde/build.sh` usage line gains `[kwin]`.
+left: nothing
+notes: `settings keys OK (142 keys)`. Task 4 is the live test on this PC (plasmashell restarts allowed, at most 2; back up the 4 config files first).
+next: Task 4 — Live test of layer A on this PC
+next-model: opus
