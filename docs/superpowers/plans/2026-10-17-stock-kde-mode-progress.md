@@ -52,3 +52,11 @@ ELI5: On a normal KDE (no Win12 patch), One bar, Split-left, Split-right and the
 Task 6 checklist: `docs/superpowers/plans/2026-10-17-stock-kde-mode.md`, section "Task 6: The user's live stock test".
 next: Task 6 — user's live stock test
 next-model: none
+
+## 2026-10-17 14:05 Task 6: user's live stock test
+status: done
+done: the user swapped to stock KDE (pacman -S 13:36:11), logged in on stock (session 13:36:43-14:00:46), tested, went back to the patched packages (pacman -U 13:52:35), logged in again (14:01). User: "it runs well on both". Journal of the stock session: no win12/TypeError/ReferenceError lines; no plasmashell crash (only baloo_file_extractor x6 at 13:36:49, during the package swap). After: pacman -T OK, desktop split-right, tray extra=19.
+left: nothing
+notes: unrelated stock bug seen at 13:34:54 (patched session, before the swap): plasmashell SIGSEGV, WidgetExplorerPrivate::removeContainment recurses forever on screenRemoved (Applet's Q_PROPERTY containment returns the parent containment, so removeContainment(c) calls itself on c). plasma-workspace components/shellprivate/widgetexplorer.cpp:338-340, not touched by Win12.
+next: none
+next-model: none
