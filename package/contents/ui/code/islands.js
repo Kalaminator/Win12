@@ -150,7 +150,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
    if (order(h, POS === 2 ? [mt.id, mw.id] : [mw.id, mt.id])) out = 'again'; if (stop()) break; }
   if (mode === 'islands') { const a = at(byPid(m.A) || mk('M', 'center')); m.A = a.id;
    let mat = byId(a, m.atm); if (!mat) { mat = a.addWidget(tm.type); put(mat, 'launchers', ''); m.atm = mat.id; out = 'again'; } likeTM(byId(isl('A'), s.atm), mat); }
-  else if (m.A) { const a = byPid(m.A); if (a) a.remove(); delete m.A; delete m.atm; out = 'again'; did = true; } }
+  else if (m.A) { const a = byPid(m.A); if (a) a.remove(); delete m.A; delete m.atm; out = 'again'; did = true; if (stop()) break; } }
  if (stop()) continue;   // the inner breaks land here
  put(p, 'win12Layout', JSON.stringify(s));
  // islands look like the panel; floating/hiding from the keys (syncPanelLook may not have reached the panel yet).

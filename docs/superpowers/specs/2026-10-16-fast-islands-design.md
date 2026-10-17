@@ -223,8 +223,10 @@ to work on a normal KDE" and section 3's "Not patched: no island or Start-positi
   by the Taskbar settings page: `pacman -T <3 provides> >/dev/null 2>&1 && [ ! -e
   "${XDG_CONFIG_HOME:-$HOME/.config}/win12-force-stock" ] && echo ok`. No `pacman` (another distro) = stock.
 - `main.qml`: `kdePatched` (true = fast engine) and `kdeChecked` (the check has answered). No sync runs before
-  the answer; when it arrives both syncs run once (`onKdeChecked`). `islandsNeedPatch = !kdePatched &&
-  cfg.taskbarLayout === "islands"` gates `syncIslands()` and `syncCenterPanel()`.
+  the answer; when it arrives both syncs run once (`onKdeChecked`). `islandsNeedPatch() = !kdePatched &&
+  islandWant === "islands"` gates `syncIslands()` and `syncCenterPanel()`. It is a function, not a binding: a
+  binding read inside `onIslandWantChanged` was still the old value (found live in Task 4, 1a0251e). `islandWant`,
+  not the raw key: another taskbar style hides the layout box, and its bar must still come back on stock.
 - The marker file `~/.config/win12-force-stock` forces stock mode on a patched machine. It exists for the live
   test on the dev PC (section 11.5); it is not a user setting and is not documented in the settings UI.
 
@@ -241,7 +243,9 @@ to work on a normal KDE" and section 3's "Not patched: no island or Start-positi
 ### 11.4 Engine rules in stock mode (`STOCK = @STOCK@` in `islands.js`, `STOCK` constant in `centerLoop()`)
 - One layout mutation per pass: after the first add, move, remove or index set the pass prints `again`; the
   rest of the pass runs next time. Config writes (`writeConfig`, `reloadConfig`, panel geometry, offsets) are
-  not layout mutations and may share a pass.
+  not layout mutations and may share a pass. Kept together on purpose (no index is read after them in that
+  pass): removing every reveal helper, removing every island panel, the re-key's weather move with its panel
+  removal, the centre spacer adds in `centerLoop()`. The breaker flag is `did` (set at each change), not `out`.
 - `order()` sets only the first mismatching index. `tray()` always makes a fresh copy. The `lost` net stays.
 - The pass loop keeps its caps (`seq 130` x 0.3 s for islands, `seq 25` for the Start position): a stock split
   needs about 15-20 passes, a mirror about 8.
