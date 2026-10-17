@@ -91,3 +91,11 @@ left: nothing
 notes: key guard --strict OK (141 keys); tiles, stylekinds, qmllint pass; no Substyle/question label left (only cfg_ key names). Screenshot row 0 OK (heading + cards); the groups are below the fold, not scrolled. The page has no xpTaskbarTheme/windowTheme/taskbarFollowsStyle rows (not in ConfigStyle), so the spec's Mix list is shorter here; Task 13 can check where they live. Journal clean.
 next: Task 11 — Search page groups; final config.qml; strict guard in install.sh; HANDOFF note; all 9 screenshots
 next-model: sonnet
+
+## 2026-10-17 11:00 Task 11: Search page groups; final config.qml; strict guard in install.sh; HANDOFF note; all 9 screenshots
+status: done
+done: ConfigSearch groups Results / History / What to search (+ hint, "Show the "Search the internet" button"); config.qml final nine-page order, Taskbar icon preferences-desktop-plasma; install.sh runs test_settings_keys.js --strict; HANDOFF paragraph (commit 5e9c6e8)
+left: nothing
+notes: install.sh prints test_islands OK + settings keys OK (141 keys); qmllint clean; no old Config* name left. All 9 pages screenshotted (rows SY=285+68k, k=0..8: Style, Start menu, Apps list, Start button & shortcuts, Taskbar, Windows, Appearance, Search, Advanced): groups and labels look right, no stray old label; below-the-fold groups not scrolled. Journal: no new error after the run.
+next: Task 12 — Translations: Messages.sh, es.po complete, .mo
+next-model: sonnet
