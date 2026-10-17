@@ -640,7 +640,8 @@ ContainmentItem {
     }
     // W5: split taskbar islands, Windows 12 style only (code/islands.js reads the style from this widget's config).
     readonly property string islandWant: win12Taskbar ? cfg.taskbarLayout : "single"
-    onIslandWantChanged: { syncCenterPanel(); syncIslands(); }
+    // back to One bar: syncIslands puts the bar's own order back first, then runs the Start position sync (centerLoop)
+    onIslandWantChanged: { if (islandWant !== "single") syncCenterPanel(); syncIslands(); }
     // W17: the layouts and the Start position need Win12's patched KDE (kde/build.sh): one script moves everything.
     // Without it no panel is touched (the settings page shows the command). Checked once per start through pacman.
     property bool kdePatched: false
@@ -705,7 +706,9 @@ ContainmentItem {
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
             + "/ -e s/@POS@/" + cfg.menuPosition + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ "
             + Tiles.shQuote(logic) + " " + Tiles.shQuote(file) + ")\"";
-        const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done";
+        const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done"
+            // a restore applies the unmirrored order without the centre spacers: the Start position goes on again after it
+            + (islandWant === "single" ? "; " + centerLoop() : "");
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(loop));
     }
     function syncPanelLook() {
@@ -724,6 +727,9 @@ ContainmentItem {
     }
     function syncCenterPanel() {
         if (!configReady || !kdePatched) return;   // never act on default settings before migrateConfig is done
+        run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(centerLoop()));
+    }
+    function centerLoop() {
         const js = "const ID = " + Plasmoid.id + ", M = 'win12Centre'; let out = 'done';"
             + "const get = (w, g, k, d) => { w.currentConfigGroup = [g]; return String(w.readConfig(k, d)); };"
             + "for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue;"
@@ -759,8 +765,7 @@ ContainmentItem {
             + "  if (!mode && f) { w.writeConfig('fill', f !== 'false'); w.writeConfig('win12Fill', ''); w.reloadConfig(); out = 'again'; } } }"
             + "print(out);";
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js);
-        const loop = "for i in $(seq 25); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done";
-        run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(loop));
+        return "for i in $(seq 25); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done";
     }
 
     // Find a power/session action by its id ("shutdown", "reboot", ...).
