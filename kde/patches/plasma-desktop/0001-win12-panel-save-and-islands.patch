@@ -180,7 +180,7 @@ index 1902cdc..65441d7 100644
                      });
                  } else {
 diff --git a/applets/taskmanager/qml/main.qml b/applets/taskmanager/qml/main.qml
-index 8d5a83c..e08b22d 100644
+index 8d5a83c..72ab872 100644
 --- a/applets/taskmanager/qml/main.qml
 +++ b/applets/taskmanager/qml/main.qml
 @@ -30,7 +30,8 @@ PlasmoidItem {
@@ -193,7 +193,27 @@ index 8d5a83c..e08b22d 100644
      readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
      readonly property bool iconsOnly: Plasmoid.pluginName === "org.kde.plasma.icontasks"
  
-@@ -98,6 +99,44 @@ PlasmoidItem {
+@@ -75,6 +76,10 @@ PlasmoidItem {
+         if (vertical) {
+             return Kirigami.Units.gridUnit * 10;
+         }
++        // Win12: an empty island has 0 columns, so taskList's max width is x/0 = Infinity (panel length overflows to 1 px)
++        if (tasksModel.count === 0) {
++            return Layout.minimumWidth;
++        }
+         return taskList.Layout.maximumWidth
+     }
+     Layout.preferredHeight: {
+@@ -82,7 +87,7 @@ PlasmoidItem {
+             return 0.01;
+         }
+         if (vertical) {
+-            return taskList.Layout.maximumHeight
++            return tasksModel.count === 0 ? Layout.minimumHeight : taskList.Layout.maximumHeight;
+         }
+         return Kirigami.Units.gridUnit * 2;
+     }
+@@ -98,6 +103,44 @@ PlasmoidItem {
          }
      }
  
@@ -238,7 +258,7 @@ index 8d5a83c..e08b22d 100644
      function windowsHovered(winIds: var, hovered: bool): DBus.DBusPendingReply {
          if (!Plasmoid.configuration.highlightWindows) {
              return;
-@@ -181,6 +220,7 @@ PlasmoidItem {
+@@ -181,6 +224,7 @@ PlasmoidItem {
  
          onLauncherListChanged: {
              Plasmoid.configuration.launchers = launcherList;
@@ -246,7 +266,7 @@ index 8d5a83c..e08b22d 100644
          }
  
          onGroupingAppIdBlacklistChanged: {
-@@ -666,6 +706,8 @@ PlasmoidItem {
+@@ -666,6 +710,8 @@ PlasmoidItem {
      Component.onCompleted: {
          TaskManagerApplet.TaskTools.taskManagerInstanceCount += 1;
          requestLayout.connect(iconGeometryTimer.restart);
