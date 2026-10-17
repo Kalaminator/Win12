@@ -18,3 +18,11 @@ left: nothing
 notes: plan steps applied verbatim, no deviation. Checks: test_islands OK, tiles.js all checks passed, qmllint 0 errors, xmllint ok, the sed-substituted script parses (node --check) for SCR = "", all, DP-1 with no @X@ left. No live test (plan: Task 5). ALLAPPS is defined but unused until Task 2; with SCR = all, MAIN = 0 for now.
 next: Task 2 — All monitors: host + app-island copies in `islands.js`; `isMirror` guards in `main.qml`
 next-model: opus
+
+## 2026-10-17 08:10 Task 2: All monitors: host + app-island copies in `islands.js`; `isMirror` guards in `main.qml`
+status: done
+done: 776c5c9: harness configKeys/configGroups follow currentConfigGroup + the plan's All-monitors cases (failed first at the [3,2,2] panel counts, as planned); islands.js mk('M') not filed in s, byPid/monPanels, restore also removes the copies, copyCfg/likeTM/s.mon block before the look block, others includes the copies, placement is place(k, row) per screen; main.qml isMirror + islandWant guard, isMirror returns in syncIslands/syncCenterPanel/syncPanelLook/syncDesktopTheme/syncIslandReveal, Connections on cfg.valueChanged -> islandTimer while islandScreen = all.
+left: nothing
+notes: Checks: test_islands OK, tiles.js all checks passed, qmllint 0 errors. Ruling: theme guard put in syncDesktopTheme (the caller of themeReader), not in themeReader.onNewData (that handler must disconnectSource first; the caller also skips the copy's firefox/icon syncs, which the host does) — cost if wrong: none seen. Ruling: also guard syncIslandReveal (not in the plan): a copy's islandWant is forced to single, so islandReveal = false and its onReady run would delete win12islandrevealEnabled and unload the host's KWin reveal script — cost if wrong: a copy can't touch the reveal script (it shouldn't anyway). Not guarded (same settings as the host, idempotent): syncWindowDeco/Colors/Blur/PanelPop/Icons-via-theme. For Task 6 review: does plasmashell's scripting panels() still list a panel whose screen was unplugged? If not, byPid misses the old copy and a new one is made (the old one leaks until the screen returns). Not testable here (one monitor).
+next: Task 3 — Settings on the Taskbar page, Spanish, README
+next-model: sonnet
