@@ -19,12 +19,10 @@ msgstr ""
 
 #: package/contents/config/config.qml:6
 #: package/contents/ui/config/ConfigStyle.qml:68
-#, fuzzy
 msgid "Style"
-msgstr "Unterstil:"
+msgstr "Stil"
 
 #: package/contents/config/config.qml:11
-#, fuzzy
 msgid "Start menu"
 msgstr "Startmenü"
 
@@ -34,23 +32,20 @@ msgid "Apps list"
 msgstr "App-Liste"
 
 #: package/contents/config/config.qml:21
-#, fuzzy
 msgid "Start button & shortcuts"
-msgstr "Farbe der Startschaltfläche:"
+msgstr "Startschaltfläche & Verknüpfungen"
 
 #: package/contents/config/config.qml:26
 msgid "Taskbar"
 msgstr "Taskleiste"
 
-#
 #: package/contents/config/config.qml:31
-#, fuzzy
 msgid "Windows"
-msgstr "Fensterrahmen:"
+msgstr "Fenster"
 
 #: package/contents/config/config.qml:36
 msgid "Appearance"
-msgstr ""
+msgstr "Darstellung"
 
 #: package/contents/config/config.qml:41
 msgid "Search"
@@ -58,16 +53,15 @@ msgstr "Suche"
 
 #: package/contents/config/config.qml:46
 msgid "Advanced"
-msgstr ""
+msgstr "Erweitert"
 
 #: package/contents/ui/AppletPicker.qml:34
 msgid "KDE widgets"
-msgstr ""
+msgstr "KDE-Widgets"
 
 #: package/contents/ui/AppletPicker.qml:57
-#, fuzzy
 msgid "Search widgets…"
-msgstr "Breite des Suchfelds:"
+msgstr "Widgets durchsuchen…"
 
 #: package/contents/ui/common/AppCanvas.qml:56
 #: package/contents/ui/common/AppCanvas.qml:103
@@ -493,49 +487,46 @@ msgid "Search apps and files"
 msgstr "Apps und Dateien durchsuchen"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:42
-#, fuzzy
 msgid "Pick a wallpaper…"
-msgstr "Bild auswählen…"
+msgstr "Hintergrundbild auswählen…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:43
-#, fuzzy
 msgid "Images (*.png *.jpg *.jpeg *.webp)"
-msgstr "Bilder (*.png *.svg *.jpg *.webp)"
+msgstr "Bilder (*.png *.jpg *.jpeg *.webp)"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:48
 msgid "Icons and wallpaper (applied at once, not on Apply)"
 msgstr ""
+"Symbole und Hintergrundbild (wird sofort übernommen, nicht erst mit "
+"„Anwenden“)"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:51
-#, fuzzy
 msgid "Icon theme:"
-msgstr "Symbolgröße:"
+msgstr "Symboldesign:"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:56
 msgid "Download icon themes…"
-msgstr ""
+msgstr "Symboldesigns herunterladen…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:62
 msgid "Download wallpapers…"
-msgstr ""
+msgstr "Hintergrundbilder herunterladen…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:65
 msgid "Wallpaper:"
-msgstr ""
+msgstr "Hintergrundbild:"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:67
-#, fuzzy
 msgid "Choose image…"
 msgstr "Bild auswählen…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:72
 msgid "Set as wallpaper"
-msgstr ""
+msgstr "Als Hintergrundbild festlegen"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:83
-#, fuzzy
 msgid "Backup and reset"
-msgstr "Win12-Einstellungen sichern"
+msgstr "Sichern und zurücksetzen"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:86
 msgid "Backup settings…"
@@ -605,15 +596,12 @@ msgid "Colours"
 msgstr "Farben"
 
 #: package/contents/ui/config/ConfigAppearance.qml:122
-#, fuzzy
 msgid "Windows XP uses its own colour scheme (Style page)."
-msgstr ""
-"Der Windows-XP-Stil verwendet ein eigenes Farbschema (Seite Startmenü). "
-"Diese Einstellungen gelten für die anderen Stile."
+msgstr "Windows XP verwendet ein eigenes Farbschema (Seite „Stil“)."
 
 #: package/contents/ui/config/ConfigAppearance.qml:127
 msgid "Mode:"
-msgstr ""
+msgstr "Modus:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:130
 msgid "Light"
@@ -628,9 +616,8 @@ msgid "Automatic (Plasma colours)"
 msgstr "Automatisch (Plasma-Farben)"
 
 #: package/contents/ui/config/ConfigAppearance.qml:130
-#, fuzzy
 msgid "Custom colours"
-msgstr "Benutzerdefinierte Farben:"
+msgstr "Benutzerdefinierte Farben"
 
 #: package/contents/ui/config/ConfigAppearance.qml:134
 msgid "Menu colour:"
@@ -684,55 +671,52 @@ msgid ""
 "The taskbar and title bars follow these when their look is not \"Plasma's "
 "own\" (Style page)."
 msgstr ""
+"Taskleiste und Titelleisten folgen diesen Einstellungen, wenn ihr Aussehen "
+"nicht „KDE Plasma (Standard)“ ist (Seite „Stil“)."
 
 #: package/contents/ui/config/ConfigAppearance.qml:192
-#, fuzzy
 msgid "Windows 12 shade"
-msgstr "Windows-10-Stil"
+msgstr "Windows-12-Abstufung"
 
 #: package/contents/ui/config/ConfigAppearance.qml:195
 msgid "Light mode tint:"
-msgstr ""
+msgstr "Tönung im hellen Modus:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:196
-#, fuzzy
 msgid "Soft tint"
-msgstr "Automatische Färbung"
+msgstr "Sanfte Tönung"
 
 #: package/contents/ui/config/ConfigAppearance.qml:198
 msgid "Near white"
-msgstr ""
+msgstr "Fast Weiß"
 
 #: package/contents/ui/config/ConfigAppearance.qml:202
 msgid "Dark mode shade:"
-msgstr ""
+msgstr "Abstufung im dunklen Modus:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:203
 msgid "Soft dark"
-msgstr ""
+msgstr "Sanftes Dunkel"
 
 #: package/contents/ui/config/ConfigAppearance.qml:205
 msgid "Near black"
-msgstr ""
+msgstr "Fast Schwarz"
 
 #: package/contents/ui/config/ConfigAppearance.qml:208
-#, fuzzy
 msgid "Transparency and corners"
-msgstr "Transparenzeffekte"
+msgstr "Transparenz und Ecken"
 
 #: package/contents/ui/config/ConfigAppearance.qml:211
 msgid "Transparency effects"
 msgstr "Transparenzeffekte"
 
 #: package/contents/ui/config/ConfigAppearance.qml:215
-#, fuzzy
 msgid "Solid Start menu"
-msgstr "An das Startmenü anheften"
+msgstr "Deckendes Startmenü"
 
 #: package/contents/ui/config/ConfigAppearance.qml:217
-#, fuzzy
 msgid "Start menu background:"
-msgstr "Farben des Startmenüs:"
+msgstr "Hintergrund des Startmenüs:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:220
 #: package/contents/ui/config/ConfigStartMenu.qml:158
@@ -741,43 +725,40 @@ msgid "%1% solid"
 msgstr "%1% undurchsichtig"
 
 #: package/contents/ui/config/ConfigAppearance.qml:224
-#, fuzzy
 msgid "Windows 12 transparency:"
-msgstr "Transparenz"
+msgstr "Windows-12-Transparenz:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Solid"
-msgstr ""
+msgstr "Deckend"
 
 #: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Clear"
-msgstr ""
+msgstr "Klar"
 
 #: package/contents/ui/config/ConfigAppearance.qml:231
-#, fuzzy
 msgid "Windows 12 blur:"
-msgstr "Windows-Farben:"
+msgstr "Windows-12-Unschärfe:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:232
 msgid "Soft"
-msgstr ""
+msgstr "Sanft"
 
 #: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Strong"
-msgstr ""
+msgstr "Stark"
 
 #: package/contents/ui/config/ConfigAppearance.qml:238
-#, fuzzy
 msgid "Windows 12 grain:"
-msgstr "Windows 7 (Glas)"
+msgstr "Windows-12-Körnung:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:239
 msgid "Smooth"
-msgstr ""
+msgstr "Glatt"
 
 #: package/contents/ui/config/ConfigAppearance.qml:241
 msgid "Grainy"
-msgstr ""
+msgstr "Körnig"
 
 #: package/contents/ui/config/ConfigAppearance.qml:248
 msgid ""
@@ -786,11 +767,14 @@ msgid ""
 "all windows while the Windows 12 look is on; your own value comes back when "
 "you leave it."
 msgstr ""
+"Taskleiste, Startmenü und Titelleisten; die Transparenz ändert nur den "
+"Hintergrund, Symbole und Text bleiben deckend. Die Unschärfestärke legt die "
+"KWin-Unschärfe für alle Fenster fest, solange das Windows-12-Aussehen aktiv "
+"ist; beim Verlassen kommt Ihr eigener Wert zurück."
 
 #: package/contents/ui/config/ConfigAppearance.qml:252
-#, fuzzy
 msgid "Menu corner radius:"
-msgstr "Eckenradius:"
+msgstr "Eckenradius des Menüs:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:255
 #: package/contents/ui/config/ConfigTaskbar.qml:157
@@ -811,9 +795,8 @@ msgstr "Textur:"
 #: package/contents/ui/config/ConfigAppearance.qml:279
 #: package/contents/ui/config/ConfigTaskbar.qml:227
 #: package/contents/ui/config/ConfigWindows.qml:106
-#, fuzzy
 msgid "Placement:"
-msgstr "Orte"
+msgstr "Anordnung:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:281
 #: package/contents/ui/config/ConfigTaskbar.qml:230
@@ -884,7 +867,7 @@ msgstr "Schriftgröße der Elemente:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:341
 msgid "Effects"
-msgstr ""
+msgstr "Effekte"
 
 #: package/contents/ui/config/ConfigAppearance.qml:342
 msgid "Fade the menu in when it opens"
@@ -925,35 +908,28 @@ msgid "Show app categories as folders"
 msgstr "App-Kategorien als Ordner anzeigen"
 
 #: package/contents/ui/config/ConfigAppsList.qml:69
-#, fuzzy
 msgid "Hide folders in the recent list"
-msgstr ""
-"Ordner in der Liste der zuletzt verwendeten Elemente ausblenden (Windows-11-"
-"Stil)"
+msgstr "Ordner in der Liste „Zuletzt verwendet“ ausblenden"
 
 #: package/contents/ui/config/ConfigAppsList.qml:71
 msgid "Place folders at the bottom of the list"
 msgstr "Ordner am Ende der Liste platzieren"
 
 #: package/contents/ui/config/ConfigAppsList.qml:75
-#, fuzzy
 msgid "All Programs (Windows 7 and XP)"
-msgstr "Ordner „Desktop“ in „Alle Programme“ anzeigen (Windows 7, XP)"
+msgstr "Alle Programme (Windows 7 und XP)"
 
 #: package/contents/ui/config/ConfigAppsList.qml:77
-#, fuzzy
 msgid "Auto expand folders on hover"
-msgstr "Ordner beim Darüberfahren automatisch erweitern (Windows 7, XP)"
+msgstr "Ordner beim Darüberfahren automatisch erweitern"
 
 #: package/contents/ui/config/ConfigAppsList.qml:78
-#, fuzzy
 msgid "Show the Desktop folder in All Programs"
-msgstr "Ordner „Desktop“ in „Alle Programme“ anzeigen (Windows 7, XP)"
+msgstr "Ordner „Desktop“ in „Alle Programme“ anzeigen"
 
 #: package/contents/ui/config/ConfigAppsList.qml:79
-#, fuzzy
 msgid "Show categories as a cascading menu"
-msgstr "Kategorien als Kaskadenmenü anzeigen (Windows 7, XP)"
+msgstr "Kategorien als Kaskadenmenü anzeigen"
 
 #: package/contents/ui/config/ConfigAppsList.qml:81
 msgid "Hidden apps"
@@ -1044,23 +1020,20 @@ msgid "Images (*.png *.svg *.jpg *.webp)"
 msgstr "Bilder (*.png *.svg *.jpg *.webp)"
 
 #: package/contents/ui/config/ConfigButton.qml:131
-#, fuzzy
 msgid "Start button"
 msgstr "Startschaltfläche"
 
 #: package/contents/ui/config/ConfigButton.qml:133
-#, fuzzy
 msgid "Start button:"
-msgstr "Startschaltfläche"
+msgstr "Startschaltfläche:"
 
 #: package/contents/ui/config/ConfigButton.qml:134
 msgid "Icon"
 msgstr "Symbol"
 
 #: package/contents/ui/config/ConfigButton.qml:135
-#, fuzzy
 msgid "Picture"
-msgstr "Bilder"
+msgstr "Bild"
 
 #: package/contents/ui/config/ConfigButton.qml:136
 msgid "Four squares"
@@ -1073,45 +1046,39 @@ msgstr "Symbol:"
 
 #: package/contents/ui/config/ConfigButton.qml:146
 msgid "System default"
-msgstr ""
+msgstr "Systemstandard"
 
 #: package/contents/ui/config/ConfigButton.qml:152
 msgid "Reset icon"
 msgstr "Symbol zurücksetzen"
 
 #: package/contents/ui/config/ConfigButton.qml:167
-#, fuzzy
 msgid "Picture:"
-msgstr "Bilder"
+msgstr "Bild:"
 
 #: package/contents/ui/config/ConfigButton.qml:200
-#, fuzzy
 msgid "Use a custom picture…"
-msgstr "Eigenes Bild für die Startschaltfläche verwenden…"
+msgstr "Eigenes Bild verwenden…"
 
 #: package/contents/ui/config/ConfigButton.qml:206
-#, fuzzy
 msgid ""
 "A custom picture holds 3 images stacked top to bottom: normal, mouse over, "
 "pressed."
 msgstr ""
-"Eigene Bilder enthalten 3 übereinander angeordnete Bilder von oben nach "
+"Ein eigenes Bild enthält 3 übereinander angeordnete Bilder von oben nach "
 "unten: normal, Maus darüber, gedrückt."
 
 #: package/contents/ui/config/ConfigButton.qml:216
-#, fuzzy
 msgid "First square:"
-msgstr "Vier Quadrate"
+msgstr "Erstes Quadrat:"
 
 #: package/contents/ui/config/ConfigButton.qml:220
-#, fuzzy
 msgid "Other squares:"
-msgstr "Vier Quadrate"
+msgstr "Weitere Quadrate:"
 
 #: package/contents/ui/config/ConfigButton.qml:226
-#, fuzzy
 msgid "XP Start button colour:"
-msgstr "Farbe der Startschaltfläche:"
+msgstr "Farbe der XP-Startschaltfläche:"
 
 #: package/contents/ui/config/ConfigButton.qml:228
 msgid "XP green"
@@ -1122,24 +1089,20 @@ msgid "Colour scheme"
 msgstr "Farbschema"
 
 #: package/contents/ui/config/ConfigButton.qml:238
-#, fuzzy
 msgid "Right-click menu"
 msgstr "Kontextmenü"
 
 #: package/contents/ui/config/ConfigButton.qml:241
-#, fuzzy
 msgid "Show in the right-click menu:"
-msgstr "Im Energiemenü anzeigen:"
+msgstr "Im Kontextmenü anzeigen:"
 
 #: package/contents/ui/config/ConfigButton.qml:257
-#, fuzzy
 msgid "Menu shortcuts"
-msgstr "Verknüpfungen"
+msgstr "Menüverknüpfungen"
 
 #: package/contents/ui/config/ConfigButton.qml:260
-#, fuzzy
 msgid "Shortcut labels:"
-msgstr "Verknüpfungen"
+msgstr "Beschriftung der Verknüpfungen:"
 
 #: package/contents/ui/config/ConfigButton.qml:261
 msgid "Only show icons"
@@ -1154,13 +1117,12 @@ msgid "Always show icons and names"
 msgstr "Symbole und Namen immer anzeigen"
 
 #: package/contents/ui/config/ConfigButton.qml:274
-#, fuzzy
 msgid "Align the icons to the bottom"
-msgstr "Symbole unten ausrichten (Windows-10-Stil)"
+msgstr "Symbole unten ausrichten"
 
 #: package/contents/ui/config/ConfigButton.qml:278
 msgid "Small place rows"
-msgstr ""
+msgstr "Kleine Zeilen für Orte"
 
 #: package/contents/ui/config/ConfigButton.qml:281
 msgid "Top to bottom:"
@@ -1175,9 +1137,8 @@ msgid "Add custom location…"
 msgstr "Benutzerdefinierten Ort hinzufügen…"
 
 #: package/contents/ui/config/ConfigButton.qml:313
-#, fuzzy
 msgid "Clicking the power button:"
-msgstr "Ein Klick auf die Ein/Aus-Schaltfläche soll:"
+msgstr "Klick auf die Ein/Aus-Schaltfläche:"
 
 #: package/contents/ui/config/ConfigButton.qml:316
 msgid "Show the power menu"
@@ -1188,9 +1149,8 @@ msgid "Show in the power menu:"
 msgstr "Im Energiemenü anzeigen:"
 
 #: package/contents/ui/config/ConfigButton.qml:338
-#, fuzzy
 msgid "Show an icon on the Shut down button"
-msgstr "Symbol auf der Schaltfläche „Herunterfahren“ anzeigen (Windows-7-Stil)"
+msgstr "Symbol auf der Schaltfläche „Herunterfahren“ anzeigen"
 
 #: package/contents/ui/config/ConfigButton.qml:349
 msgid "Add custom location"
@@ -1267,7 +1227,7 @@ msgstr "Wörterbuch"
 
 #: package/contents/ui/config/ConfigSearch.qml:41
 msgid "Results"
-msgstr ""
+msgstr "Ergebnisse"
 
 #: package/contents/ui/config/ConfigSearch.qml:42
 msgid "Group results by type (Apps, Files, Settings …)"
@@ -1284,7 +1244,6 @@ msgid "Show filter icons above the results (Apps, Documents, Web …)"
 msgstr "Filtersymbole über den Ergebnissen anzeigen (Apps, Dokumente, Web …)"
 
 #: package/contents/ui/config/ConfigSearch.qml:45
-#, fuzzy
 msgid "Show the \"Search the internet\" button"
 msgstr "Schaltfläche „Im Internet suchen“ anzeigen"
 
@@ -1299,7 +1258,7 @@ msgstr "%s wird durch Ihre Eingabe ersetzt."
 
 #: package/contents/ui/config/ConfigSearch.qml:59
 msgid "History"
-msgstr ""
+msgstr "Verlauf"
 
 #: package/contents/ui/config/ConfigSearch.qml:60
 msgid "Remember recent searches"
@@ -1320,21 +1279,20 @@ msgstr "Alles verwenden, was KRunner durchsuchen kann"
 #: package/contents/ui/config/ConfigSearch.qml:75
 msgid "Off: starts with Apps, Settings and Files; tick more below."
 msgstr ""
+"Aus: beginnt mit Apps, Einstellungen und Dateien; weitere unten ankreuzen."
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
 #: package/contents/ui/main.qml:927
 msgid "Pick tile image…"
 msgstr "Kachelbild auswählen…"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:70
-#, fuzzy
 msgid "Size and position"
-msgstr "Menüposition:"
+msgstr "Größe und Position"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:74
 msgid "Size:"
-msgstr ""
+msgstr "Größe:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:75
 msgid "Tall"
@@ -1356,23 +1314,21 @@ msgstr "Benutzerdefinierte Höhe:"
 msgid "From size"
 msgstr "Nach Größe"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:88
-#, fuzzy
 msgid "Position:"
-msgstr "Menüposition:"
+msgstr "Position:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Top"
-msgstr ""
+msgstr "Oben"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Middle"
-msgstr ""
+msgstr "Mitte"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Bottom"
-msgstr ""
+msgstr "Unten"
 
 #
 #: package/contents/ui/config/ConfigStartMenu.qml:89
@@ -1390,41 +1346,33 @@ msgstr "Mitte"
 msgid "Right"
 msgstr "Rechts"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:95
-#, fuzzy
 msgid "Also mirror the taskbar (Start button at the bottom)"
-msgstr "Auch die Start-Schaltfläche und die Taskleistensymbole zentrieren"
+msgstr "Auch die Taskleiste spiegeln (Startschaltfläche unten)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:96
 msgid "Also mirror the taskbar (Start button on the right, clock on the left)"
-msgstr ""
+msgstr "Auch die Taskleiste spiegeln (Startschaltfläche rechts, Uhr links)"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:97
-#, fuzzy
 msgid "Also centre the Start button and the taskbar icons vertically"
-msgstr "Auch die Start-Schaltfläche und die Taskleistensymbole zentrieren"
+msgstr "Startschaltfläche und Taskleistensymbole auch vertikal zentrieren"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:98
-#, fuzzy
 msgid "Also align the Start button and taskbar icons with the menu"
-msgstr "Auch die Start-Schaltfläche und die Taskleistensymbole zentrieren"
+msgstr "Startschaltfläche und Taskleistensymbole auch am Menü ausrichten"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:100
-#, fuzzy
 msgid "Full screen menu"
-msgstr "Vollbildmenü verwenden"
+msgstr "Vollbildmenü"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:101
 msgid "Keep the panel visible"
 msgstr "Panel sichtbar halten"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:103
-#, fuzzy
 msgid "Menu scale:"
-msgstr "Menügröße"
+msgstr "Menüskalierung:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:112
 #, javascript-format
@@ -1442,12 +1390,11 @@ msgstr "Menülayout bearbeiten…"
 #: package/contents/ui/config/ConfigStartMenu.qml:127
 #: package/contents/ui/config/ConfigTaskbar.qml:301
 msgid "(applies at once)"
-msgstr ""
+msgstr "(wird sofort übernommen)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:131
-#, fuzzy
 msgid "Tile columns:"
-msgstr "Kachelfarbe:"
+msgstr "Kachelspalten:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:134
 msgid "%1 column"
@@ -1464,7 +1411,6 @@ msgid "Tile icon size:"
 msgstr "Symbolgröße der Kacheln:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:149
-#, fuzzy
 msgid "Hide tile captions (show them as tooltips)"
 msgstr "Beschriftung der Kacheln ausblenden (als Quickinfo anzeigen)"
 
@@ -1504,59 +1450,53 @@ msgid "%1%"
 msgstr "%1%"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:172
-#, fuzzy
 msgid "Fetch favicons for pinned web links"
-msgstr "Favicon für angeheftete Weblinks abrufen"
+msgstr "Favicons für angeheftete Weblinks abrufen"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:173
-#, fuzzy
 msgid "Lock tile and pin positions"
-msgstr "Position der Menüverknüpfungen sperren"
+msgstr "Positionen von Kacheln und Angeheftetem sperren"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:175
-#, fuzzy
 msgid "Reset tile and pin positions…"
-msgstr "Symbolpositionen zurücksetzen…"
+msgstr "Positionen von Kacheln und Angeheftetem zurücksetzen…"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:180
-#, fuzzy
 msgid "Windows 12"
-msgstr "Windows-10-Stil"
+msgstr "Windows 12"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:184
-#, fuzzy
 msgid "Apps list side:"
-msgstr "App-Liste"
+msgstr "Seite der App-Liste:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:185
 msgid "Automatic (menu on the left: left, else right)"
-msgstr ""
+msgstr "Automatisch (Menü links: links, sonst rechts)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:190
 msgid "Greeting with picture:"
-msgstr ""
+msgstr "Begrüßung mit Bild:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 msgid "Automatic (when the list is on the left)"
-msgstr ""
+msgstr "Automatisch (wenn die Liste links steht)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 msgid "On"
-msgstr ""
+msgstr "Ein"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 #: package/contents/ui/config/ConfigTaskbar.qml:260
-#, fuzzy
 msgid "Off"
-msgstr "Abmelden"
+msgstr "Aus"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:193
 msgid "Show Documents, Pictures and Music above the cards"
-msgstr ""
+msgstr "Dokumente, Bilder und Musik über den Karten anzeigen"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:194
 msgid "Show the clock and date above the cards"
-msgstr ""
+msgstr "Uhr und Datum über den Karten anzeigen"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:199
 msgid "Reset icon positions?"
@@ -1582,9 +1522,8 @@ msgid "Windows 7 style"
 msgstr "Windows-7-Stil"
 
 #: package/contents/ui/config/ConfigStyle.qml:52
-#, fuzzy
 msgid "The Windows 7 menu, classic or modern."
-msgstr "Das blaue Luna-Menü, klassisch oder modernisiert."
+msgstr "Das Windows-7-Menü, klassisch oder modern."
 
 #: package/contents/ui/config/ConfigStyle.qml:53
 #: package/contents/ui/config/ConfigStyle.qml:129
@@ -1611,13 +1550,12 @@ msgstr "Windows-11-Stil mit Verbesserungen."
 #: package/contents/ui/config/ConfigStyle.qml:55
 #: package/contents/ui/config/ConfigStyle.qml:130
 #: package/contents/ui/config/ConfigStyle.qml:141
-#, fuzzy
 msgid "Windows 12 style"
-msgstr "Windows-10-Stil"
+msgstr "Windows-12-Stil"
 
 #: package/contents/ui/config/ConfigStyle.qml:55
 msgid "Concept-art menu: app list beside pinned cards and widgets."
-msgstr ""
+msgstr "Concept-Art-Menü: App-Liste neben angehefteten Karten und Widgets."
 
 #: package/contents/ui/config/ConfigStyle.qml:56
 #: package/contents/ui/config/ConfigStyle.qml:130
@@ -1660,17 +1598,19 @@ msgstr "Das blaue Luna-Menü, klassisch oder modernisiert."
 
 #: package/contents/ui/config/ConfigStyle.qml:60
 msgid "KDE Plasma"
-msgstr ""
+msgstr "KDE Plasma"
 
 #: package/contents/ui/config/ConfigStyle.qml:60
 msgid "Plasma's own launcher look, taskbar and title bars."
-msgstr ""
+msgstr "Plasmas eigenes Aussehen für Starter, Taskleiste und Titelleisten."
 
 #: package/contents/ui/config/ConfigStyle.qml:73
 msgid ""
 "A style sets the Start menu, the taskbar and the window title bars together. "
 "Mix them below."
 msgstr ""
+"Ein Stil legt Startmenü, Taskleiste und Fenstertitelleisten gemeinsam fest. "
+"Unten lassen sie sich mischen."
 
 #: package/contents/ui/config/ConfigStyle.qml:109
 msgid "Coming soon"
@@ -1678,18 +1618,17 @@ msgstr "Demnächst verfügbar"
 
 #: package/contents/ui/config/ConfigStyle.qml:124
 msgid "Mix and match"
-msgstr ""
+msgstr "Stile kombinieren"
 
 #: package/contents/ui/config/ConfigStyle.qml:127
-#, fuzzy
 msgid "Start menu:"
-msgstr "Startmenü"
+msgstr "Startmenü:"
 
 #: package/contents/ui/config/ConfigStyle.qml:128
 #: package/contents/ui/config/ConfigStyle.qml:139
 #: package/contents/ui/config/ConfigStyle.qml:153
 msgid "Same as the style"
-msgstr ""
+msgstr "Wie der Stil"
 
 #: package/contents/ui/config/ConfigStyle.qml:129
 #: package/contents/ui/config/ConfigStyle.qml:188
@@ -1700,46 +1639,42 @@ msgstr "Moderner Stil"
 #: package/contents/ui/config/ConfigStyle.qml:139
 #: package/contents/ui/config/ConfigStyle.qml:153
 msgid "KDE Plasma (default)"
-msgstr ""
+msgstr "KDE Plasma (Standard)"
 
 #: package/contents/ui/config/ConfigStyle.qml:137
-#, fuzzy
 msgid "Taskbar:"
-msgstr "Taskleiste"
+msgstr "Taskleiste:"
 
 #: package/contents/ui/config/ConfigStyle.qml:151
-#, fuzzy
 msgid "Window title bars:"
-msgstr "Windows-Farben:"
+msgstr "Fenstertitelleisten:"
 
 #: package/contents/ui/config/ConfigStyle.qml:165
 msgid "KDE Plasma (default): your own Plasma Style and title bars come back."
 msgstr ""
+"KDE Plasma (Standard): Ihr eigener Plasma-Stil und Ihre Titelleisten kommen "
+"zurück."
 
 #: package/contents/ui/config/ConfigStyle.qml:168
-#, fuzzy
 msgid "Windows 7"
-msgstr "Windows-7-Stil"
+msgstr "Windows 7"
 
 #: package/contents/ui/config/ConfigStyle.qml:172
-#, fuzzy
 msgid "Menu look:"
-msgstr "Menüfarbe:"
+msgstr "Aussehen des Menüs:"
 
 #: package/contents/ui/config/ConfigStyle.qml:173
 msgid "Classic"
-msgstr ""
+msgstr "Klassisch"
 
 #: package/contents/ui/config/ConfigStyle.qml:173
 #: package/contents/ui/config/ConfigStyle.qml:197
-#, fuzzy
 msgid "Modern"
-msgstr "Moderner Stil"
+msgstr "Modern"
 
 #: package/contents/ui/config/ConfigStyle.qml:180
-#, fuzzy
 msgid "Windows 7 list:"
-msgstr "Windows-7-Stil"
+msgstr "Windows-7-Liste:"
 
 #: package/contents/ui/config/ConfigStyle.qml:181
 msgid "Windows 7 style with icons"
@@ -1762,9 +1697,8 @@ msgid "Compact Grid Windows 7 style"
 msgstr "Kompakter Windows-7-Stil als Raster"
 
 #: package/contents/ui/config/ConfigStyle.qml:187
-#, fuzzy
 msgid "Modern list:"
-msgstr "Moderner Stil"
+msgstr "Moderne Liste:"
 
 #: package/contents/ui/config/ConfigStyle.qml:188
 msgid "Modern style with icons"
@@ -1788,22 +1722,20 @@ msgstr "Kompakter moderner Stil als Raster"
 
 #: package/contents/ui/config/ConfigStyle.qml:191
 #: package/contents/ui/config/ConfigWindows.qml:125
-#, fuzzy
 msgid "Windows XP"
-msgstr "Windows-XP-Stil"
+msgstr "Windows XP"
 
 #: package/contents/ui/config/ConfigStyle.qml:194
 msgid "XP theme:"
-msgstr ""
+msgstr "XP-Design:"
 
 #: package/contents/ui/config/ConfigStyle.qml:197
 msgid "Classic XP"
-msgstr ""
+msgstr "Klassisches XP"
 
 #: package/contents/ui/config/ConfigStyle.qml:197
-#, fuzzy
 msgid "Modern classic"
-msgstr "Moderner Stil"
+msgstr "Modern klassisch"
 
 #: package/contents/ui/config/ConfigStyle.qml:203
 msgid "Colour scheme:"
@@ -1824,17 +1756,19 @@ msgstr "Silber"
 
 #: package/contents/ui/config/ConfigStyle.qml:215
 msgid "Use an XP icon theme while XP is active"
-msgstr ""
+msgstr "Ein XP-Symboldesign verwenden, solange XP aktiv ist"
 
 #: package/contents/ui/config/ConfigStyle.qml:221
 msgid "XP icon theme:"
-msgstr ""
+msgstr "XP-Symboldesign:"
 
 #: package/contents/ui/config/ConfigStyle.qml:231
 msgid ""
 "No XP icon theme is installed. Get one on the Advanced page (Download icon "
 "themes…, search for \"XP\")."
 msgstr ""
+"Es ist kein XP-Symboldesign installiert. Eines gibt es auf der Seite "
+"„Erweitert“ („Symboldesigns herunterladen…“, nach „XP“ suchen)."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:70
 msgid "Pick taskbar texture…"
@@ -1850,40 +1784,40 @@ msgid ""
 "Your own Plasma Style is in use. Pick a Windows taskbar on the Style page to "
 "change its layout and colours."
 msgstr ""
+"Ihr eigener Plasma-Stil ist aktiv. Wählen Sie auf der Seite „Stil“ eine "
+"Windows-Taskleiste, um Layout und Farben zu ändern."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:85
-#, fuzzy
 msgid "Windows 12 taskbar"
-msgstr "An die Taskleiste anheften"
+msgstr "Windows-12-Taskleiste"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:86
-#, fuzzy
 msgid "Layout:"
-msgstr "Layout"
+msgstr "Layout:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:92
 msgid "Show islands on:"
-msgstr ""
+msgstr "Inseln anzeigen auf:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:95
 msgid "%1 (main)"
-msgstr ""
+msgstr "%1 (Hauptmonitor)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:95
 msgid "All monitors"
-msgstr ""
+msgstr "Alle Monitore"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:102
 msgid "Open apps on other monitors:"
-msgstr ""
+msgstr "Geöffnete Apps auf anderen Monitoren:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:103
 msgid "Only apps on that monitor"
-msgstr ""
+msgstr "Nur Apps auf diesem Monitor"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:103
 msgid "All apps on every monitor"
-msgstr ""
+msgstr "Alle Apps auf jedem Monitor"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:112
 msgid ""
@@ -1891,32 +1825,35 @@ msgid ""
 "stays on the main monitor. Moving an app icon to another island moves it on "
 "every monitor. Pin apps from the main monitor."
 msgstr ""
+"Alle Monitore: Jeder Monitor erhält Start und die App-Inseln; die "
+"Infobereich-Insel bleibt auf dem Hauptmonitor. Ein App-Symbol auf eine "
+"andere Insel zu verschieben, gilt für jeden Monitor. Apps vom Hauptmonitor "
+"aus anheften."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:114
 msgid "Floating bar"
-msgstr ""
+msgstr "Schwebende Leiste"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:119
 msgid "Bottom spacing:"
-msgstr ""
+msgstr "Abstand nach unten:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:122
 #: package/contents/ui/config/ConfigTaskbar.qml:144
 msgid "%1 px"
-msgstr ""
+msgstr "%1 px"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:129
-#, fuzzy
 msgid "Maximised windows:"
-msgstr "Geöffnete Fenster"
+msgstr "Maximierte Fenster:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:130
 msgid "Fill the screen"
-msgstr ""
+msgstr "Bildschirm ausfüllen"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:130
 msgid "Keep a gap above the taskbar"
-msgstr ""
+msgstr "Abstand über der Taskleiste lassen"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:137
 msgid ""
@@ -1925,65 +1862,64 @@ msgid ""
 "windows stop one bottom spacing above it (single bar only; split islands "
 "always fill the screen)."
 msgstr ""
+"Bildschirm ausfüllen: Maximierte Fenster nutzen den ganzen Bildschirm und "
+"die Leiste blendet sich als Insel über ihnen automatisch aus. Abstand "
+"lassen: Die Leiste bleibt immer sichtbar und maximierte Fenster enden einen "
+"Abstand nach unten darüber (nur bei einer einzelnen Leiste; geteilte Inseln "
+"füllen den Bildschirm immer aus)."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:141
-#, fuzzy
 msgid "Menu gap:"
-msgstr "Menüschriftart:"
+msgstr "Menüabstand:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:151
-#, fuzzy
 msgid "Pop-up animation:"
-msgstr "Animation:"
+msgstr "Einblendanimation:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Slide (Plasma)"
-msgstr ""
+msgstr "Gleiten (Plasma)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Fade"
-msgstr ""
+msgstr "Überblenden"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Zoom"
-msgstr ""
+msgstr "Zoom"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Rise"
-msgstr ""
+msgstr "Aufsteigen"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:156
-#, fuzzy
 msgid "Corner roundness:"
-msgstr "Eckenradius:"
+msgstr "Eckenrundung:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:159
 msgid "Round"
-msgstr ""
+msgstr "Rund"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:163
-#, fuzzy
 msgid "Taskbar colour and texture"
-msgstr "Hintergrundtextur"
+msgstr "Taskleistenfarbe und -textur"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:167
 msgid "Use a custom taskbar colour instead of your Plasma Style"
-msgstr ""
+msgstr "Eigene Taskleistenfarbe statt Ihres Plasma-Stils verwenden"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:171
-#, fuzzy
 msgid "Available with a custom taskbar colour."
-msgstr "Taskleistenfarbe überschreiben"
+msgstr "Verfügbar mit eigener Taskleistenfarbe."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:172
-#, fuzzy
 msgid "Colour:"
-msgstr "Farben:"
+msgstr "Farbe:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:175
 #: package/contents/ui/config/ConfigWindows.qml:49
 msgid "Opacity:"
-msgstr ""
+msgstr "Deckkraft:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:177
 #: package/contents/ui/config/ConfigTaskbar.qml:240
@@ -2024,30 +1960,28 @@ msgstr "Windows 7 (Glas)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:203
 msgid "Gradient:"
-msgstr ""
+msgstr "Verlauf:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:207
-#, fuzzy
 msgid "Left to right"
-msgstr "Registerkarte nach rechts verschieben"
+msgstr "Von links nach rechts"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:208
 msgid "Right to left"
-msgstr ""
+msgstr "Von rechts nach links"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:208
-#, fuzzy
 msgid "Top to bottom"
-msgstr "Von oben nach unten:"
+msgstr "Von oben nach unten"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:209
 msgid "Bottom to top"
-msgstr ""
+msgstr "Von unten nach oben"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:214
 #, javascript-format
 msgid "Gradient strength: %1%"
-msgstr ""
+msgstr "Verlaufsstärke: %1%"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:230
 #: package/contents/ui/config/ConfigWindows.qml:109
@@ -2067,9 +2001,8 @@ msgid "Align bottom"
 msgstr "Unten ausrichten"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:238
-#, fuzzy
 msgid "Texture opacity:"
-msgstr "Ausrichtung der Textur:"
+msgstr "Deckkraft der Textur:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:245
 #: package/contents/ui/config/ConfigWindows.qml:122
@@ -2082,72 +2015,74 @@ msgstr "Aktive Schaltfläche weniger transparent darstellen"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:253
 msgid "Behaviour"
-msgstr ""
+msgstr "Verhalten"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:259
-#, fuzzy
 msgid "Auto-hide:"
-msgstr "Panel automatisch ausblenden"
+msgstr "Automatisch ausblenden:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:260
 msgid "Hide when a window covers it"
-msgstr ""
+msgstr "Ausblenden, wenn ein Fenster sie verdeckt"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:260
 msgid "Always auto-hide"
-msgstr ""
+msgstr "Immer automatisch ausblenden"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:263
 msgid "Off (the floating bar still auto-hides)"
-msgstr ""
+msgstr "Aus (die schwebende Leiste blendet sich weiterhin automatisch aus)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:270
 msgid ""
 "The floating Windows 12 bar always auto-hides, so it stays an island over "
 "maximized windows. Turn off \"Floating bar\" for a fixed one."
 msgstr ""
+"Die schwebende Windows-12-Leiste blendet sich immer automatisch aus und "
+"bleibt so eine Insel über maximierten Fenstern. Schalten Sie „Schwebende "
+"Leiste“ aus, um eine feste Leiste zu erhalten."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:271
 msgid "A hidden taskbar shows again when the mouse touches the screen edge."
 msgstr ""
+"Eine ausgeblendete Taskleiste erscheint wieder, wenn die Maus den "
+"Bildschirmrand berührt."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:274
-#, fuzzy
 msgid "Show a search box on the taskbar"
-msgstr "Suche in der Taskleiste anzeigen"
+msgstr "Suchfeld in der Taskleiste anzeigen"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:278
 msgid "Search box width:"
 msgstr "Breite des Suchfelds:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:286
-#, fuzzy
 msgid "Plasma panel"
-msgstr "Plasma-Stil"
+msgstr "Plasma-Panel"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:290
-#, fuzzy
 msgid "Panel height, position and task grouping are set by Plasma itself."
 msgstr ""
-"Höhe, Position, Schweben, automatisches Ausblenden und Gruppierung der Tasks "
-"des Panels werden von Plasma selbst verwaltet."
+"Höhe, Position und Gruppierung der Tasks des Panels werden von Plasma selbst "
+"verwaltet."
 
 #: package/contents/ui/config/ConfigTaskbar.qml:296
 msgid "Edit panel…"
 msgstr "Panel bearbeiten…"
 
 #: package/contents/ui/config/ConfigWindows.qml:34
-#, fuzzy
 msgid "Pick title bar picture…"
-msgstr "Taskleistentextur auswählen…"
+msgstr "Titelleistenbild auswählen…"
 
 #: package/contents/ui/config/ConfigWindows.qml:40
 msgid "Title bars and frames"
-msgstr ""
+msgstr "Titelleisten und Rahmen"
 
 #: package/contents/ui/config/ConfigWindows.qml:43
 msgid "Pick a Windows title bar on the Style page to change these."
 msgstr ""
+"Wählen Sie auf der Seite „Stil“ eine Windows-Titelleiste, um diese "
+"Einstellungen zu ändern."
 
 #: package/contents/ui/config/ConfigWindows.qml:56
 msgid "Blur behind translucent frames"
@@ -2158,46 +2093,49 @@ msgid "Title bar height:"
 msgstr "Höhe der Titelleiste:"
 
 #: package/contents/ui/config/ConfigWindows.qml:99
-#, fuzzy
 msgid "Title bar picture:"
-msgstr "Höhe der Titelleiste:"
+msgstr "Titelleistenbild:"
 
 #: package/contents/ui/config/ConfigWindows.qml:115
-#, fuzzy
 msgid "Picture opacity:"
-msgstr "Deckkraft des Kachelbilds:"
+msgstr "Deckkraft des Bildes:"
 
 #: package/contents/ui/config/ConfigWindows.qml:129
 msgid "Use the system title bar in Firefox"
-msgstr ""
+msgstr "Systemtitelleiste in Firefox verwenden"
 
 #: package/contents/ui/config/ConfigWindows.qml:131
 msgid ""
 "Firefox draws its own title bar, so the XP one does not show. Restart "
 "Firefox for this to take effect."
 msgstr ""
+"Firefox zeichnet eine eigene Titelleiste, daher erscheint die XP-Titelleiste "
+"nicht. Starten Sie Firefox neu, damit die Änderung wirksam wird."
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:25
 msgid ""
 "The taskbar layouts and the Start position need Win12's patched KDE "
 "packages. Run kde/build.sh from the Win12 source folder, then log out and in."
 msgstr ""
+"Die Taskleistenlayouts und die Startposition benötigen die angepassten KDE-"
+"Pakete von Win12. Führen Sie kde/build.sh im Win12-Quellordner aus und "
+"melden Sie sich dann ab und wieder an."
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:28
 msgid "One floating bar"
-msgstr ""
+msgstr "Eine schwebende Leiste"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:28
 msgid "Split: widgets left, apps centre, tray right"
-msgstr ""
+msgstr "Geteilt: Widgets links, Apps Mitte, Infobereich rechts"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "Split: Start and apps left, tray right"
-msgstr ""
+msgstr "Geteilt: Start und Apps links, Infobereich rechts"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "3 Islands: pinned apps, open apps, tray"
-msgstr ""
+msgstr "3 Inseln: angeheftete Apps, offene Apps, Infobereich"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:34
 msgid ""
@@ -2205,16 +2143,22 @@ msgid ""
 "(islands). 3 Islands also splits pinned and open apps; drag an app icon to "
 "another island to move it there. Touching the bottom edge shows all of them."
 msgstr ""
+"Geteilte Layouts legen Infobereich, Uhr und Wetter in eigene schwebende "
+"Panels (Inseln). Bei 3 Inseln werden zusätzlich angeheftete und offene Apps "
+"getrennt; ziehen Sie ein App-Symbol auf eine andere Insel, um es dorthin zu "
+"verschieben. Wer den unteren Rand berührt, blendet alle ein."
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:41
 msgid "Magnetic islands"
-msgstr ""
+msgstr "Magnetische Inseln"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:46
 msgid ""
 "On: the islands sit close together in the middle of the screen. Off: pushed "
 "to the screen edges."
 msgstr ""
+"Ein: Die Inseln sitzen dicht beieinander in der Bildschirmmitte. Aus: an die "
+"Bildschirmränder geschoben."
 
 #: package/contents/ui/ContextMenu.qml:36
 msgid "Open file location"
@@ -2233,14 +2177,12 @@ msgid "Pin to taskbar"
 msgstr "An die Taskleiste anheften"
 
 #: package/contents/ui/main.qml:934 package/contents/ui/win10/Tile.qml:302
-#, fuzzy
 msgid "Choose picture…"
-msgstr "Benutzerbild"
+msgstr "Bild auswählen…"
 
 #: package/contents/ui/main.qml:941 package/contents/ui/win10/Tile.qml:303
-#, fuzzy
 msgid "Choose folder…"
-msgstr "Ordner anheften…"
+msgstr "Ordner auswählen…"
 
 #: package/contents/ui/main.qml:998
 msgid "Pin file to Start"
@@ -2292,36 +2234,35 @@ msgstr "Ordner anheften…"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
-msgstr ""
+msgstr "Uhr"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
-msgstr ""
+msgstr "Kalender"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
-#, fuzzy
 msgid "System monitor"
 msgstr "Systemmonitor"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
-msgstr ""
+msgstr "Laufwerke"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
-msgstr ""
+msgstr "Wetter"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
-msgstr ""
+msgstr "Notizen"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
-msgstr ""
+msgstr "Foto"
 
 #: package/contents/ui/main.qml:1092
 msgid "KDE widgets…"
-msgstr ""
+msgstr "KDE-Widgets…"
 
 #: package/contents/ui/main.qml:1422
 msgid "Design mode — drag the dividers"
@@ -2356,17 +2297,15 @@ msgstr "start"
 
 #: package/contents/ui/styles/plasma.qml:45
 msgid "Favorites"
-msgstr ""
+msgstr "Favoriten"
 
 #: package/contents/ui/styles/plasma.qml:46
-#, fuzzy
 msgid "All Applications"
-msgstr "Anwendungen bearbeiten…"
+msgstr "Alle Anwendungen"
 
 #: package/contents/ui/styles/plasma.qml:226
-#, fuzzy
 msgid "Applications"
-msgstr "Anwendungen bearbeiten…"
+msgstr "Anwendungen"
 
 #: package/contents/ui/styles/windows11.qml:138
 #: package/contents/ui/styles/windows11.qml:183
@@ -2380,15 +2319,15 @@ msgstr "Mehr"
 
 #: package/contents/ui/styles/windows12.qml:96
 msgid "Good morning, %1!"
-msgstr ""
+msgstr "Guten Morgen, %1!"
 
 #: package/contents/ui/styles/windows12.qml:96
 msgid "Good afternoon, %1!"
-msgstr ""
+msgstr "Guten Tag, %1!"
 
 #: package/contents/ui/styles/windows12.qml:97
 msgid "Good evening, %1!"
-msgstr ""
+msgstr "Guten Abend, %1!"
 
 #: package/contents/ui/styles/windows7.qml:298
 #: package/contents/ui/styles/xp.qml:410
@@ -2427,52 +2366,51 @@ msgstr "Computer ausschalten"
 
 #: package/contents/ui/widgets/Drives.qml:62
 msgid "%1 TB"
-msgstr ""
+msgstr "%1 TB"
 
 #: package/contents/ui/widgets/Drives.qml:63
 msgid "%1 GB"
-msgstr ""
+msgstr "%1 GB"
 
 #: package/contents/ui/widgets/Drives.qml:140
 msgid "%1 free"
-msgstr ""
+msgstr "%1 frei"
 
 #: package/contents/ui/widgets/Drives.qml:141
 msgid "%1 free of %2"
-msgstr ""
+msgstr "%1 von %2 frei"
 
 #: package/contents/ui/widgets/Notes.qml:25
 msgid "Write a note…"
-msgstr ""
+msgstr "Notiz schreiben…"
 
 #: package/contents/ui/widgets/Photo.qml:54
 msgid "Right-click to choose a picture or folder"
-msgstr ""
+msgstr "Rechtsklick, um ein Bild oder einen Ordner zu wählen"
 
 #: package/contents/ui/widgets/SysMon.qml:90
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: package/contents/ui/widgets/SysMon.qml:91
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: package/contents/ui/widgets/Weather.qml:16
 msgid "Weather unavailable"
-msgstr ""
+msgstr "Wetter nicht verfügbar"
 
 #: package/contents/ui/widgets/Weather.qml:17
 msgid "Location not found"
-msgstr ""
+msgstr "Ort nicht gefunden"
 
 #: package/contents/ui/widgets/Weather.qml:82
-#, fuzzy
 msgid "Right-click to set location"
-msgstr "Kontextmenü"
+msgstr "Rechtsklick, um den Ort festzulegen"
 
 #: package/contents/ui/widgets/Weather.qml:82
 msgid "Loading…"
-msgstr ""
+msgstr "Wird geladen…"
 
 #: package/contents/ui/win10/AppList.qml:35
 msgid "Desktop"
@@ -2514,7 +2452,7 @@ msgstr "Keine Elemente entsprechen Ihrer Suche"
 #: package/contents/ui/win10/TileArea.qml:39
 #: package/contents/ui/win10/TileGroup.qml:161
 msgid "Add widget"
-msgstr ""
+msgstr "Widget hinzufügen"
 
 #: package/contents/ui/win10/TileArea.qml:41
 msgid "New page"
@@ -2587,81 +2525,76 @@ msgstr "Ordner benennen"
 
 #: package/contents/ui/win10/Tile.qml:56
 msgid "Widget"
-msgstr ""
+msgstr "Widget"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Red"
-msgstr ""
+msgstr "Rot"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Orange"
-msgstr ""
+msgstr "Orange"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Yellow"
-msgstr ""
+msgstr "Gelb"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Lime"
-msgstr ""
+msgstr "Hellgrün"
 
 #: package/contents/ui/win10/Tile.qml:213
-#, fuzzy
 msgid "Green"
-msgstr "Olivgrün"
+msgstr "Grün"
 
 #: package/contents/ui/win10/Tile.qml:213
 msgid "Teal"
-msgstr ""
+msgstr "Blaugrün"
 
 #: package/contents/ui/win10/Tile.qml:213
 msgid "Cyan"
-msgstr ""
+msgstr "Cyan"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Indigo"
-msgstr ""
+msgstr "Indigo"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Purple"
-msgstr ""
+msgstr "Violett"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Pink"
-msgstr ""
+msgstr "Rosa"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Brown"
-msgstr ""
+msgstr "Braun"
 
 #: package/contents/ui/win10/Tile.qml:215
 msgid "Grey"
-msgstr ""
+msgstr "Grau"
 
 #: package/contents/ui/win10/Tile.qml:281
-#, fuzzy
 msgid "Custom colour…"
-msgstr "Benutzerdefinierte Farbe"
+msgstr "Eigene Farbe…"
 
 #: package/contents/ui/win10/Tile.qml:292
 msgid "Unpin folder from Start"
 msgstr "Ordner von Start lösen"
 
 #: package/contents/ui/win10/Tile.qml:294
-#, fuzzy
 msgid "Configure widget…"
-msgstr "Win12 konfigurieren…"
+msgstr "Widget konfigurieren…"
 
 #: package/contents/ui/win10/Tile.qml:295
 #: package/contents/ui/win10/Tile.qml:296
-#, fuzzy
 msgid "Remove widget"
-msgstr "Entfernen"
+msgstr "Widget entfernen"
 
 #: package/contents/ui/win10/Tile.qml:300
-#, fuzzy
 msgid "Set location…"
-msgstr "Symbol festlegen…"
+msgstr "Ort festlegen…"
 
 #: package/contents/ui/win10/Tile.qml:305
 msgid "Set icon…"
@@ -2684,24 +2617,20 @@ msgid "Tile colour…"
 msgstr "Kachelfarbe…"
 
 #: package/contents/ui/win10/Tile.qml:312
-#, fuzzy
 msgid "Set tile image…"
-msgstr "Kachelbild auswählen…"
+msgstr "Kachelbild festlegen…"
 
 #: package/contents/ui/win10/Tile.qml:313
-#, fuzzy
 msgid "Remove tile image"
-msgstr "Kachelbild:"
+msgstr "Kachelbild entfernen"
 
 #: package/contents/ui/win10/Tile.qml:315
-#, fuzzy
 msgid "Show icon"
-msgstr "Symboltext anzeigen"
+msgstr "Symbol anzeigen"
 
 #: package/contents/ui/win10/Tile.qml:315
-#, fuzzy
 msgid "Hide icon"
-msgstr "Symboltext ausblenden"
+msgstr "Symbol ausblenden"
 
 #: package/contents/ui/win10/Tile.qml:318
 msgid "Resize"
@@ -2712,22 +2641,20 @@ msgid "Wide"
 msgstr "Breit"
 
 #: package/contents/ui/win10/Tile.qml:320
-#, fuzzy
 msgid "W. Large H."
-msgstr "Groß"
+msgstr "Breit-Groß H."
 
 #: package/contents/ui/win10/Tile.qml:320
-#, fuzzy
 msgid "W. Large V."
-msgstr "Groß"
+msgstr "Breit-Groß V."
 
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 H."
-msgstr ""
+msgstr "3x6 H."
 
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 V."
-msgstr ""
+msgstr "3x6 V."
 
 #~ msgid "Look"
 #~ msgstr "Darstellung"

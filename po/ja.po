@@ -19,12 +19,10 @@ msgstr ""
 
 #: package/contents/config/config.qml:6
 #: package/contents/ui/config/ConfigStyle.qml:68
-#, fuzzy
 msgid "Style"
-msgstr "サブスタイル:"
+msgstr "スタイル"
 
 #: package/contents/config/config.qml:11
-#, fuzzy
 msgid "Start menu"
 msgstr "スタート メニュー"
 
@@ -34,23 +32,20 @@ msgid "Apps list"
 msgstr "アプリ一覧"
 
 #: package/contents/config/config.qml:21
-#, fuzzy
 msgid "Start button & shortcuts"
-msgstr "スタート ボタンの色:"
+msgstr "スタート ボタンとショートカット"
 
 #: package/contents/config/config.qml:26
 msgid "Taskbar"
 msgstr "タスク バー"
 
-#
 #: package/contents/config/config.qml:31
-#, fuzzy
 msgid "Windows"
-msgstr "ウィンドウ枠:"
+msgstr "Windows"
 
 #: package/contents/config/config.qml:36
 msgid "Appearance"
-msgstr ""
+msgstr "外観"
 
 #: package/contents/config/config.qml:41
 msgid "Search"
@@ -58,16 +53,15 @@ msgstr "検索"
 
 #: package/contents/config/config.qml:46
 msgid "Advanced"
-msgstr ""
+msgstr "詳細設定"
 
 #: package/contents/ui/AppletPicker.qml:34
 msgid "KDE widgets"
-msgstr ""
+msgstr "KDE ウィジェット"
 
 #: package/contents/ui/AppletPicker.qml:57
-#, fuzzy
 msgid "Search widgets…"
-msgstr "検索ボックスの幅:"
+msgstr "ウィジェットを検索…"
 
 #: package/contents/ui/common/AppCanvas.qml:56
 #: package/contents/ui/common/AppCanvas.qml:103
@@ -493,49 +487,44 @@ msgid "Search apps and files"
 msgstr "アプリとファイルを検索"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:42
-#, fuzzy
 msgid "Pick a wallpaper…"
-msgstr "画像を選択…"
+msgstr "壁紙を選択…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:43
-#, fuzzy
 msgid "Images (*.png *.jpg *.jpeg *.webp)"
-msgstr "画像 (*.png *.svg *.jpg *.webp)"
+msgstr "画像 (*.png *.jpg *.jpeg *.webp)"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:48
 msgid "Icons and wallpaper (applied at once, not on Apply)"
-msgstr ""
+msgstr "アイコンと壁紙 (すぐに適用されます。[適用] は不要)"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:51
-#, fuzzy
 msgid "Icon theme:"
-msgstr "アイコンのサイズ:"
+msgstr "アイコン テーマ:"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:56
 msgid "Download icon themes…"
-msgstr ""
+msgstr "アイコン テーマをダウンロード…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:62
 msgid "Download wallpapers…"
-msgstr ""
+msgstr "壁紙をダウンロード…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:65
 msgid "Wallpaper:"
-msgstr ""
+msgstr "壁紙:"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:67
-#, fuzzy
 msgid "Choose image…"
 msgstr "画像を選択…"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:72
 msgid "Set as wallpaper"
-msgstr ""
+msgstr "壁紙に設定"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:83
-#, fuzzy
 msgid "Backup and reset"
-msgstr "Win12 の設定をバックアップ"
+msgstr "バックアップとリセット"
 
 #: package/contents/ui/config/ConfigAdvanced.qml:86
 msgid "Backup settings…"
@@ -602,15 +591,12 @@ msgid "Colours"
 msgstr "色"
 
 #: package/contents/ui/config/ConfigAppearance.qml:122
-#, fuzzy
 msgid "Windows XP uses its own colour scheme (Style page)."
-msgstr ""
-"Windows XP スタイルは独自の配色を使用します (スタート メニュー ページ)。これ"
-"らの設定はその他のスタイル用です。"
+msgstr "Windows XP は独自の配色を使用します (スタイル ページ)。"
 
 #: package/contents/ui/config/ConfigAppearance.qml:127
 msgid "Mode:"
-msgstr ""
+msgstr "モード:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:130
 msgid "Light"
@@ -625,9 +611,8 @@ msgid "Automatic (Plasma colours)"
 msgstr "自動 (Plasma の色)"
 
 #: package/contents/ui/config/ConfigAppearance.qml:130
-#, fuzzy
 msgid "Custom colours"
-msgstr "ユーザー設定の色:"
+msgstr "ユーザー設定の色"
 
 #: package/contents/ui/config/ConfigAppearance.qml:134
 msgid "Menu colour:"
@@ -681,55 +666,52 @@ msgid ""
 "The taskbar and title bars follow these when their look is not \"Plasma's "
 "own\" (Style page)."
 msgstr ""
+"タスク バーとタイトルバーの外観が \"Plasma 標準\" でない場合は、これらの設定"
+"に従います (スタイル ページ)。"
 
 #: package/contents/ui/config/ConfigAppearance.qml:192
-#, fuzzy
 msgid "Windows 12 shade"
-msgstr "Windows 10 スタイル"
+msgstr "Windows 12 のシェード"
 
 #: package/contents/ui/config/ConfigAppearance.qml:195
 msgid "Light mode tint:"
-msgstr ""
+msgstr "ライト モードの色合い:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:196
-#, fuzzy
 msgid "Soft tint"
-msgstr "自動の色合い"
+msgstr "ソフトな色合い"
 
 #: package/contents/ui/config/ConfigAppearance.qml:198
 msgid "Near white"
-msgstr ""
+msgstr "白に近い色"
 
 #: package/contents/ui/config/ConfigAppearance.qml:202
 msgid "Dark mode shade:"
-msgstr ""
+msgstr "ダーク モードのシェード:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:203
 msgid "Soft dark"
-msgstr ""
+msgstr "ソフト ダーク"
 
 #: package/contents/ui/config/ConfigAppearance.qml:205
 msgid "Near black"
-msgstr ""
+msgstr "黒に近い色"
 
 #: package/contents/ui/config/ConfigAppearance.qml:208
-#, fuzzy
 msgid "Transparency and corners"
-msgstr "透明効果"
+msgstr "透明度と角"
 
 #: package/contents/ui/config/ConfigAppearance.qml:211
 msgid "Transparency effects"
 msgstr "透明効果"
 
 #: package/contents/ui/config/ConfigAppearance.qml:215
-#, fuzzy
 msgid "Solid Start menu"
-msgstr "スタート メニューにピン留めする"
+msgstr "不透明なスタート メニュー"
 
 #: package/contents/ui/config/ConfigAppearance.qml:217
-#, fuzzy
 msgid "Start menu background:"
-msgstr "スタート メニューの色:"
+msgstr "スタート メニューの背景:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:220
 #: package/contents/ui/config/ConfigStartMenu.qml:158
@@ -738,43 +720,40 @@ msgid "%1% solid"
 msgstr "%1% 不透明"
 
 #: package/contents/ui/config/ConfigAppearance.qml:224
-#, fuzzy
 msgid "Windows 12 transparency:"
-msgstr "透明度"
+msgstr "Windows 12 の透明度:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Solid"
-msgstr ""
+msgstr "不透明"
 
 #: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Clear"
-msgstr ""
+msgstr "透明"
 
 #: package/contents/ui/config/ConfigAppearance.qml:231
-#, fuzzy
 msgid "Windows 12 blur:"
-msgstr "Windows の色:"
+msgstr "Windows 12 のぼかし:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:232
 msgid "Soft"
-msgstr ""
+msgstr "ソフト"
 
 #: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Strong"
-msgstr ""
+msgstr "強"
 
 #: package/contents/ui/config/ConfigAppearance.qml:238
-#, fuzzy
 msgid "Windows 12 grain:"
-msgstr "Windows 7 (ガラス)"
+msgstr "Windows 12 のざらつき:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:239
 msgid "Smooth"
-msgstr ""
+msgstr "なめらか"
 
 #: package/contents/ui/config/ConfigAppearance.qml:241
 msgid "Grainy"
-msgstr ""
+msgstr "ざらざら"
 
 #: package/contents/ui/config/ConfigAppearance.qml:248
 msgid ""
@@ -783,11 +762,14 @@ msgid ""
 "all windows while the Windows 12 look is on; your own value comes back when "
 "you leave it."
 msgstr ""
+"タスク バー、スタート メニュー、タイトルバー。透明度を変更するのは背景だけ"
+"で、アイコンとテキストは不透明のままです。ぼかしの強さは、Windows 12 の外観が"
+"オンの間、すべてのウィンドウに対する KWin のぼかしを設定します。オフにすると"
+"元の値に戻ります。"
 
 #: package/contents/ui/config/ConfigAppearance.qml:252
-#, fuzzy
 msgid "Menu corner radius:"
-msgstr "角の半径:"
+msgstr "メニューの角の半径:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:255
 #: package/contents/ui/config/ConfigTaskbar.qml:157
@@ -808,9 +790,8 @@ msgstr "テクスチャ:"
 #: package/contents/ui/config/ConfigAppearance.qml:279
 #: package/contents/ui/config/ConfigTaskbar.qml:227
 #: package/contents/ui/config/ConfigWindows.qml:106
-#, fuzzy
 msgid "Placement:"
-msgstr "場所"
+msgstr "配置:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:281
 #: package/contents/ui/config/ConfigTaskbar.qml:230
@@ -881,7 +862,7 @@ msgstr "項目のフォント サイズ:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:341
 msgid "Effects"
-msgstr ""
+msgstr "エフェクト"
 
 #: package/contents/ui/config/ConfigAppearance.qml:342
 msgid "Fade the menu in when it opens"
@@ -922,33 +903,28 @@ msgid "Show app categories as folders"
 msgstr "アプリのカテゴリをフォルダーとして表示する"
 
 #: package/contents/ui/config/ConfigAppsList.qml:69
-#, fuzzy
 msgid "Hide folders in the recent list"
-msgstr "最近の一覧でフォルダーを隠す (Windows 11 スタイル)"
+msgstr "最近の一覧でフォルダーを隠す"
 
 #: package/contents/ui/config/ConfigAppsList.qml:71
 msgid "Place folders at the bottom of the list"
 msgstr "フォルダーを一覧の下部に配置する"
 
 #: package/contents/ui/config/ConfigAppsList.qml:75
-#, fuzzy
 msgid "All Programs (Windows 7 and XP)"
-msgstr "すべてのプログラムにデスクトップ フォルダーを表示する (Windows 7、XP)"
+msgstr "すべてのプログラム (Windows 7 と XP)"
 
 #: package/contents/ui/config/ConfigAppsList.qml:77
-#, fuzzy
 msgid "Auto expand folders on hover"
-msgstr "ポイントしたときにフォルダーを自動的に展開する (Windows 7、XP)"
+msgstr "ポイントしたときにフォルダーを自動的に展開する"
 
 #: package/contents/ui/config/ConfigAppsList.qml:78
-#, fuzzy
 msgid "Show the Desktop folder in All Programs"
-msgstr "すべてのプログラムにデスクトップ フォルダーを表示する (Windows 7、XP)"
+msgstr "[すべてのプログラム] に [デスクトップ] フォルダーを表示する"
 
 #: package/contents/ui/config/ConfigAppsList.qml:79
-#, fuzzy
 msgid "Show categories as a cascading menu"
-msgstr "カテゴリをカスケード メニューで表示する (Windows 7、XP)"
+msgstr "カテゴリをカスケード メニューとして表示する"
 
 #: package/contents/ui/config/ConfigAppsList.qml:81
 msgid "Hidden apps"
@@ -1038,23 +1014,20 @@ msgid "Images (*.png *.svg *.jpg *.webp)"
 msgstr "画像 (*.png *.svg *.jpg *.webp)"
 
 #: package/contents/ui/config/ConfigButton.qml:131
-#, fuzzy
 msgid "Start button"
 msgstr "スタート ボタン"
 
 #: package/contents/ui/config/ConfigButton.qml:133
-#, fuzzy
 msgid "Start button:"
-msgstr "スタート ボタン"
+msgstr "スタート ボタン:"
 
 #: package/contents/ui/config/ConfigButton.qml:134
 msgid "Icon"
 msgstr "アイコン"
 
 #: package/contents/ui/config/ConfigButton.qml:135
-#, fuzzy
 msgid "Picture"
-msgstr "ピクチャ"
+msgstr "画像"
 
 #: package/contents/ui/config/ConfigButton.qml:136
 msgid "Four squares"
@@ -1067,24 +1040,21 @@ msgstr "アイコン:"
 
 #: package/contents/ui/config/ConfigButton.qml:146
 msgid "System default"
-msgstr ""
+msgstr "システム既定"
 
 #: package/contents/ui/config/ConfigButton.qml:152
 msgid "Reset icon"
 msgstr "アイコンをリセット"
 
 #: package/contents/ui/config/ConfigButton.qml:167
-#, fuzzy
 msgid "Picture:"
-msgstr "ピクチャ"
+msgstr "画像:"
 
 #: package/contents/ui/config/ConfigButton.qml:200
-#, fuzzy
 msgid "Use a custom picture…"
-msgstr "カスタムのスタート ボタン画像を使用…"
+msgstr "カスタム画像を使用…"
 
 #: package/contents/ui/config/ConfigButton.qml:206
-#, fuzzy
 msgid ""
 "A custom picture holds 3 images stacked top to bottom: normal, mouse over, "
 "pressed."
@@ -1093,19 +1063,16 @@ msgstr ""
 "す。"
 
 #: package/contents/ui/config/ConfigButton.qml:216
-#, fuzzy
 msgid "First square:"
-msgstr "4 つの四角"
+msgstr "最初の四角:"
 
 #: package/contents/ui/config/ConfigButton.qml:220
-#, fuzzy
 msgid "Other squares:"
-msgstr "4 つの四角"
+msgstr "その他の四角:"
 
 #: package/contents/ui/config/ConfigButton.qml:226
-#, fuzzy
 msgid "XP Start button colour:"
-msgstr "スタート ボタンの色:"
+msgstr "XP のスタート ボタンの色:"
 
 #: package/contents/ui/config/ConfigButton.qml:228
 msgid "XP green"
@@ -1116,24 +1083,20 @@ msgid "Colour scheme"
 msgstr "配色"
 
 #: package/contents/ui/config/ConfigButton.qml:238
-#, fuzzy
 msgid "Right-click menu"
 msgstr "右クリック メニュー"
 
 #: package/contents/ui/config/ConfigButton.qml:241
-#, fuzzy
 msgid "Show in the right-click menu:"
-msgstr "電源メニューに表示:"
+msgstr "右クリック メニューに表示:"
 
 #: package/contents/ui/config/ConfigButton.qml:257
-#, fuzzy
 msgid "Menu shortcuts"
-msgstr "ショートカット"
+msgstr "メニューのショートカット"
 
 #: package/contents/ui/config/ConfigButton.qml:260
-#, fuzzy
 msgid "Shortcut labels:"
-msgstr "ショートカット"
+msgstr "ショートカットのラベル:"
 
 #: package/contents/ui/config/ConfigButton.qml:261
 msgid "Only show icons"
@@ -1148,13 +1111,12 @@ msgid "Always show icons and names"
 msgstr "常にアイコンと名前を表示"
 
 #: package/contents/ui/config/ConfigButton.qml:274
-#, fuzzy
 msgid "Align the icons to the bottom"
-msgstr "アイコンを下揃えにする (Windows 10 スタイル)"
+msgstr "アイコンを下揃えにする"
 
 #: package/contents/ui/config/ConfigButton.qml:278
 msgid "Small place rows"
-msgstr ""
+msgstr "場所の行を小さくする"
 
 #: package/contents/ui/config/ConfigButton.qml:281
 msgid "Top to bottom:"
@@ -1169,7 +1131,6 @@ msgid "Add custom location…"
 msgstr "カスタムの場所を追加…"
 
 #: package/contents/ui/config/ConfigButton.qml:313
-#, fuzzy
 msgid "Clicking the power button:"
 msgstr "電源ボタンをクリックしたときの動作:"
 
@@ -1182,9 +1143,8 @@ msgid "Show in the power menu:"
 msgstr "電源メニューに表示:"
 
 #: package/contents/ui/config/ConfigButton.qml:338
-#, fuzzy
 msgid "Show an icon on the Shut down button"
-msgstr "[シャットダウン] ボタンにアイコンを表示する (Windows 7 スタイル)"
+msgstr "[シャットダウン] ボタンにアイコンを表示する"
 
 #: package/contents/ui/config/ConfigButton.qml:349
 msgid "Add custom location"
@@ -1261,7 +1221,7 @@ msgstr "辞書"
 
 #: package/contents/ui/config/ConfigSearch.qml:41
 msgid "Results"
-msgstr ""
+msgstr "結果"
 
 #: package/contents/ui/config/ConfigSearch.qml:42
 msgid "Group results by type (Apps, Files, Settings …)"
@@ -1276,9 +1236,8 @@ msgid "Show filter icons above the results (Apps, Documents, Web …)"
 msgstr "結果の上にフィルター アイコンを表示する (アプリ、ドキュメント、Web …)"
 
 #: package/contents/ui/config/ConfigSearch.qml:45
-#, fuzzy
 msgid "Show the \"Search the internet\" button"
-msgstr "インターネット検索ボタンを表示する"
+msgstr "\"インターネットを検索\" ボタンを表示する"
 
 #: package/contents/ui/config/ConfigSearch.qml:49
 msgid "Search the internet with:"
@@ -1291,7 +1250,7 @@ msgstr "%s は入力した内容に置き換えられます。"
 
 #: package/contents/ui/config/ConfigSearch.qml:59
 msgid "History"
-msgstr ""
+msgstr "履歴"
 
 #: package/contents/ui/config/ConfigSearch.qml:60
 msgid "Remember recent searches"
@@ -1311,22 +1270,20 @@ msgstr "KRunner で検索できるものをすべて使用"
 
 #: package/contents/ui/config/ConfigSearch.qml:75
 msgid "Off: starts with Apps, Settings and Files; tick more below."
-msgstr ""
+msgstr "オフ: アプリ、設定、ファイルから始めます。下でさらに選択できます。"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
 #: package/contents/ui/main.qml:927
 msgid "Pick tile image…"
 msgstr "タイル画像を選択…"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:70
-#, fuzzy
 msgid "Size and position"
-msgstr "メニューの位置:"
+msgstr "サイズと位置"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:74
 msgid "Size:"
-msgstr ""
+msgstr "サイズ:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:75
 msgid "Tall"
@@ -1348,23 +1305,21 @@ msgstr "カスタムの高さ:"
 msgid "From size"
 msgstr "サイズから"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:88
-#, fuzzy
 msgid "Position:"
-msgstr "メニューの位置:"
+msgstr "位置:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Top"
-msgstr ""
+msgstr "上"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Middle"
-msgstr ""
+msgstr "中央"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:89
 msgid "Bottom"
-msgstr ""
+msgstr "下"
 
 #
 #: package/contents/ui/config/ConfigStartMenu.qml:89
@@ -1382,41 +1337,33 @@ msgstr "中央"
 msgid "Right"
 msgstr "右"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:95
-#, fuzzy
 msgid "Also mirror the taskbar (Start button at the bottom)"
-msgstr "スタートボタンとタスクバーのアイコンも中央に配置"
+msgstr "タスク バーも反転する (スタート ボタンを下に配置)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:96
 msgid "Also mirror the taskbar (Start button on the right, clock on the left)"
-msgstr ""
+msgstr "タスク バーも左右反転する (スタート ボタンを右、時計を左に配置)"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:97
-#, fuzzy
 msgid "Also centre the Start button and the taskbar icons vertically"
-msgstr "スタートボタンとタスクバーのアイコンも中央に配置"
+msgstr "スタート ボタンとタスク バーのアイコンも縦方向に中央揃えにする"
 
-#
 #: package/contents/ui/config/ConfigStartMenu.qml:98
-#, fuzzy
 msgid "Also align the Start button and taskbar icons with the menu"
-msgstr "スタートボタンとタスクバーのアイコンも中央に配置"
+msgstr "スタート ボタンとタスク バーのアイコンもメニューに揃える"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:100
-#, fuzzy
 msgid "Full screen menu"
-msgstr "フルスクリーン メニューを使用する"
+msgstr "全画面メニュー"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:101
 msgid "Keep the panel visible"
 msgstr "パネルを表示したままにする"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:103
-#, fuzzy
 msgid "Menu scale:"
-msgstr "メニューのサイズ"
+msgstr "メニューの倍率:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:112
 #, javascript-format
@@ -1434,12 +1381,11 @@ msgstr "メニュー レイアウトを編集…"
 #: package/contents/ui/config/ConfigStartMenu.qml:127
 #: package/contents/ui/config/ConfigTaskbar.qml:301
 msgid "(applies at once)"
-msgstr ""
+msgstr "(すぐに適用されます)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:131
-#, fuzzy
 msgid "Tile columns:"
-msgstr "タイルの色:"
+msgstr "タイルの列数:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:134
 msgid "%1 column"
@@ -1455,7 +1401,6 @@ msgid "Tile icon size:"
 msgstr "タイルのアイコン サイズ:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:149
-#, fuzzy
 msgid "Hide tile captions (show them as tooltips)"
 msgstr "タイルのキャプションを隠す (ヒントとして表示)"
 
@@ -1495,59 +1440,53 @@ msgid "%1%"
 msgstr "%1%"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:172
-#, fuzzy
 msgid "Fetch favicons for pinned web links"
 msgstr "ピン留めした Web リンクのファビコンを取得する"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:173
-#, fuzzy
 msgid "Lock tile and pin positions"
-msgstr "メニューのショートカット位置をロックする"
+msgstr "タイルとピン留めの位置をロックする"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:175
-#, fuzzy
 msgid "Reset tile and pin positions…"
-msgstr "アイコンの位置をリセット…"
+msgstr "タイルとピン留めの位置をリセット…"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:180
-#, fuzzy
 msgid "Windows 12"
-msgstr "Windows 10 スタイル"
+msgstr "Windows 12"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:184
-#, fuzzy
 msgid "Apps list side:"
-msgstr "アプリ一覧"
+msgstr "アプリ一覧の位置:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:185
 msgid "Automatic (menu on the left: left, else right)"
-msgstr ""
+msgstr "自動 (メニューが左のとき: 左、それ以外: 右)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:190
 msgid "Greeting with picture:"
-msgstr ""
+msgstr "画像付きのあいさつ:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 msgid "Automatic (when the list is on the left)"
-msgstr ""
+msgstr "自動 (一覧が左にあるとき)"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 msgid "On"
-msgstr ""
+msgstr "オン"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:191
 #: package/contents/ui/config/ConfigTaskbar.qml:260
-#, fuzzy
 msgid "Off"
-msgstr "ログオフ"
+msgstr "オフ"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:193
 msgid "Show Documents, Pictures and Music above the cards"
-msgstr ""
+msgstr "カードの上に [ドキュメント]、[ピクチャ]、[ミュージック] を表示する"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:194
 msgid "Show the clock and date above the cards"
-msgstr ""
+msgstr "カードの上に時計と日付を表示する"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:199
 msgid "Reset icon positions?"
@@ -1572,9 +1511,8 @@ msgid "Windows 7 style"
 msgstr "Windows 7 スタイル"
 
 #: package/contents/ui/config/ConfigStyle.qml:52
-#, fuzzy
 msgid "The Windows 7 menu, classic or modern."
-msgstr "青い Luna メニュー。クラシックまたはモダン化。"
+msgstr "Windows 7 メニュー。クラシックまたはモダン。"
 
 #: package/contents/ui/config/ConfigStyle.qml:53
 #: package/contents/ui/config/ConfigStyle.qml:129
@@ -1601,13 +1539,14 @@ msgstr "改良された Windows 11 スタイル。"
 #: package/contents/ui/config/ConfigStyle.qml:55
 #: package/contents/ui/config/ConfigStyle.qml:130
 #: package/contents/ui/config/ConfigStyle.qml:141
-#, fuzzy
 msgid "Windows 12 style"
-msgstr "Windows 10 スタイル"
+msgstr "Windows 12 スタイル"
 
 #: package/contents/ui/config/ConfigStyle.qml:55
 msgid "Concept-art menu: app list beside pinned cards and widgets."
 msgstr ""
+"コンセプトアート メニュー: ピン留めしたカードとウィジェットの横にアプリ一覧を"
+"表示します。"
 
 #: package/contents/ui/config/ConfigStyle.qml:56
 #: package/contents/ui/config/ConfigStyle.qml:130
@@ -1650,17 +1589,19 @@ msgstr "青い Luna メニュー。クラシックまたはモダン化。"
 
 #: package/contents/ui/config/ConfigStyle.qml:60
 msgid "KDE Plasma"
-msgstr ""
+msgstr "KDE Plasma"
 
 #: package/contents/ui/config/ConfigStyle.qml:60
 msgid "Plasma's own launcher look, taskbar and title bars."
-msgstr ""
+msgstr "Plasma 標準のランチャーの外観、タスク バー、タイトルバー。"
 
 #: package/contents/ui/config/ConfigStyle.qml:73
 msgid ""
 "A style sets the Start menu, the taskbar and the window title bars together. "
 "Mix them below."
 msgstr ""
+"スタイルは、スタート メニュー、タスク バー、ウィンドウのタイトルバーをまとめ"
+"て設定します。下で組み合わせることもできます。"
 
 #: package/contents/ui/config/ConfigStyle.qml:109
 msgid "Coming soon"
@@ -1668,18 +1609,17 @@ msgstr "近日公開"
 
 #: package/contents/ui/config/ConfigStyle.qml:124
 msgid "Mix and match"
-msgstr ""
+msgstr "組み合わせ"
 
 #: package/contents/ui/config/ConfigStyle.qml:127
-#, fuzzy
 msgid "Start menu:"
-msgstr "スタート メニュー"
+msgstr "スタート メニュー:"
 
 #: package/contents/ui/config/ConfigStyle.qml:128
 #: package/contents/ui/config/ConfigStyle.qml:139
 #: package/contents/ui/config/ConfigStyle.qml:153
 msgid "Same as the style"
-msgstr ""
+msgstr "スタイルと同じ"
 
 #: package/contents/ui/config/ConfigStyle.qml:129
 #: package/contents/ui/config/ConfigStyle.qml:188
@@ -1690,46 +1630,40 @@ msgstr "モダン スタイル"
 #: package/contents/ui/config/ConfigStyle.qml:139
 #: package/contents/ui/config/ConfigStyle.qml:153
 msgid "KDE Plasma (default)"
-msgstr ""
+msgstr "KDE Plasma (既定)"
 
 #: package/contents/ui/config/ConfigStyle.qml:137
-#, fuzzy
 msgid "Taskbar:"
-msgstr "タスク バー"
+msgstr "タスク バー:"
 
 #: package/contents/ui/config/ConfigStyle.qml:151
-#, fuzzy
 msgid "Window title bars:"
-msgstr "Windows の色:"
+msgstr "ウィンドウのタイトルバー:"
 
 #: package/contents/ui/config/ConfigStyle.qml:165
 msgid "KDE Plasma (default): your own Plasma Style and title bars come back."
-msgstr ""
+msgstr "KDE Plasma (既定): 元の Plasma スタイルとタイトルバーに戻ります。"
 
 #: package/contents/ui/config/ConfigStyle.qml:168
-#, fuzzy
 msgid "Windows 7"
-msgstr "Windows 7 スタイル"
+msgstr "Windows 7"
 
 #: package/contents/ui/config/ConfigStyle.qml:172
-#, fuzzy
 msgid "Menu look:"
-msgstr "メニューの色:"
+msgstr "メニューの外観:"
 
 #: package/contents/ui/config/ConfigStyle.qml:173
 msgid "Classic"
-msgstr ""
+msgstr "クラシック"
 
 #: package/contents/ui/config/ConfigStyle.qml:173
 #: package/contents/ui/config/ConfigStyle.qml:197
-#, fuzzy
 msgid "Modern"
-msgstr "モダン スタイル"
+msgstr "モダン"
 
 #: package/contents/ui/config/ConfigStyle.qml:180
-#, fuzzy
 msgid "Windows 7 list:"
-msgstr "Windows 7 スタイル"
+msgstr "Windows 7 の一覧:"
 
 #: package/contents/ui/config/ConfigStyle.qml:181
 msgid "Windows 7 style with icons"
@@ -1752,9 +1686,8 @@ msgid "Compact Grid Windows 7 style"
 msgstr "コンパクトなグリッド Windows 7 スタイル"
 
 #: package/contents/ui/config/ConfigStyle.qml:187
-#, fuzzy
 msgid "Modern list:"
-msgstr "モダン スタイル"
+msgstr "モダンの一覧:"
 
 #: package/contents/ui/config/ConfigStyle.qml:188
 msgid "Modern style with icons"
@@ -1778,22 +1711,20 @@ msgstr "コンパクトなグリッド モダン スタイル"
 
 #: package/contents/ui/config/ConfigStyle.qml:191
 #: package/contents/ui/config/ConfigWindows.qml:125
-#, fuzzy
 msgid "Windows XP"
-msgstr "Windows XP スタイル"
+msgstr "Windows XP"
 
 #: package/contents/ui/config/ConfigStyle.qml:194
 msgid "XP theme:"
-msgstr ""
+msgstr "XP テーマ:"
 
 #: package/contents/ui/config/ConfigStyle.qml:197
 msgid "Classic XP"
-msgstr ""
+msgstr "クラシック XP"
 
 #: package/contents/ui/config/ConfigStyle.qml:197
-#, fuzzy
 msgid "Modern classic"
-msgstr "モダン スタイル"
+msgstr "モダン クラシック"
 
 #: package/contents/ui/config/ConfigStyle.qml:203
 msgid "Colour scheme:"
@@ -1814,17 +1745,19 @@ msgstr "シルバー"
 
 #: package/contents/ui/config/ConfigStyle.qml:215
 msgid "Use an XP icon theme while XP is active"
-msgstr ""
+msgstr "XP が有効な間は XP のアイコン テーマを使用する"
 
 #: package/contents/ui/config/ConfigStyle.qml:221
 msgid "XP icon theme:"
-msgstr ""
+msgstr "XP のアイコン テーマ:"
 
 #: package/contents/ui/config/ConfigStyle.qml:231
 msgid ""
 "No XP icon theme is installed. Get one on the Advanced page (Download icon "
 "themes…, search for \"XP\")."
 msgstr ""
+"XP のアイコン テーマがインストールされていません。詳細設定ページで入手してく"
+"ださい ([アイコン テーマをダウンロード…] で \"XP\" を検索)。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:70
 msgid "Pick taskbar texture…"
@@ -1840,40 +1773,40 @@ msgid ""
 "Your own Plasma Style is in use. Pick a Windows taskbar on the Style page to "
 "change its layout and colours."
 msgstr ""
+"独自の Plasma スタイルを使用中です。レイアウトと色を変更するには、スタイル "
+"ページで Windows のタスク バーを選択してください。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:85
-#, fuzzy
 msgid "Windows 12 taskbar"
-msgstr "タスク バーにピン留めする"
+msgstr "Windows 12 タスク バー"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:86
-#, fuzzy
 msgid "Layout:"
-msgstr "レイアウト"
+msgstr "レイアウト:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:92
 msgid "Show islands on:"
-msgstr ""
+msgstr "アイランドを表示するモニター:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:95
 msgid "%1 (main)"
-msgstr ""
+msgstr "%1 (メイン)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:95
 msgid "All monitors"
-msgstr ""
+msgstr "すべてのモニター"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:102
 msgid "Open apps on other monitors:"
-msgstr ""
+msgstr "他のモニターで開いているアプリ:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:103
 msgid "Only apps on that monitor"
-msgstr ""
+msgstr "そのモニターのアプリのみ"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:103
 msgid "All apps on every monitor"
-msgstr ""
+msgstr "すべてのアプリをすべてのモニターに"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:112
 msgid ""
@@ -1881,32 +1814,35 @@ msgid ""
 "stays on the main monitor. Moving an app icon to another island moves it on "
 "every monitor. Pin apps from the main monitor."
 msgstr ""
+"すべてのモニター: どのモニターにもスタートとアプリのアイランドが表示されま"
+"す。トレイ アイランドはメイン モニターにのみ表示されます。アプリのアイコンを"
+"別のアイランドに移動すると、すべてのモニターで移動します。アプリはメイン モニ"
+"ターからピン留めしてください。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:114
 msgid "Floating bar"
-msgstr ""
+msgstr "フローティング バー"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:119
 msgid "Bottom spacing:"
-msgstr ""
+msgstr "下の間隔:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:122
 #: package/contents/ui/config/ConfigTaskbar.qml:144
 msgid "%1 px"
-msgstr ""
+msgstr "%1 px"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:129
-#, fuzzy
 msgid "Maximised windows:"
-msgstr "開いているウィンドウ"
+msgstr "最大化したウィンドウ:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:130
 msgid "Fill the screen"
-msgstr ""
+msgstr "画面全体を使う"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:130
 msgid "Keep a gap above the taskbar"
-msgstr ""
+msgstr "タスク バーの上に余白を残す"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:137
 msgid ""
@@ -1915,65 +1851,63 @@ msgid ""
 "windows stop one bottom spacing above it (single bar only; split islands "
 "always fill the screen)."
 msgstr ""
+"画面全体を使う: 最大化したウィンドウは画面全体を使い、バーはその上でアイラン"
+"ドとして自動的に隠れます。余白を残す: バーは常に表示され、最大化したウィンド"
+"ウはバーの上、下の間隔 1 つ分のところで止まります (バーが 1 つの場合のみ。分"
+"割したアイランドは常に画面全体を使います)。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:141
-#, fuzzy
 msgid "Menu gap:"
-msgstr "メニューのフォント:"
+msgstr "メニューの間隔:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:151
-#, fuzzy
 msgid "Pop-up animation:"
-msgstr "アニメーション:"
+msgstr "ポップアップのアニメーション:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Slide (Plasma)"
-msgstr ""
+msgstr "スライド (Plasma)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Fade"
-msgstr ""
+msgstr "フェード"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Zoom"
-msgstr ""
+msgstr "ズーム"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:152
 msgid "Rise"
-msgstr ""
+msgstr "上昇"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:156
-#, fuzzy
 msgid "Corner roundness:"
-msgstr "角の半径:"
+msgstr "角の丸み:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:159
 msgid "Round"
-msgstr ""
+msgstr "丸い"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:163
-#, fuzzy
 msgid "Taskbar colour and texture"
-msgstr "背景テクスチャ"
+msgstr "タスク バーの色とテクスチャ"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:167
 msgid "Use a custom taskbar colour instead of your Plasma Style"
-msgstr ""
+msgstr "Plasma スタイルの代わりにユーザー設定のタスク バーの色を使用する"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:171
-#, fuzzy
 msgid "Available with a custom taskbar colour."
-msgstr "タスク バーの色を上書きする"
+msgstr "ユーザー設定のタスク バーの色で使用できます。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:172
-#, fuzzy
 msgid "Colour:"
 msgstr "色:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:175
 #: package/contents/ui/config/ConfigWindows.qml:49
 msgid "Opacity:"
-msgstr ""
+msgstr "不透明度:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:177
 #: package/contents/ui/config/ConfigTaskbar.qml:240
@@ -2014,30 +1948,28 @@ msgstr "Windows 7 (ガラス)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:203
 msgid "Gradient:"
-msgstr ""
+msgstr "グラデーション:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:207
-#, fuzzy
 msgid "Left to right"
-msgstr "タブを右へ移動"
+msgstr "左から右"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:208
 msgid "Right to left"
-msgstr ""
+msgstr "右から左"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:208
-#, fuzzy
 msgid "Top to bottom"
-msgstr "上から下:"
+msgstr "上から下"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:209
 msgid "Bottom to top"
-msgstr ""
+msgstr "下から上"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:214
 #, javascript-format
 msgid "Gradient strength: %1%"
-msgstr ""
+msgstr "グラデーションの強さ: %1%"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:230
 #: package/contents/ui/config/ConfigWindows.qml:109
@@ -2057,9 +1989,8 @@ msgid "Align bottom"
 msgstr "下揃え"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:238
-#, fuzzy
 msgid "Texture opacity:"
-msgstr "テクスチャの配置:"
+msgstr "テクスチャの不透明度:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:245
 #: package/contents/ui/config/ConfigWindows.qml:122
@@ -2072,72 +2003,70 @@ msgstr "アクティブなボタンの透明度を下げる"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:253
 msgid "Behaviour"
-msgstr ""
+msgstr "動作"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:259
-#, fuzzy
 msgid "Auto-hide:"
-msgstr "パネルを自動的に隠す"
+msgstr "自動的に隠す:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:260
 msgid "Hide when a window covers it"
-msgstr ""
+msgstr "ウィンドウが重なったときに隠す"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:260
 msgid "Always auto-hide"
-msgstr ""
+msgstr "常に自動的に隠す"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:263
 msgid "Off (the floating bar still auto-hides)"
-msgstr ""
+msgstr "オフ (フローティング バーは引き続き自動的に隠れます)"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:270
 msgid ""
 "The floating Windows 12 bar always auto-hides, so it stays an island over "
 "maximized windows. Turn off \"Floating bar\" for a fixed one."
 msgstr ""
+"フローティングの Windows 12 バーは常に自動的に隠れるため、最大化したウィンド"
+"ウの上ではアイランドのままです。固定のバーにするには \"フローティング バー\" "
+"をオフにしてください。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:271
 msgid "A hidden taskbar shows again when the mouse touches the screen edge."
-msgstr ""
+msgstr "隠れたタスク バーは、マウスが画面の端に触れると再び表示されます。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:274
-#, fuzzy
 msgid "Show a search box on the taskbar"
-msgstr "タスク バーに検索を表示する"
+msgstr "タスク バーに検索ボックスを表示する"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:278
 msgid "Search box width:"
 msgstr "検索ボックスの幅:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:286
-#, fuzzy
 msgid "Plasma panel"
-msgstr "Plasma スタイル"
+msgstr "Plasma パネル"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:290
-#, fuzzy
 msgid "Panel height, position and task grouping are set by Plasma itself."
-msgstr ""
-"パネルの高さ、位置、フローティング、自動非表示、タスクのグループ化は Plasma "
-"自体で処理されます。"
+msgstr "パネルの高さ、位置、タスクのグループ化は Plasma 自体で設定します。"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:296
 msgid "Edit panel…"
 msgstr "パネルを編集…"
 
 #: package/contents/ui/config/ConfigWindows.qml:34
-#, fuzzy
 msgid "Pick title bar picture…"
-msgstr "タスク バーのテクスチャを選択…"
+msgstr "タイトルバーの画像を選択…"
 
 #: package/contents/ui/config/ConfigWindows.qml:40
 msgid "Title bars and frames"
-msgstr ""
+msgstr "タイトルバーと枠"
 
 #: package/contents/ui/config/ConfigWindows.qml:43
 msgid "Pick a Windows title bar on the Style page to change these."
 msgstr ""
+"これらを変更するには、スタイル ページで Windows のタイトルバーを選択してくだ"
+"さい。"
 
 #: package/contents/ui/config/ConfigWindows.qml:56
 msgid "Blur behind translucent frames"
@@ -2148,46 +2077,49 @@ msgid "Title bar height:"
 msgstr "タイトルバーの高さ:"
 
 #: package/contents/ui/config/ConfigWindows.qml:99
-#, fuzzy
 msgid "Title bar picture:"
-msgstr "タイトルバーの高さ:"
+msgstr "タイトルバーの画像:"
 
 #: package/contents/ui/config/ConfigWindows.qml:115
-#, fuzzy
 msgid "Picture opacity:"
-msgstr "タイル画像の不透明度:"
+msgstr "画像の不透明度:"
 
 #: package/contents/ui/config/ConfigWindows.qml:129
 msgid "Use the system title bar in Firefox"
-msgstr ""
+msgstr "Firefox でシステムのタイトルバーを使用する"
 
 #: package/contents/ui/config/ConfigWindows.qml:131
 msgid ""
 "Firefox draws its own title bar, so the XP one does not show. Restart "
 "Firefox for this to take effect."
 msgstr ""
+"Firefox は独自のタイトルバーを描画するため、XP のタイトルバーは表示されませ"
+"ん。有効にするには Firefox を再起動してください。"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:25
 msgid ""
 "The taskbar layouts and the Start position need Win12's patched KDE "
 "packages. Run kde/build.sh from the Win12 source folder, then log out and in."
 msgstr ""
+"タスク バーのレイアウトとスタートの位置には、Win12 のパッチ適用済み KDE パッ"
+"ケージが必要です。Win12 のソース フォルダーから kde/build.sh を実行し、ログア"
+"ウトして再度ログインしてください。"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:28
 msgid "One floating bar"
-msgstr ""
+msgstr "フローティング バー 1 本"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:28
 msgid "Split: widgets left, apps centre, tray right"
-msgstr ""
+msgstr "分割: ウィジェットを左、アプリを中央、トレイを右"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "Split: Start and apps left, tray right"
-msgstr ""
+msgstr "分割: スタートとアプリを左、トレイを右"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "3 Islands: pinned apps, open apps, tray"
-msgstr ""
+msgstr "3 アイランド: ピン留めアプリ、開いているアプリ、トレイ"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:34
 msgid ""
@@ -2195,16 +2127,21 @@ msgid ""
 "(islands). 3 Islands also splits pinned and open apps; drag an app icon to "
 "another island to move it there. Touching the bottom edge shows all of them."
 msgstr ""
+"分割レイアウトでは、トレイ、時計、天気が別々のフローティング パネル (アイラン"
+"ド) に分かれます。3 アイランドではピン留めしたアプリと開いているアプリも分か"
+"れます。アプリのアイコンを別のアイランドにドラッグすると、そこへ移動できま"
+"す。画面の下端に触れると、すべて表示されます。"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:41
 msgid "Magnetic islands"
-msgstr ""
+msgstr "マグネット アイランド"
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:46
 msgid ""
 "On: the islands sit close together in the middle of the screen. Off: pushed "
 "to the screen edges."
 msgstr ""
+"オン: アイランドが画面の中央に寄り集まります。オフ: 画面の端に寄せられます。"
 
 #: package/contents/ui/ContextMenu.qml:36
 msgid "Open file location"
@@ -2223,14 +2160,12 @@ msgid "Pin to taskbar"
 msgstr "タスク バーにピン留めする"
 
 #: package/contents/ui/main.qml:934 package/contents/ui/win10/Tile.qml:302
-#, fuzzy
 msgid "Choose picture…"
-msgstr "ユーザーの画像"
+msgstr "画像を選択…"
 
 #: package/contents/ui/main.qml:941 package/contents/ui/win10/Tile.qml:303
-#, fuzzy
 msgid "Choose folder…"
-msgstr "フォルダーをピン留め…"
+msgstr "フォルダーを選択…"
 
 #: package/contents/ui/main.qml:998
 msgid "Pin file to Start"
@@ -2282,36 +2217,35 @@ msgstr "フォルダーをピン留め…"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
-msgstr ""
+msgstr "時計"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
-msgstr ""
+msgstr "カレンダー"
 
 #: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
-#, fuzzy
 msgid "System monitor"
 msgstr "システム モニター"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
-msgstr ""
+msgstr "ドライブ"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
-msgstr ""
+msgstr "天気"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
-msgstr ""
+msgstr "メモ"
 
 #: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
-msgstr ""
+msgstr "写真"
 
 #: package/contents/ui/main.qml:1092
 msgid "KDE widgets…"
-msgstr ""
+msgstr "KDE ウィジェット…"
 
 #: package/contents/ui/main.qml:1422
 msgid "Design mode — drag the dividers"
@@ -2346,17 +2280,15 @@ msgstr "スタート"
 
 #: package/contents/ui/styles/plasma.qml:45
 msgid "Favorites"
-msgstr ""
+msgstr "お気に入り"
 
 #: package/contents/ui/styles/plasma.qml:46
-#, fuzzy
 msgid "All Applications"
-msgstr "アプリケーションを編集…"
+msgstr "すべてのアプリケーション"
 
 #: package/contents/ui/styles/plasma.qml:226
-#, fuzzy
 msgid "Applications"
-msgstr "アプリケーションを編集…"
+msgstr "アプリケーション"
 
 #: package/contents/ui/styles/windows11.qml:138
 #: package/contents/ui/styles/windows11.qml:183
@@ -2370,15 +2302,15 @@ msgstr "その他"
 
 #: package/contents/ui/styles/windows12.qml:96
 msgid "Good morning, %1!"
-msgstr ""
+msgstr "おはようございます、%1 さん!"
 
 #: package/contents/ui/styles/windows12.qml:96
 msgid "Good afternoon, %1!"
-msgstr ""
+msgstr "こんにちは、%1 さん!"
 
 #: package/contents/ui/styles/windows12.qml:97
 msgid "Good evening, %1!"
-msgstr ""
+msgstr "こんばんは、%1 さん!"
 
 #: package/contents/ui/styles/windows7.qml:298
 #: package/contents/ui/styles/xp.qml:410
@@ -2417,52 +2349,51 @@ msgstr "コンピューターの電源を切る"
 
 #: package/contents/ui/widgets/Drives.qml:62
 msgid "%1 TB"
-msgstr ""
+msgstr "%1 TB"
 
 #: package/contents/ui/widgets/Drives.qml:63
 msgid "%1 GB"
-msgstr ""
+msgstr "%1 GB"
 
 #: package/contents/ui/widgets/Drives.qml:140
 msgid "%1 free"
-msgstr ""
+msgstr "空き %1"
 
 #: package/contents/ui/widgets/Drives.qml:141
 msgid "%1 free of %2"
-msgstr ""
+msgstr "%2 中 %1 空き"
 
 #: package/contents/ui/widgets/Notes.qml:25
 msgid "Write a note…"
-msgstr ""
+msgstr "メモを入力…"
 
 #: package/contents/ui/widgets/Photo.qml:54
 msgid "Right-click to choose a picture or folder"
-msgstr ""
+msgstr "右クリックして画像またはフォルダーを選択"
 
 #: package/contents/ui/widgets/SysMon.qml:90
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: package/contents/ui/widgets/SysMon.qml:91
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: package/contents/ui/widgets/Weather.qml:16
 msgid "Weather unavailable"
-msgstr ""
+msgstr "天気を取得できません"
 
 #: package/contents/ui/widgets/Weather.qml:17
 msgid "Location not found"
-msgstr ""
+msgstr "場所が見つかりません"
 
 #: package/contents/ui/widgets/Weather.qml:82
-#, fuzzy
 msgid "Right-click to set location"
-msgstr "右クリック メニュー"
+msgstr "右クリックして場所を設定"
 
 #: package/contents/ui/widgets/Weather.qml:82
 msgid "Loading…"
-msgstr ""
+msgstr "読み込み中…"
 
 #: package/contents/ui/win10/AppList.qml:35
 msgid "Desktop"
@@ -2504,7 +2435,7 @@ msgstr "検索に一致する項目はありません"
 #: package/contents/ui/win10/TileArea.qml:39
 #: package/contents/ui/win10/TileGroup.qml:161
 msgid "Add widget"
-msgstr ""
+msgstr "ウィジェットを追加"
 
 #: package/contents/ui/win10/TileArea.qml:41
 msgid "New page"
@@ -2577,81 +2508,76 @@ msgstr "フォルダーに名前を付ける"
 
 #: package/contents/ui/win10/Tile.qml:56
 msgid "Widget"
-msgstr ""
+msgstr "ウィジェット"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Red"
-msgstr ""
+msgstr "赤"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Orange"
-msgstr ""
+msgstr "オレンジ"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Yellow"
-msgstr ""
+msgstr "黄"
 
 #: package/contents/ui/win10/Tile.qml:212
 msgid "Lime"
-msgstr ""
+msgstr "ライム"
 
 #: package/contents/ui/win10/Tile.qml:213
-#, fuzzy
 msgid "Green"
-msgstr "オリーブ グリーン"
+msgstr "緑"
 
 #: package/contents/ui/win10/Tile.qml:213
 msgid "Teal"
-msgstr ""
+msgstr "ティール"
 
 #: package/contents/ui/win10/Tile.qml:213
 msgid "Cyan"
-msgstr ""
+msgstr "シアン"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Indigo"
-msgstr ""
+msgstr "インディゴ"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Purple"
-msgstr ""
+msgstr "紫"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Pink"
-msgstr ""
+msgstr "ピンク"
 
 #: package/contents/ui/win10/Tile.qml:214
 msgid "Brown"
-msgstr ""
+msgstr "茶"
 
 #: package/contents/ui/win10/Tile.qml:215
 msgid "Grey"
-msgstr ""
+msgstr "グレー"
 
 #: package/contents/ui/win10/Tile.qml:281
-#, fuzzy
 msgid "Custom colour…"
-msgstr "ユーザー設定の色"
+msgstr "ユーザー設定の色…"
 
 #: package/contents/ui/win10/Tile.qml:292
 msgid "Unpin folder from Start"
 msgstr "スタートからフォルダーのピン留めを外す"
 
 #: package/contents/ui/win10/Tile.qml:294
-#, fuzzy
 msgid "Configure widget…"
-msgstr "Win12 を構成…"
+msgstr "ウィジェットを設定…"
 
 #: package/contents/ui/win10/Tile.qml:295
 #: package/contents/ui/win10/Tile.qml:296
-#, fuzzy
 msgid "Remove widget"
-msgstr "削除"
+msgstr "ウィジェットを削除"
 
 #: package/contents/ui/win10/Tile.qml:300
-#, fuzzy
 msgid "Set location…"
-msgstr "アイコンを設定…"
+msgstr "場所を設定…"
 
 #: package/contents/ui/win10/Tile.qml:305
 msgid "Set icon…"
@@ -2674,24 +2600,20 @@ msgid "Tile colour…"
 msgstr "タイルの色…"
 
 #: package/contents/ui/win10/Tile.qml:312
-#, fuzzy
 msgid "Set tile image…"
-msgstr "タイル画像を選択…"
+msgstr "タイル画像を設定…"
 
 #: package/contents/ui/win10/Tile.qml:313
-#, fuzzy
 msgid "Remove tile image"
-msgstr "タイル画像:"
+msgstr "タイル画像を削除"
 
 #: package/contents/ui/win10/Tile.qml:315
-#, fuzzy
 msgid "Show icon"
-msgstr "アイコンのテキストを表示"
+msgstr "アイコンを表示"
 
 #: package/contents/ui/win10/Tile.qml:315
-#, fuzzy
 msgid "Hide icon"
-msgstr "アイコンのテキストを隠す"
+msgstr "アイコンを隠す"
 
 #: package/contents/ui/win10/Tile.qml:318
 msgid "Resize"
@@ -2702,22 +2624,20 @@ msgid "Wide"
 msgstr "幅広"
 
 #: package/contents/ui/win10/Tile.qml:320
-#, fuzzy
 msgid "W. Large H."
-msgstr "大"
+msgstr "特大 横"
 
 #: package/contents/ui/win10/Tile.qml:320
-#, fuzzy
 msgid "W. Large V."
-msgstr "大"
+msgstr "特大 縦"
 
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 H."
-msgstr ""
+msgstr "3x6 横"
 
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 V."
-msgstr ""
+msgstr "3x6 縦"
 
 #~ msgid "Look"
 #~ msgstr "外観"
