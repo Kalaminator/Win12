@@ -34,3 +34,11 @@ left: nothing
 notes: plan steps applied verbatim. Checks: qmllint 0 errors, msgfmt --check ok. Not seen live (settings dialog not opened).
 next: Task 4 — KWin reveal script: the pointer's monitor only
 next-model: opus
+
+## 2026-10-17 08:00 Task 4: KWin reveal script: the pointer's monitor only
+status: done
+done: 32907b7: extras/win12-islandreveal main.js: reveal(name) per connector (screenForConnector in the sent plasmashell script, helpers on p.screen === sid true, the rest false), workspace.screenAt(cursorPos) || activeScreen for the edge and the docks filter (w.output.name), timer also starts when the pointer is on another monitor.
+left: nothing
+notes: Step 1 live: `win12-api screenAt=function out=HDMI-A-2 docks=HDMI-A-2,HDMI-A-2` (API as planned). Ruling: `let on;` (undefined) instead of the plan's `let on = null` — with null the closing `reveal(null)` returned early and never cleared a helper left on by a crash — cost if wrong: one extra D-Bus call at load. Checks: node --check OK; ./install.sh OK (tiles + islands tests pass), installed copy = repo; reload: no win12islandreveal/TypeError/ReferenceError lines; live split-right autohide (panels 2, 412 on screen 0): pointer on row 1079 -> 2:true 412:true, centre after 1.5 s -> 2:false 412:false. Configs backed up to the session scratchpad bk-task4 (not restored: nothing changed but the reveal keys, now false). plasmashell not restarted (the upgraded plasmoid QML from Tasks 1-3 runs after the next restart; Task 5).
+next: Task 5 — Live single-monitor regression
+next-model: opus
