@@ -83,3 +83,11 @@ e0ebbe8left: nothing
 notes: key guard --strict OK (141 keys); tiles, stylekinds, qmllint (no errors) pass. Bug fixed on the way: NewStuff.Button has no onChangedEntriesChanged, so the old Icons page failed to load ("Cannot assign to non-existent property"); now onEntryEvent. Screenshot row 8 (SY=829) OK: both groups seen. XP rows not screenshotted (user's style is not XP). Style still has its old Item isSection after the Windows combo; Task 10 regroups Style. Sidebar rows: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Appearance, 5 Search, 6 Taskbar, 7 Windows, 8 Advanced.
 next: Task 10 — Style page: heading, Mix and match / Windows 7 / Windows XP groups, renamed labels
 next-model: sonnet
+
+## 2026-10-17 10:40 Task 10: Style page — heading, Mix and match / Windows 7 / Windows XP groups, renamed labels
+status: done
+done: ConfigStyle: heading "Style", separators Mix and match / Windows 7 (visible kinds.win7Family) / Windows XP (visible kinds.anyXp); labels Window title bars:, Menu look:, Windows 7 list:, Modern list:, XP theme: (commit 0ecdf87)
+left: nothing
+notes: key guard --strict OK (141 keys); tiles, stylekinds, qmllint pass; no Substyle/question label left (only cfg_ key names). Screenshot row 0 OK (heading + cards); the groups are below the fold, not scrolled. The page has no xpTaskbarTheme/windowTheme/taskbarFollowsStyle rows (not in ConfigStyle), so the spec's Mix list is shorter here; Task 13 can check where they live. Journal clean.
+next: Task 11 — Search page groups; final config.qml; strict guard in install.sh; HANDOFF note; all 9 screenshots
+next-model: sonnet
