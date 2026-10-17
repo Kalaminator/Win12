@@ -68,7 +68,7 @@ Pick a style on the *Style* page.
 - With your own Plasma Style, pick a Windows taskbar on the Style page first. Then these rows show.
 - Windows 12 taskbar group:
   - Layout: One floating bar, two Split layouts (widgets left, apps centre, tray right; or Start and apps left, tray right), or 3 Islands (pinned apps, open apps and tray). In 3 Islands, drag an app icon to another island to move it. Magnetic islands: close together in the middle, or pushed to the screen edges.
-  - The split and 3 Islands layouts need the patched KDE packages (see the README). The page shows a warning when they are missing.
+  - 3 Islands and dragging apps between islands need the patched KDE packages (see the README); on stock KDE the split layouts and the Start position still work, slowly (5-10 s per change), and the page says so.
   - Show islands on: one monitor (default: the main one) or All monitors. With All monitors, every monitor gets Start and the app islands, and the tray island stays on the main monitor.
   - Open apps on other monitors (with All monitors): only the apps on that monitor (default), or all apps on every monitor.
   - Floating bar and bottom spacing. Maximised windows: fill the screen (the bar auto-hides as an island over them) or keep a gap above the taskbar. Menu gap, pop-up animation (Slide, Fade, Zoom, Rise), corner roundness.

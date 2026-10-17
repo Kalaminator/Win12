@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Start 12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 09:45+0200\n"
+"POT-Creation-Date: 2026-10-17 12:57+0200\n"
 "PO-Revision-Date: 2026-10-14 20:26+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -142,7 +142,7 @@ msgstr "最近的文件"
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:1044
+#: package/contents/ui/main.qml:1053
 #: package/contents/ui/styles/windows7.qml:300
 #: package/contents/ui/styles/xp.qml:411
 msgid "Rename"
@@ -377,7 +377,7 @@ msgstr "更新"
 #: package/contents/ui/common/Places.qml:41
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:68
-#: package/contents/ui/main.qml:1452
+#: package/contents/ui/main.qml:1461
 msgid "File Explorer"
 msgstr "文件资源管理器"
 
@@ -390,7 +390,7 @@ msgstr "个性化"
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:70
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:1446
+#: package/contents/ui/main.qml:1455
 #: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr "设置"
@@ -398,21 +398,21 @@ msgstr "设置"
 #: package/contents/ui/common/Places.qml:44
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:71
-#: package/contents/ui/main.qml:1464
+#: package/contents/ui/main.qml:1473
 msgid "Terminal"
 msgstr "终端"
 
 #: package/contents/ui/common/Places.qml:45
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:72
-#: package/contents/ui/main.qml:1458
+#: package/contents/ui/main.qml:1467
 msgid "System Monitor"
 msgstr "系统监视器"
 
 #: package/contents/ui/common/Places.qml:46
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:73
-#: package/contents/ui/main.qml:1470
+#: package/contents/ui/main.qml:1479
 msgid "Run…"
 msgstr "运行…"
 
@@ -431,13 +431,13 @@ msgstr "电源"
 
 #: package/contents/ui/common/Places.qml:63
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1499
+#: package/contents/ui/main.qml:1508
 msgid "Lock"
 msgstr "锁定"
 
 #: package/contents/ui/common/Places.qml:64
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1505
+#: package/contents/ui/main.qml:1514
 msgid "Sign out"
 msgstr "注销"
 
@@ -448,7 +448,7 @@ msgstr "切换用户"
 
 #: package/contents/ui/common/Places.qml:66
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1511
+#: package/contents/ui/main.qml:1520
 msgid "Sleep"
 msgstr "睡眠"
 
@@ -459,13 +459,13 @@ msgstr "休眠"
 
 #: package/contents/ui/common/Places.qml:68
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1517
+#: package/contents/ui/main.qml:1526
 msgid "Restart"
 msgstr "重启"
 
 #: package/contents/ui/common/Places.qml:69
 #: package/contents/ui/config/ConfigButton.qml:80
-#: package/contents/ui/main.qml:1523
+#: package/contents/ui/main.qml:1532
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr "关机"
@@ -579,7 +579,7 @@ msgstr "选择自定义纹理…"
 
 #: package/contents/ui/config/ConfigAppearance.qml:108
 #: package/contents/ui/config/ConfigStartMenu.qml:65
-#: package/contents/ui/main.qml:928 package/contents/ui/main.qml:935
+#: package/contents/ui/main.qml:937 package/contents/ui/main.qml:944
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr "图像 (*.png *.jpg *.jpeg *.webp *.svg)"
 
@@ -948,7 +948,7 @@ msgstr "移除"
 
 #: package/contents/ui/config/ConfigAppsList.qml:123
 #: package/contents/ui/config/ConfigButton.qml:359
-#: package/contents/ui/main.qml:1058
+#: package/contents/ui/main.qml:1067
 msgid "Name:"
 msgstr "名称:"
 
@@ -973,17 +973,17 @@ msgid "Add filtered folder"
 msgstr "添加筛选文件夹"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1476
+#: package/contents/ui/main.qml:1485
 msgid "Show desktop"
 msgstr "显示桌面"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1482
+#: package/contents/ui/main.qml:1491
 msgid "Edit panel"
 msgstr "编辑面板"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1488
+#: package/contents/ui/main.qml:1497
 msgid "Auto-hide panel"
 msgstr "自动隐藏面板"
 
@@ -1266,7 +1266,7 @@ msgid "Off: starts with Apps, Settings and Files; tick more below."
 msgstr "关闭: 从应用、设置和文件开始；可在下方勾选更多。"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
-#: package/contents/ui/main.qml:927
+#: package/contents/ui/main.qml:936
 msgid "Pick tile image…"
 msgstr "选择磁贴图像…"
 
@@ -2076,31 +2076,31 @@ msgstr ""
 "Firefox 会绘制自己的标题栏，因此不会显示 XP 标题栏。重启 Firefox 后此设置才会"
 "生效。"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:25
+#: package/contents/ui/config/TaskbarLayoutBox.qml:26
 msgid ""
-"The taskbar layouts and the Start position need Win12's patched KDE "
-"packages. Run kde/build.sh from the Win12 source folder, then log out and in."
-msgstr ""
-"任务栏布局和“开始”位置需要 Win12 打过补丁的 KDE 软件包。请在 Win12 源码文件夹"
-"中运行 kde/build.sh，然后注销并重新登录。"
+"3 Islands and moving apps between islands need Win12's patched KDE packages: "
+"run kde/build.sh from the Win12 source folder, then log out and in. On a "
+"stock KDE the One bar, the Split layouts and the Start position work, but a "
+"change takes a few seconds."
+msgstr "3 Islands 和在岛之间移动应用需要 Win12 的补丁版 KDE 软件包：请在 Win12 源码文件夹中运行 kde/build.sh，然后注销并重新登录。在原版 KDE 上，单栏、分离布局和开始按钮位置可以使用，但每次更改需要几秒钟。"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:28
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "One floating bar"
 msgstr "单个浮动栏"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:28
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "Split: widgets left, apps centre, tray right"
 msgstr "分离: 小部件在左，应用居中，托盘在右"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+#: package/contents/ui/config/TaskbarLayoutBox.qml:30
 msgid "Split: Start and apps left, tray right"
 msgstr "分离: “开始”和应用在左，托盘在右"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+#: package/contents/ui/config/TaskbarLayoutBox.qml:30
 msgid "3 Islands: pinned apps, open apps, tray"
 msgstr "3 个浮动岛: 已固定的应用、已打开的应用、托盘"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:34
+#: package/contents/ui/config/TaskbarLayoutBox.qml:35
 msgid ""
 "Split layouts put the tray, clock and weather into separate floating panels "
 "(islands). 3 Islands also splits pinned and open apps; drag an app icon to "
@@ -2110,11 +2110,11 @@ msgstr ""
 "把已固定和已打开的应用分开；将应用图标拖到另一个浮动岛即可移到那里。触碰屏幕"
 "底部边缘会显示所有浮动岛。"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:41
+#: package/contents/ui/config/TaskbarLayoutBox.qml:42
 msgid "Magnetic islands"
 msgstr "吸附式浮动岛"
 
-#: package/contents/ui/config/TaskbarLayoutBox.qml:46
+#: package/contents/ui/config/TaskbarLayoutBox.qml:47
 msgid ""
 "On: the islands sit close together in the middle of the screen. Off: pushed "
 "to the screen edges."
@@ -2136,111 +2136,111 @@ msgstr "从任务栏取消固定"
 msgid "Pin to taskbar"
 msgstr "固定到任务栏"
 
-#: package/contents/ui/main.qml:934 package/contents/ui/win10/Tile.qml:302
+#: package/contents/ui/main.qml:943 package/contents/ui/win10/Tile.qml:302
 msgid "Choose picture…"
 msgstr "选择图片…"
 
-#: package/contents/ui/main.qml:941 package/contents/ui/win10/Tile.qml:303
+#: package/contents/ui/main.qml:950 package/contents/ui/win10/Tile.qml:303
 msgid "Choose folder…"
 msgstr "选择文件夹…"
 
-#: package/contents/ui/main.qml:998
+#: package/contents/ui/main.qml:1007
 msgid "Pin file to Start"
 msgstr "将文件固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:1004
+#: package/contents/ui/main.qml:1013
 msgid "Add a folder as group"
 msgstr "将文件夹添加为组"
 
-#: package/contents/ui/main.qml:1004
+#: package/contents/ui/main.qml:1013
 msgid "Pin folder to Start"
 msgstr "将文件夹固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:1010
+#: package/contents/ui/main.qml:1019
 msgid "Pin website to Start"
 msgstr "将网站固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:1025
+#: package/contents/ui/main.qml:1034
 msgid "Web address:"
 msgstr "网址:"
 
-#: package/contents/ui/main.qml:1035
+#: package/contents/ui/main.qml:1044
 msgid "Pin"
 msgstr "固定"
 
-#: package/contents/ui/main.qml:1036 package/contents/ui/main.qml:1068
+#: package/contents/ui/main.qml:1045 package/contents/ui/main.qml:1077
 msgid "Cancel"
 msgstr "取消"
 
-#: package/contents/ui/main.qml:1058
+#: package/contents/ui/main.qml:1067
 msgid "Name (empty = original):"
 msgstr "名称 (留空 = 原名):"
 
-#: package/contents/ui/main.qml:1067
+#: package/contents/ui/main.qml:1076
 msgid "OK"
 msgstr "确定"
 
-#: package/contents/ui/main.qml:1083
+#: package/contents/ui/main.qml:1092
 msgid "Pin website…"
 msgstr "固定网站…"
 
-#: package/contents/ui/main.qml:1084
+#: package/contents/ui/main.qml:1093
 msgid "Pin file…"
 msgstr "固定文件…"
 
-#: package/contents/ui/main.qml:1085
+#: package/contents/ui/main.qml:1094
 msgid "Pin folder…"
 msgstr "固定文件夹…"
 
-#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
 msgstr "时钟"
 
-#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
 msgstr "日历"
 
-#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
 msgid "System monitor"
 msgstr "系统监视器"
 
-#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
 msgstr "驱动器"
 
-#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
 msgstr "天气"
 
-#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
 msgstr "便笺"
 
-#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
 msgstr "照片"
 
-#: package/contents/ui/main.qml:1092
+#: package/contents/ui/main.qml:1101
 msgid "KDE widgets…"
 msgstr "KDE 小部件…"
 
-#: package/contents/ui/main.qml:1422
+#: package/contents/ui/main.qml:1431
 msgid "Design mode — drag the dividers"
 msgstr "设计模式 — 拖动分隔线"
 
-#: package/contents/ui/main.qml:1427 package/contents/ui/win10/Tile.qml:282
+#: package/contents/ui/main.qml:1436 package/contents/ui/win10/Tile.qml:282
 msgid "Reset"
 msgstr "重置"
 
-#: package/contents/ui/main.qml:1432
+#: package/contents/ui/main.qml:1441
 msgid "Done"
 msgstr "完成"
 
-#: package/contents/ui/main.qml:1532
+#: package/contents/ui/main.qml:1541
 msgid "Edit menu layout"
 msgstr "编辑菜单布局"
 
-#: package/contents/ui/main.qml:1537
+#: package/contents/ui/main.qml:1546
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr "编辑应用程序…"
@@ -2613,6 +2613,14 @@ msgstr "3x6 横"
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 V."
 msgstr "3x6 竖"
+
+#~ msgid ""
+#~ "The taskbar layouts and the Start position need Win12's patched KDE "
+#~ "packages. Run kde/build.sh from the Win12 source folder, then log out and "
+#~ "in."
+#~ msgstr ""
+#~ "任务栏布局和“开始”位置需要 Win12 打过补丁的 KDE 软件包。请在 Win12 源码文"
+#~ "件夹中运行 kde/build.sh，然后注销并重新登录。"
 
 #~ msgid "Look"
 #~ msgstr "外观"

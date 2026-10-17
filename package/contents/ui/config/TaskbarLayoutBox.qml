@@ -22,8 +22,8 @@ ColumnLayout {
         visible: !box.kdePatched
         Layout.maximumWidth: Kirigami.Units.gridUnit * 24
         wrapMode: Text.Wrap
-        color: Kirigami.Theme.negativeTextColor
-        text: i18n("The taskbar layouts and the Start position need Win12's patched KDE packages. Run kde/build.sh from the Win12 source folder, then log out and in.")
+        color: box.cfgPage.cfg_taskbarLayout === "islands" ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
+        text: i18n("3 Islands and moving apps between islands need Win12's patched KDE packages: run kde/build.sh from the Win12 source folder, then log out and in. On a stock KDE the One bar, the Split layouts and the Start position work, but a change takes a few seconds.")
     }
     QQC2.ComboBox {
         model: [i18n("One floating bar"), i18n("Split: widgets left, apps centre, tray right"),

@@ -102,8 +102,8 @@ patches for three packages and rebuilds them from Arch's own PKGBUILDs:
 
     kde/build.sh            # libplasma, plasma-workspace, plasma-desktop; 20-40 min; asks for sudo to install
 
-Without the patched packages the Taskbar page shows a warning and Win12 leaves your panels alone, so after each
-Plasma update that warning is the sign to run `kde/build.sh` again (`kde/build.sh` also installs the tiny `win12-kde-hook` package, a pacman hook that prints
+Without the patched packages the split layouts and the Start position still work the slow way (one step every 0.3 s, 5-10 s per change, icons jump). 3 Islands and dragging apps between islands are off, and the Taskbar page says so. After each
+Plasma update that note is the sign to run `kde/build.sh` again (`kde/build.sh` also installs the tiny `win12-kde-hook` package, a pacman hook that prints
 "Run kde/build.sh again" after a stock Plasma update; it is its own package so the upgrade cannot remove it). Undo at any time:
 `sudo pacman -S libplasma plasma-workspace plasma-desktop`, then
 `sudo pacman -R win12-kde-hook libplasma-debug plasma-workspace-debug plasma-desktop-debug` (makepkg also built and installed
