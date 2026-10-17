@@ -99,3 +99,11 @@ left: nothing
 notes: install.sh prints test_islands OK + settings keys OK (141 keys); qmllint clean; no old Config* name left. All 9 pages screenshotted (rows SY=285+68k, k=0..8: Style, Start menu, Apps list, Start button & shortcuts, Taskbar, Windows, Appearance, Search, Advanced): groups and labels look right, no stray old label; below-the-fold groups not scrolled. Journal: no new error after the run.
 next: Task 12 — Translations: Messages.sh, es.po complete, .mo
 next-model: sonnet
+
+## 2026-10-17 12:00 Task 12: Translations: Messages.sh, es.po complete, .mo
+status: done
+done: Messages.sh run; 20 untranslated + 75 fuzzy msgids in po/es.po translated (fuzzy flags gone); template.pot and es .mo rebuilt (commit 411b142)
+left: nothing
+notes: msgfmt --check: 580 translated messages, no untranslated, no fuzzy. install.sh prints settings keys OK (141 keys). Other po/*.po were not touched by Messages.sh. Method: msgattrib --translated --no-fuzzy, msgcat --use-first with a new translation file, msgmerge --no-fuzzy-matching against template.pot (no polib here). Stray untracked messages.mo in the repo root is not ours; left alone.
+next: Task 13 — Review against the proposal, fixes, ELI5 + hand-check list for the user
+next-model: opus
