@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Win12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 08:30+0200\n"
+"POT-Creation-Date: 2026-10-17 09:45+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0000\n"
 "Last-Translator: Win12\n"
 "Language-Team: Spanish\n"
@@ -660,11 +660,11 @@ msgstr "Mostrar color de énfasis en barras de título y bordes de ventana"
 
 #: package/contents/ui/config/ConfigAppearance.qml:188
 msgid ""
-"The taskbar and title bars follow these when their look is not \"Plasma's "
-"own\" (Style page)."
+"The taskbar and title bars follow these when their look is not \"KDE Plasma "
+"(default)\" (Style page)."
 msgstr ""
 "La barra de tareas y las barras de título los siguen si su aspecto no es "
-"\"El de Plasma\" (página Estilo)."
+"\"KDE Plasma (predeterminado)\" (página Estilo)."
 
 #: package/contents/ui/config/ConfigAppearance.qml:192
 msgid "Windows 12 shade"

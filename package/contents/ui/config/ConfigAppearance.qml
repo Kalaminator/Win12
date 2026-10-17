@@ -185,7 +185,7 @@ KCM.SimpleKCM {
             wrapMode: Text.WordWrap
             font: Kirigami.Theme.smallFont
             opacity: 0.7
-            text: i18n("The taskbar and title bars follow these when their look is not \"Plasma's own\" (Style page).")
+            text: i18n("The taskbar and title bars follow these when their look is not \"KDE Plasma (default)\" (Style page).")
         }
 
         // W11 shade sliders (-1 = default look; the slider shows where that look sits)
