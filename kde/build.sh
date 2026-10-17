@@ -1,6 +1,6 @@
 #!/bin/bash
 # Win12: build and install the patched KDE packages from Arch's own PKGBUILDs (spec part 1), in dependency order.
-# usage: kde/build.sh [libplasma] [plasma-workspace] [plasma-desktop]     (default: all three)
+# usage: kde/build.sh [libplasma] [plasma-workspace] [plasma-desktop] [kwin]     (default: the first three; kwin is not built by default, spec 12.2)
 # Also builds and installs kde/hook (win12-kde-hook: the pacman hook that says to run this again after a stock Plasma update).
 # Needs git, makepkg, gpg. Installing needs `sudo pacman`: run it in a terminal (sudo asks for the password) or
 # add a sudoers drop-in for /usr/bin/pacman alone; with neither, the packages are built and the pacman -U command is printed. Undo: sudo pacman -S libplasma plasma-workspace plasma-desktop

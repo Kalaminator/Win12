@@ -110,6 +110,11 @@ Plasma update that note is the sign to run `kde/build.sh` again (`kde/build.sh` 
 those). Patches: `kde/patches/`; what they change is in
 `docs/superpowers/specs/2026-10-16-fast-islands-design.md`.
 
+Optional 4th package: `kde/build.sh kwin` builds `kwin-win12` (not built by default). It adds one thing to KWin's blur:
+a contrast step for docks and Plasma, so the glass taskbar looks the same over a white page and a dark wallpaper.
+The two-tone edge and shadow of the "Readable glass" option need no patch. Log out and in after installing it. Undo:
+`sudo pacman -S kwin`.
+
 Multi-monitor (extended desktops): Taskbar page → *Show islands on* picks the monitor (default: the main one) or
 *All monitors* (Start and the app islands on every monitor, the tray island on the main one; *Open apps on other
 monitors* chooses that monitor's windows or all). Pin apps from the main monitor; a monitor plugged or unplugged

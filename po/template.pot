@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 12:57+0200\n"
+"POT-Creation-Date: 2026-10-17 16:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -143,7 +143,7 @@ msgstr ""
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:1053
+#: package/contents/ui/main.qml:1068
 #: package/contents/ui/styles/windows7.qml:300
 #: package/contents/ui/styles/xp.qml:411
 msgid "Rename"
@@ -171,7 +171,7 @@ msgid "Automatic"
 msgstr ""
 
 #: package/contents/ui/common/AppCanvas.qml:278
-#: package/contents/ui/config/ConfigAppearance.qml:266
+#: package/contents/ui/config/ConfigAppearance.qml:288
 #: package/contents/ui/config/ConfigStartMenu.qml:162
 #: package/contents/ui/config/ConfigTaskbar.qml:120
 #: package/contents/ui/config/ConfigTaskbar.qml:142
@@ -378,7 +378,7 @@ msgstr ""
 #: package/contents/ui/common/Places.qml:41
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:68
-#: package/contents/ui/main.qml:1461
+#: package/contents/ui/main.qml:1476
 msgid "File Explorer"
 msgstr ""
 
@@ -391,7 +391,7 @@ msgstr ""
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:70
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:1455
+#: package/contents/ui/main.qml:1470
 #: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr ""
@@ -399,21 +399,21 @@ msgstr ""
 #: package/contents/ui/common/Places.qml:44
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:71
-#: package/contents/ui/main.qml:1473
+#: package/contents/ui/main.qml:1488
 msgid "Terminal"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:45
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:72
-#: package/contents/ui/main.qml:1467
+#: package/contents/ui/main.qml:1482
 msgid "System Monitor"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:46
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:73
-#: package/contents/ui/main.qml:1479
+#: package/contents/ui/main.qml:1494
 msgid "Run…"
 msgstr ""
 
@@ -432,13 +432,13 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:63
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1508
+#: package/contents/ui/main.qml:1523
 msgid "Lock"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:64
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1514
+#: package/contents/ui/main.qml:1529
 msgid "Sign out"
 msgstr ""
 
@@ -449,7 +449,7 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:66
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1520
+#: package/contents/ui/main.qml:1535
 msgid "Sleep"
 msgstr ""
 
@@ -460,13 +460,13 @@ msgstr ""
 
 #: package/contents/ui/common/Places.qml:68
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1526
+#: package/contents/ui/main.qml:1541
 msgid "Restart"
 msgstr ""
 
 #: package/contents/ui/common/Places.qml:69
 #: package/contents/ui/config/ConfigButton.qml:80
-#: package/contents/ui/main.qml:1532
+#: package/contents/ui/main.qml:1547
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr ""
@@ -568,185 +568,195 @@ msgid ""
 "old values are written back."
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:107
-#: package/contents/ui/config/ConfigAppearance.qml:275
+#: package/contents/ui/config/ConfigAppearance.qml:117
+#: package/contents/ui/config/ConfigAppearance.qml:297
 msgid "Pick custom texture…"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:108
+#: package/contents/ui/config/ConfigAppearance.qml:118
 #: package/contents/ui/config/ConfigStartMenu.qml:65
-#: package/contents/ui/main.qml:937 package/contents/ui/main.qml:944
+#: package/contents/ui/main.qml:952 package/contents/ui/main.qml:959
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:119
+#: package/contents/ui/config/ConfigAppearance.qml:129
 msgid "Colours"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:122
+#: package/contents/ui/config/ConfigAppearance.qml:132
 msgid "Windows XP uses its own colour scheme (Style page)."
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:127
+#: package/contents/ui/config/ConfigAppearance.qml:137
 msgid "Mode:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Light"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Dark"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Automatic (Plasma colours)"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Custom colours"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:134
+#: package/contents/ui/config/ConfigAppearance.qml:144
 msgid "Menu colour:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:135
+#: package/contents/ui/config/ConfigAppearance.qml:145
 msgid "Text colour:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:138
+#: package/contents/ui/config/ConfigAppearance.qml:148
 msgid "Accent colour:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:139
+#: package/contents/ui/config/ConfigAppearance.qml:149
 msgid "Automatic (Plasma accent colour)"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:139
+#: package/contents/ui/config/ConfigAppearance.qml:149
 #: package/contents/ui/config/ConfigButton.qml:228
 #: package/contents/ui/config/ConfigStartMenu.qml:152
 #: package/contents/ui/config/ConfigStyle.qml:206
 msgid "Custom"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:144
+#: package/contents/ui/config/ConfigAppearance.qml:154
 msgid "Recent colours:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:153
+#: package/contents/ui/config/ConfigAppearance.qml:163
 msgid "Windows colours:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:164
+#: package/contents/ui/config/ConfigAppearance.qml:174
 msgid "Custom colours:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:166
+#: package/contents/ui/config/ConfigAppearance.qml:176
 msgid "View colours"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:172
+#: package/contents/ui/config/ConfigAppearance.qml:182
 msgid "Show accent colour on Start and taskbar"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:178
+#: package/contents/ui/config/ConfigAppearance.qml:188
 msgid "Show accent colour on title bars and window borders"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:188
+#: package/contents/ui/config/ConfigAppearance.qml:198
 msgid ""
 "The taskbar and title bars follow these when their look is not \"KDE Plasma "
 "(default)\" (Style page)."
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:192
+#: package/contents/ui/config/ConfigAppearance.qml:202
 msgid "Windows 12 shade"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:195
+#: package/contents/ui/config/ConfigAppearance.qml:205
 msgid "Light mode tint:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:196
+#: package/contents/ui/config/ConfigAppearance.qml:206
 msgid "Soft tint"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:198
+#: package/contents/ui/config/ConfigAppearance.qml:208
 msgid "Near white"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:202
+#: package/contents/ui/config/ConfigAppearance.qml:212
 msgid "Dark mode shade:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:203
+#: package/contents/ui/config/ConfigAppearance.qml:213
 msgid "Soft dark"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:215
 msgid "Near black"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:208
+#: package/contents/ui/config/ConfigAppearance.qml:218
 msgid "Transparency and corners"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:211
+#: package/contents/ui/config/ConfigAppearance.qml:221
 msgid "Transparency effects"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:215
+#: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Solid Start menu"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:217
+#: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Start menu background:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:220
+#: package/contents/ui/config/ConfigAppearance.qml:230
 #: package/contents/ui/config/ConfigStartMenu.qml:158
 #, javascript-format
 msgid "%1% solid"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:224
+#: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Windows 12 transparency:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:225
+#: package/contents/ui/config/ConfigAppearance.qml:235
 msgid "Solid"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:227
+#: package/contents/ui/config/ConfigAppearance.qml:237
 msgid "Clear"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:231
+#: package/contents/ui/config/ConfigAppearance.qml:241
 msgid "Windows 12 blur:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:232
+#: package/contents/ui/config/ConfigAppearance.qml:242
 msgid "Soft"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:234
+#: package/contents/ui/config/ConfigAppearance.qml:244
 msgid "Strong"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:238
+#: package/contents/ui/config/ConfigAppearance.qml:248
 msgid "Windows 12 grain:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:239
+#: package/contents/ui/config/ConfigAppearance.qml:249
 msgid "Smooth"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:241
+#: package/contents/ui/config/ConfigAppearance.qml:251
 msgid "Grainy"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:248
+#: package/contents/ui/config/ConfigAppearance.qml:255
+msgid "Readable glass: edge, shadow and an even background"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:263
+msgid ""
+"The even background needs Win12's KWin patch: run kde/build.sh kwin from the "
+"Win12 source folder, then log out and in. Edge and shadow work without it."
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:270
 msgid ""
 "Taskbar, Start menu and title bars; transparency changes only the "
 "background, icons and text stay solid. Blur strength sets KWin's blur for "
@@ -754,108 +764,108 @@ msgid ""
 "you leave it."
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:252
+#: package/contents/ui/config/ConfigAppearance.qml:274
 msgid "Menu corner radius:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:255
+#: package/contents/ui/config/ConfigAppearance.qml:277
 #: package/contents/ui/config/ConfigTaskbar.qml:157
 #: package/contents/ui/config/ConfigTaskbar.qml:185
 #: package/contents/ui/config/ConfigWindows.qml:72
 msgid "Square"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:259
+#: package/contents/ui/config/ConfigAppearance.qml:281
 msgid "Texture"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:261
+#: package/contents/ui/config/ConfigAppearance.qml:283
 #: package/contents/ui/config/ConfigTaskbar.qml:220
 msgid "Texture:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:279
+#: package/contents/ui/config/ConfigAppearance.qml:301
 #: package/contents/ui/config/ConfigTaskbar.qml:227
 #: package/contents/ui/config/ConfigWindows.qml:106
 msgid "Placement:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 #: package/contents/ui/config/ConfigTaskbar.qml:230
 #: package/contents/ui/config/ConfigWindows.qml:109
 msgid "Tile"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Stretch to show entire texture"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Fit"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Fill"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:284
+#: package/contents/ui/config/ConfigAppearance.qml:306
 msgid "Fade texture:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:289
+#: package/contents/ui/config/ConfigAppearance.qml:311
 msgid "Darken texture"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:290
+#: package/contents/ui/config/ConfigAppearance.qml:312
 msgid "Recolour the texture with the menu colour"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:301
+#: package/contents/ui/config/ConfigAppearance.qml:323
 msgid "Fonts"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:303
+#: package/contents/ui/config/ConfigAppearance.qml:325
 msgid "Menu font:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:305
+#: package/contents/ui/config/ConfigAppearance.qml:327
 msgid "** Default font **"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:311
+#: package/contents/ui/config/ConfigAppearance.qml:333
 msgid "Font size:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:318
+#: package/contents/ui/config/ConfigAppearance.qml:340
 msgid "Header font:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:320
+#: package/contents/ui/config/ConfigAppearance.qml:342
 msgid "** Menu font **"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:326
+#: package/contents/ui/config/ConfigAppearance.qml:348
 msgid "Header font size:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:329
-#: package/contents/ui/config/ConfigAppearance.qml:337
+#: package/contents/ui/config/ConfigAppearance.qml:351
+#: package/contents/ui/config/ConfigAppearance.qml:359
 msgid "Menu size"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:334
+#: package/contents/ui/config/ConfigAppearance.qml:356
 msgid "Item font size:"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:341
+#: package/contents/ui/config/ConfigAppearance.qml:363
 msgid "Effects"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:342
+#: package/contents/ui/config/ConfigAppearance.qml:364
 msgid "Fade the menu in when it opens"
 msgstr ""
 
-#: package/contents/ui/config/ConfigAppearance.qml:343
+#: package/contents/ui/config/ConfigAppearance.qml:365
 msgid "Show app icons in grey"
 msgstr ""
 
@@ -939,7 +949,7 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigAppsList.qml:123
 #: package/contents/ui/config/ConfigButton.qml:359
-#: package/contents/ui/main.qml:1067
+#: package/contents/ui/main.qml:1082
 msgid "Name:"
 msgstr ""
 
@@ -964,17 +974,17 @@ msgid "Add filtered folder"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1485
+#: package/contents/ui/main.qml:1500
 msgid "Show desktop"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1491
+#: package/contents/ui/main.qml:1506
 msgid "Edit panel"
 msgstr ""
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1497
+#: package/contents/ui/main.qml:1512
 msgid "Auto-hide panel"
 msgstr ""
 
@@ -1257,7 +1267,7 @@ msgid "Off: starts with Apps, Settings and Files; tick more below."
 msgstr ""
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
-#: package/contents/ui/main.qml:936
+#: package/contents/ui/main.qml:951
 msgid "Pick tile image…"
 msgstr ""
 
@@ -2101,119 +2111,119 @@ msgstr ""
 msgid "Folder"
 msgstr ""
 
-#: package/contents/ui/main.qml:565
+#: package/contents/ui/main.qml:579
 msgid "Unpin from taskbar"
 msgstr ""
 
-#: package/contents/ui/main.qml:565
+#: package/contents/ui/main.qml:579
 msgid "Pin to taskbar"
 msgstr ""
 
-#: package/contents/ui/main.qml:943 package/contents/ui/win10/Tile.qml:302
+#: package/contents/ui/main.qml:958 package/contents/ui/win10/Tile.qml:302
 msgid "Choose picture…"
 msgstr ""
 
-#: package/contents/ui/main.qml:950 package/contents/ui/win10/Tile.qml:303
+#: package/contents/ui/main.qml:965 package/contents/ui/win10/Tile.qml:303
 msgid "Choose folder…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1007
+#: package/contents/ui/main.qml:1022
 msgid "Pin file to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:1013
+#: package/contents/ui/main.qml:1028
 msgid "Add a folder as group"
 msgstr ""
 
-#: package/contents/ui/main.qml:1013
+#: package/contents/ui/main.qml:1028
 msgid "Pin folder to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:1019
+#: package/contents/ui/main.qml:1034
 msgid "Pin website to Start"
 msgstr ""
 
-#: package/contents/ui/main.qml:1034
+#: package/contents/ui/main.qml:1049
 msgid "Web address:"
 msgstr ""
 
-#: package/contents/ui/main.qml:1044
+#: package/contents/ui/main.qml:1059
 msgid "Pin"
 msgstr ""
 
-#: package/contents/ui/main.qml:1045 package/contents/ui/main.qml:1077
+#: package/contents/ui/main.qml:1060 package/contents/ui/main.qml:1092
 msgid "Cancel"
 msgstr ""
 
-#: package/contents/ui/main.qml:1067
+#: package/contents/ui/main.qml:1082
 msgid "Name (empty = original):"
 msgstr ""
 
-#: package/contents/ui/main.qml:1076
+#: package/contents/ui/main.qml:1091
 msgid "OK"
 msgstr ""
 
-#: package/contents/ui/main.qml:1092
+#: package/contents/ui/main.qml:1107
 msgid "Pin website…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1093
+#: package/contents/ui/main.qml:1108
 msgid "Pin file…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1094
+#: package/contents/ui/main.qml:1109
 msgid "Pin folder…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
 msgstr ""
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
 msgstr ""
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "System monitor"
 msgstr ""
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
 msgstr ""
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
 msgstr ""
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
 msgstr ""
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
 msgstr ""
 
-#: package/contents/ui/main.qml:1101
+#: package/contents/ui/main.qml:1116
 msgid "KDE widgets…"
 msgstr ""
 
-#: package/contents/ui/main.qml:1431
+#: package/contents/ui/main.qml:1446
 msgid "Design mode — drag the dividers"
 msgstr ""
 
-#: package/contents/ui/main.qml:1436 package/contents/ui/win10/Tile.qml:282
+#: package/contents/ui/main.qml:1451 package/contents/ui/win10/Tile.qml:282
 msgid "Reset"
 msgstr ""
 
-#: package/contents/ui/main.qml:1441
+#: package/contents/ui/main.qml:1456
 msgid "Done"
 msgstr ""
 
-#: package/contents/ui/main.qml:1541
+#: package/contents/ui/main.qml:1556
 msgid "Edit menu layout"
 msgstr ""
 
-#: package/contents/ui/main.qml:1546
+#: package/contents/ui/main.qml:1561
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr ""

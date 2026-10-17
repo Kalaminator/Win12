@@ -94,7 +94,7 @@ Needs a Windows title bar picked on the Style page.
 - Show the accent colour on Start and the taskbar, and on title bars and window borders.
 - The Windows XP style uses its own colour scheme from the Style page.
 - Windows 12 shade group: light mode tint and dark mode shade.
-- Transparency and corners group: transparency effects; make the Start menu solid, or choose how transparent its background is; Windows 12 transparency, blur and grain; round the corners of the menu, from square to very round.
+- Transparency and corners group: transparency effects; make the Start menu solid, or choose how transparent its background is; Windows 12 transparency, blur and grain; readable glass (two-tone edge and shadow; an even background behind the glass with the kwin-win12 patch); round the corners of the menu, from square to very round.
 - Texture: use an image as the menu background (your own file), how it is laid out (tile, stretch, fit, fill), fade it, darken it, or recolour it with the menu colour.
 - Fonts: menu font and size, header font and size, item font size.
 - Effects: fade the menu in when it opens, and show app icons in grey.

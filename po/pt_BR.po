@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Start 12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 12:57+0200\n"
+"POT-Creation-Date: 2026-10-17 16:00+0200\n"
 "PO-Revision-Date: 2026-10-14 20:26+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -142,7 +142,7 @@ msgstr "Arquivos recentes"
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:1053
+#: package/contents/ui/main.qml:1068
 #: package/contents/ui/styles/windows7.qml:300
 #: package/contents/ui/styles/xp.qml:411
 msgid "Rename"
@@ -170,7 +170,7 @@ msgid "Automatic"
 msgstr "Automático"
 
 #: package/contents/ui/common/AppCanvas.qml:278
-#: package/contents/ui/config/ConfigAppearance.qml:266
+#: package/contents/ui/config/ConfigAppearance.qml:288
 #: package/contents/ui/config/ConfigStartMenu.qml:162
 #: package/contents/ui/config/ConfigTaskbar.qml:120
 #: package/contents/ui/config/ConfigTaskbar.qml:142
@@ -377,7 +377,7 @@ msgstr "Atualizações"
 #: package/contents/ui/common/Places.qml:41
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:68
-#: package/contents/ui/main.qml:1461
+#: package/contents/ui/main.qml:1476
 msgid "File Explorer"
 msgstr "Explorador de Arquivos"
 
@@ -390,7 +390,7 @@ msgstr "Personalização"
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:70
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:1455
+#: package/contents/ui/main.qml:1470
 #: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr "Configurações"
@@ -398,21 +398,21 @@ msgstr "Configurações"
 #: package/contents/ui/common/Places.qml:44
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:71
-#: package/contents/ui/main.qml:1473
+#: package/contents/ui/main.qml:1488
 msgid "Terminal"
 msgstr "Terminal"
 
 #: package/contents/ui/common/Places.qml:45
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:72
-#: package/contents/ui/main.qml:1467
+#: package/contents/ui/main.qml:1482
 msgid "System Monitor"
 msgstr "Monitor do Sistema"
 
 #: package/contents/ui/common/Places.qml:46
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:73
-#: package/contents/ui/main.qml:1479
+#: package/contents/ui/main.qml:1494
 msgid "Run…"
 msgstr "Executar…"
 
@@ -431,13 +431,13 @@ msgstr "Energia"
 
 #: package/contents/ui/common/Places.qml:63
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1508
+#: package/contents/ui/main.qml:1523
 msgid "Lock"
 msgstr "Bloquear"
 
 #: package/contents/ui/common/Places.qml:64
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1514
+#: package/contents/ui/main.qml:1529
 msgid "Sign out"
 msgstr "Sair"
 
@@ -448,7 +448,7 @@ msgstr "Trocar usuário"
 
 #: package/contents/ui/common/Places.qml:66
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1520
+#: package/contents/ui/main.qml:1535
 msgid "Sleep"
 msgstr "Suspender"
 
@@ -459,13 +459,13 @@ msgstr "Hibernar"
 
 #: package/contents/ui/common/Places.qml:68
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1526
+#: package/contents/ui/main.qml:1541
 msgid "Restart"
 msgstr "Reiniciar"
 
 #: package/contents/ui/common/Places.qml:69
 #: package/contents/ui/config/ConfigButton.qml:80
-#: package/contents/ui/main.qml:1532
+#: package/contents/ui/main.qml:1547
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr "Desligar"
@@ -576,93 +576,93 @@ msgstr ""
 "configurações para concluir; ela será fechada e nenhum valor antigo será "
 "gravado de volta."
 
-#: package/contents/ui/config/ConfigAppearance.qml:107
-#: package/contents/ui/config/ConfigAppearance.qml:275
+#: package/contents/ui/config/ConfigAppearance.qml:117
+#: package/contents/ui/config/ConfigAppearance.qml:297
 msgid "Pick custom texture…"
 msgstr "Escolher textura personalizada…"
 
-#: package/contents/ui/config/ConfigAppearance.qml:108
+#: package/contents/ui/config/ConfigAppearance.qml:118
 #: package/contents/ui/config/ConfigStartMenu.qml:65
-#: package/contents/ui/main.qml:937 package/contents/ui/main.qml:944
+#: package/contents/ui/main.qml:952 package/contents/ui/main.qml:959
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr "Imagens (*.png *.jpg *.jpeg *.webp *.svg)"
 
-#: package/contents/ui/config/ConfigAppearance.qml:119
+#: package/contents/ui/config/ConfigAppearance.qml:129
 msgid "Colours"
 msgstr "Cores"
 
-#: package/contents/ui/config/ConfigAppearance.qml:122
+#: package/contents/ui/config/ConfigAppearance.qml:132
 msgid "Windows XP uses its own colour scheme (Style page)."
 msgstr "O Windows XP usa seu próprio esquema de cores (página Estilo)."
 
-#: package/contents/ui/config/ConfigAppearance.qml:127
+#: package/contents/ui/config/ConfigAppearance.qml:137
 msgid "Mode:"
 msgstr "Modo:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Light"
 msgstr "Claro"
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Dark"
 msgstr "Escuro"
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Automatic (Plasma colours)"
 msgstr "Automático (cores do Plasma)"
 
-#: package/contents/ui/config/ConfigAppearance.qml:130
+#: package/contents/ui/config/ConfigAppearance.qml:140
 msgid "Custom colours"
 msgstr "Cores personalizadas"
 
-#: package/contents/ui/config/ConfigAppearance.qml:134
+#: package/contents/ui/config/ConfigAppearance.qml:144
 msgid "Menu colour:"
 msgstr "Cor do menu:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:135
+#: package/contents/ui/config/ConfigAppearance.qml:145
 msgid "Text colour:"
 msgstr "Cor do texto:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:138
+#: package/contents/ui/config/ConfigAppearance.qml:148
 msgid "Accent colour:"
 msgstr "Cor de destaque:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:139
+#: package/contents/ui/config/ConfigAppearance.qml:149
 msgid "Automatic (Plasma accent colour)"
 msgstr "Automática (cor de destaque do Plasma)"
 
-#: package/contents/ui/config/ConfigAppearance.qml:139
+#: package/contents/ui/config/ConfigAppearance.qml:149
 #: package/contents/ui/config/ConfigButton.qml:228
 #: package/contents/ui/config/ConfigStartMenu.qml:152
 #: package/contents/ui/config/ConfigStyle.qml:206
 msgid "Custom"
 msgstr "Personalizado"
 
-#: package/contents/ui/config/ConfigAppearance.qml:144
+#: package/contents/ui/config/ConfigAppearance.qml:154
 msgid "Recent colours:"
 msgstr "Cores recentes:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:153
+#: package/contents/ui/config/ConfigAppearance.qml:163
 msgid "Windows colours:"
 msgstr "Cores do Windows:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:164
+#: package/contents/ui/config/ConfigAppearance.qml:174
 msgid "Custom colours:"
 msgstr "Cores personalizadas:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:166
+#: package/contents/ui/config/ConfigAppearance.qml:176
 msgid "View colours"
 msgstr "Ver cores"
 
-#: package/contents/ui/config/ConfigAppearance.qml:172
+#: package/contents/ui/config/ConfigAppearance.qml:182
 msgid "Show accent colour on Start and taskbar"
 msgstr "Mostrar cor de destaque no Iniciar e na barra de tarefas"
 
-#: package/contents/ui/config/ConfigAppearance.qml:178
+#: package/contents/ui/config/ConfigAppearance.qml:188
 msgid "Show accent colour on title bars and window borders"
 msgstr "Mostrar cor de destaque nas barras de título e nas bordas das janelas"
 
-#: package/contents/ui/config/ConfigAppearance.qml:188
+#: package/contents/ui/config/ConfigAppearance.qml:198
 msgid ""
 "The taskbar and title bars follow these when their look is not \"KDE Plasma "
 "(default)\" (Style page)."
@@ -670,93 +670,106 @@ msgstr ""
 "A barra de tarefas e as barras de título seguem estas opções quando o visual "
 "delas não é \"KDE Plasma (padrão)\" (página Estilo)."
 
-#: package/contents/ui/config/ConfigAppearance.qml:192
+#: package/contents/ui/config/ConfigAppearance.qml:202
 msgid "Windows 12 shade"
 msgstr "Tom do Windows 12"
 
-#: package/contents/ui/config/ConfigAppearance.qml:195
+#: package/contents/ui/config/ConfigAppearance.qml:205
 msgid "Light mode tint:"
 msgstr "Tom do modo claro:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:196
+#: package/contents/ui/config/ConfigAppearance.qml:206
 msgid "Soft tint"
 msgstr "Tom suave"
 
-#: package/contents/ui/config/ConfigAppearance.qml:198
+#: package/contents/ui/config/ConfigAppearance.qml:208
 msgid "Near white"
 msgstr "Quase branco"
 
-#: package/contents/ui/config/ConfigAppearance.qml:202
+#: package/contents/ui/config/ConfigAppearance.qml:212
 msgid "Dark mode shade:"
 msgstr "Tom do modo escuro:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:203
+#: package/contents/ui/config/ConfigAppearance.qml:213
 msgid "Soft dark"
 msgstr "Escuro suave"
 
-#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:215
 msgid "Near black"
 msgstr "Quase preto"
 
-#: package/contents/ui/config/ConfigAppearance.qml:208
+#: package/contents/ui/config/ConfigAppearance.qml:218
 msgid "Transparency and corners"
 msgstr "Transparência e cantos"
 
-#: package/contents/ui/config/ConfigAppearance.qml:211
+#: package/contents/ui/config/ConfigAppearance.qml:221
 msgid "Transparency effects"
 msgstr "Efeitos de transparência"
 
-#: package/contents/ui/config/ConfigAppearance.qml:215
+#: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Solid Start menu"
 msgstr "Menu Iniciar sólido"
 
-#: package/contents/ui/config/ConfigAppearance.qml:217
+#: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Start menu background:"
 msgstr "Fundo do menu Iniciar:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:220
+#: package/contents/ui/config/ConfigAppearance.qml:230
 #: package/contents/ui/config/ConfigStartMenu.qml:158
 #, javascript-format
 msgid "%1% solid"
 msgstr "%1% sólido"
 
-#: package/contents/ui/config/ConfigAppearance.qml:224
+#: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Windows 12 transparency:"
 msgstr "Transparência do Windows 12:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:225
+#: package/contents/ui/config/ConfigAppearance.qml:235
 msgid "Solid"
 msgstr "Sólido"
 
-#: package/contents/ui/config/ConfigAppearance.qml:227
+#: package/contents/ui/config/ConfigAppearance.qml:237
 msgid "Clear"
 msgstr "Transparente"
 
-#: package/contents/ui/config/ConfigAppearance.qml:231
+#: package/contents/ui/config/ConfigAppearance.qml:241
 msgid "Windows 12 blur:"
 msgstr "Desfoque do Windows 12:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:232
+#: package/contents/ui/config/ConfigAppearance.qml:242
 msgid "Soft"
 msgstr "Suave"
 
-#: package/contents/ui/config/ConfigAppearance.qml:234
+#: package/contents/ui/config/ConfigAppearance.qml:244
 msgid "Strong"
 msgstr "Forte"
 
-#: package/contents/ui/config/ConfigAppearance.qml:238
+#: package/contents/ui/config/ConfigAppearance.qml:248
 msgid "Windows 12 grain:"
 msgstr "Granulação do Windows 12:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:239
+#: package/contents/ui/config/ConfigAppearance.qml:249
 msgid "Smooth"
 msgstr "Liso"
 
-#: package/contents/ui/config/ConfigAppearance.qml:241
+#: package/contents/ui/config/ConfigAppearance.qml:251
 msgid "Grainy"
 msgstr "Granulado"
 
-#: package/contents/ui/config/ConfigAppearance.qml:248
+#: package/contents/ui/config/ConfigAppearance.qml:255
+msgid "Readable glass: edge, shadow and an even background"
+msgstr "Vidro legível: borda, sombra e um fundo uniforme"
+
+#: package/contents/ui/config/ConfigAppearance.qml:263
+msgid ""
+"The even background needs Win12's KWin patch: run kde/build.sh kwin from the "
+"Win12 source folder, then log out and in. Edge and shadow work without it."
+msgstr "O fundo uniforme precisa do patch do KWin do Win12: execute kde/build.sh kwin na pasta de código-fonte do Win12 e depois saia e entre na sessão de novo. A borda e a sombra funcionam sem ele."
+"Os layouts da barra de tarefas e a posição do Iniciar precisam dos pacotes "
+"KDE modificados do Win12. Execute kde/build.sh na pasta de código-fonte do "
+"Win12 e depois saia da sessão e entre novamente."
+
+#: package/contents/ui/config/ConfigAppearance.qml:270
 msgid ""
 "Taskbar, Start menu and title bars; transparency changes only the "
 "background, icons and text stay solid. Blur strength sets KWin's blur for "
@@ -768,108 +781,108 @@ msgstr ""
 "desfoque define o desfoque do KWin para todas as janelas enquanto o visual "
 "Windows 12 estiver ativo; seu valor volta quando você sair dele."
 
-#: package/contents/ui/config/ConfigAppearance.qml:252
+#: package/contents/ui/config/ConfigAppearance.qml:274
 msgid "Menu corner radius:"
 msgstr "Raio dos cantos do menu:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:255
+#: package/contents/ui/config/ConfigAppearance.qml:277
 #: package/contents/ui/config/ConfigTaskbar.qml:157
 #: package/contents/ui/config/ConfigTaskbar.qml:185
 #: package/contents/ui/config/ConfigWindows.qml:72
 msgid "Square"
 msgstr "Quadrado"
 
-#: package/contents/ui/config/ConfigAppearance.qml:259
+#: package/contents/ui/config/ConfigAppearance.qml:281
 msgid "Texture"
 msgstr "Textura"
 
-#: package/contents/ui/config/ConfigAppearance.qml:261
+#: package/contents/ui/config/ConfigAppearance.qml:283
 #: package/contents/ui/config/ConfigTaskbar.qml:220
 msgid "Texture:"
 msgstr "Textura:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:279
+#: package/contents/ui/config/ConfigAppearance.qml:301
 #: package/contents/ui/config/ConfigTaskbar.qml:227
 #: package/contents/ui/config/ConfigWindows.qml:106
 msgid "Placement:"
 msgstr "Posicionamento:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 #: package/contents/ui/config/ConfigTaskbar.qml:230
 #: package/contents/ui/config/ConfigWindows.qml:109
 msgid "Tile"
 msgstr "Lado a lado"
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Stretch to show entire texture"
 msgstr "Esticar para mostrar a textura inteira"
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Fit"
 msgstr "Ajustar"
 
-#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Fill"
 msgstr "Preencher"
 
-#: package/contents/ui/config/ConfigAppearance.qml:284
+#: package/contents/ui/config/ConfigAppearance.qml:306
 msgid "Fade texture:"
 msgstr "Esmaecer textura:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:289
+#: package/contents/ui/config/ConfigAppearance.qml:311
 msgid "Darken texture"
 msgstr "Escurecer textura"
 
-#: package/contents/ui/config/ConfigAppearance.qml:290
+#: package/contents/ui/config/ConfigAppearance.qml:312
 msgid "Recolour the texture with the menu colour"
 msgstr "Recolorir a textura com a cor do menu"
 
-#: package/contents/ui/config/ConfigAppearance.qml:301
+#: package/contents/ui/config/ConfigAppearance.qml:323
 msgid "Fonts"
 msgstr "Fontes"
 
-#: package/contents/ui/config/ConfigAppearance.qml:303
+#: package/contents/ui/config/ConfigAppearance.qml:325
 msgid "Menu font:"
 msgstr "Fonte do menu:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:305
+#: package/contents/ui/config/ConfigAppearance.qml:327
 msgid "** Default font **"
 msgstr "** Fonte padrão **"
 
-#: package/contents/ui/config/ConfigAppearance.qml:311
+#: package/contents/ui/config/ConfigAppearance.qml:333
 msgid "Font size:"
 msgstr "Tamanho da fonte:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:318
+#: package/contents/ui/config/ConfigAppearance.qml:340
 msgid "Header font:"
 msgstr "Fonte do cabeçalho:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:320
+#: package/contents/ui/config/ConfigAppearance.qml:342
 msgid "** Menu font **"
 msgstr "** Fonte do menu **"
 
-#: package/contents/ui/config/ConfigAppearance.qml:326
+#: package/contents/ui/config/ConfigAppearance.qml:348
 msgid "Header font size:"
 msgstr "Tamanho da fonte do cabeçalho:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:329
-#: package/contents/ui/config/ConfigAppearance.qml:337
+#: package/contents/ui/config/ConfigAppearance.qml:351
+#: package/contents/ui/config/ConfigAppearance.qml:359
 msgid "Menu size"
 msgstr "Tamanho do menu"
 
-#: package/contents/ui/config/ConfigAppearance.qml:334
+#: package/contents/ui/config/ConfigAppearance.qml:356
 msgid "Item font size:"
 msgstr "Tamanho da fonte dos itens:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:341
+#: package/contents/ui/config/ConfigAppearance.qml:363
 msgid "Effects"
 msgstr "Efeitos"
 
-#: package/contents/ui/config/ConfigAppearance.qml:342
+#: package/contents/ui/config/ConfigAppearance.qml:364
 msgid "Fade the menu in when it opens"
 msgstr "Exibir o menu com efeito de fade ao abrir"
 
-#: package/contents/ui/config/ConfigAppearance.qml:343
+#: package/contents/ui/config/ConfigAppearance.qml:365
 msgid "Show app icons in grey"
 msgstr "Mostrar ícones dos aplicativos em cinza"
 
@@ -955,7 +968,7 @@ msgstr "Remover"
 
 #: package/contents/ui/config/ConfigAppsList.qml:123
 #: package/contents/ui/config/ConfigButton.qml:359
-#: package/contents/ui/main.qml:1067
+#: package/contents/ui/main.qml:1082
 msgid "Name:"
 msgstr "Nome:"
 
@@ -980,17 +993,17 @@ msgid "Add filtered folder"
 msgstr "Adicionar pasta filtrada"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1485
+#: package/contents/ui/main.qml:1500
 msgid "Show desktop"
 msgstr "Mostrar área de trabalho"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1491
+#: package/contents/ui/main.qml:1506
 msgid "Edit panel"
 msgstr "Editar painel"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1497
+#: package/contents/ui/main.qml:1512
 msgid "Auto-hide panel"
 msgstr "Ocultar painel automaticamente"
 
@@ -1281,7 +1294,7 @@ msgstr ""
 "abaixo."
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
-#: package/contents/ui/main.qml:936
+#: package/contents/ui/main.qml:951
 msgid "Pick tile image…"
 msgstr "Escolher imagem do bloco…"
 
@@ -2123,7 +2136,12 @@ msgid ""
 "run kde/build.sh from the Win12 source folder, then log out and in. On a "
 "stock KDE the One bar, the Split layouts and the Start position work, but a "
 "change takes a few seconds."
-msgstr "3 Islands e mover aplicativos entre ilhas precisam dos pacotes do KDE com patch do Win12: execute kde/build.sh na pasta de código do Win12 e depois saia e entre de novo na sessão. Em um KDE padrão, a barra única, os layouts divididos e a posição do Iniciar funcionam, mas uma mudança leva alguns segundos."
+msgstr ""
+"3 Islands e mover aplicativos entre ilhas precisam dos pacotes do KDE com "
+"patch do Win12: execute kde/build.sh na pasta de código do Win12 e depois "
+"saia e entre de novo na sessão. Em um KDE padrão, a barra única, os layouts "
+"divididos e a posição do Iniciar funcionam, mas uma mudança leva alguns "
+"segundos."
 
 #: package/contents/ui/config/TaskbarLayoutBox.qml:29
 msgid "One floating bar"
@@ -2172,119 +2190,119 @@ msgstr "Abrir local do arquivo"
 msgid "Folder"
 msgstr "Pasta"
 
-#: package/contents/ui/main.qml:565
+#: package/contents/ui/main.qml:579
 msgid "Unpin from taskbar"
 msgstr "Desafixar da barra de tarefas"
 
-#: package/contents/ui/main.qml:565
+#: package/contents/ui/main.qml:579
 msgid "Pin to taskbar"
 msgstr "Fixar na barra de tarefas"
 
-#: package/contents/ui/main.qml:943 package/contents/ui/win10/Tile.qml:302
+#: package/contents/ui/main.qml:958 package/contents/ui/win10/Tile.qml:302
 msgid "Choose picture…"
 msgstr "Escolher imagem…"
 
-#: package/contents/ui/main.qml:950 package/contents/ui/win10/Tile.qml:303
+#: package/contents/ui/main.qml:965 package/contents/ui/win10/Tile.qml:303
 msgid "Choose folder…"
 msgstr "Escolher pasta…"
 
-#: package/contents/ui/main.qml:1007
+#: package/contents/ui/main.qml:1022
 msgid "Pin file to Start"
 msgstr "Fixar arquivo no Iniciar"
 
-#: package/contents/ui/main.qml:1013
+#: package/contents/ui/main.qml:1028
 msgid "Add a folder as group"
 msgstr "Adicionar uma pasta como grupo"
 
-#: package/contents/ui/main.qml:1013
+#: package/contents/ui/main.qml:1028
 msgid "Pin folder to Start"
 msgstr "Fixar pasta no Iniciar"
 
-#: package/contents/ui/main.qml:1019
+#: package/contents/ui/main.qml:1034
 msgid "Pin website to Start"
 msgstr "Fixar site no Iniciar"
 
-#: package/contents/ui/main.qml:1034
+#: package/contents/ui/main.qml:1049
 msgid "Web address:"
 msgstr "Endereço da web:"
 
-#: package/contents/ui/main.qml:1044
+#: package/contents/ui/main.qml:1059
 msgid "Pin"
 msgstr "Fixar"
 
-#: package/contents/ui/main.qml:1045 package/contents/ui/main.qml:1077
+#: package/contents/ui/main.qml:1060 package/contents/ui/main.qml:1092
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: package/contents/ui/main.qml:1067
+#: package/contents/ui/main.qml:1082
 msgid "Name (empty = original):"
 msgstr "Nome (vazio = original):"
 
-#: package/contents/ui/main.qml:1076
+#: package/contents/ui/main.qml:1091
 msgid "OK"
 msgstr "OK"
 
-#: package/contents/ui/main.qml:1092
+#: package/contents/ui/main.qml:1107
 msgid "Pin website…"
 msgstr "Fixar site…"
 
-#: package/contents/ui/main.qml:1093
+#: package/contents/ui/main.qml:1108
 msgid "Pin file…"
 msgstr "Fixar arquivo…"
 
-#: package/contents/ui/main.qml:1094
+#: package/contents/ui/main.qml:1109
 msgid "Pin folder…"
 msgstr "Fixar pasta…"
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
 msgstr "Relógio"
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
 msgstr "Calendário"
 
-#: package/contents/ui/main.qml:1098 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
 msgid "System monitor"
 msgstr "Monitor do Sistema"
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
 msgstr "Unidades"
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
 msgstr "Clima"
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
 msgstr "Notas"
 
-#: package/contents/ui/main.qml:1099 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
 msgstr "Foto"
 
-#: package/contents/ui/main.qml:1101
+#: package/contents/ui/main.qml:1116
 msgid "KDE widgets…"
 msgstr "Widgets do KDE…"
 
-#: package/contents/ui/main.qml:1431
+#: package/contents/ui/main.qml:1446
 msgid "Design mode — drag the dividers"
 msgstr "Modo de design — arraste os divisores"
 
-#: package/contents/ui/main.qml:1436 package/contents/ui/win10/Tile.qml:282
+#: package/contents/ui/main.qml:1451 package/contents/ui/win10/Tile.qml:282
 msgid "Reset"
 msgstr "Redefinir"
 
-#: package/contents/ui/main.qml:1441
+#: package/contents/ui/main.qml:1456
 msgid "Done"
 msgstr "Concluído"
 
-#: package/contents/ui/main.qml:1541
+#: package/contents/ui/main.qml:1556
 msgid "Edit menu layout"
 msgstr "Editar layout do menu"
 
-#: package/contents/ui/main.qml:1546
+#: package/contents/ui/main.qml:1561
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr "Editar aplicativos…"
@@ -2659,15 +2677,6 @@ msgstr "3x6 H."
 #: package/contents/ui/win10/Tile.qml:321
 msgid "3x6 V."
 msgstr "3x6 V."
-
-#~ msgid ""
-#~ "The taskbar layouts and the Start position need Win12's patched KDE "
-#~ "packages. Run kde/build.sh from the Win12 source folder, then log out and "
-#~ "in."
-#~ msgstr ""
-#~ "Os layouts da barra de tarefas e a posição do Iniciar precisam dos "
-#~ "pacotes KDE modificados do Win12. Execute kde/build.sh na pasta de código-"
-#~ "fonte do Win12 e depois saia da sessão e entre novamente."
 
 #~ msgid "Look"
 #~ msgstr "Aparência"
