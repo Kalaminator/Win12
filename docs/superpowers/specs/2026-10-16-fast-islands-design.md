@@ -265,3 +265,103 @@ to work on a normal KDE" and section 3's "Not patched: no island or Start-positi
   index semantics (the patched `Widget.index` is always fresh) or the real tray-icon loss. Those are harness-only.
 - The user's live stock test: stock packages, log out/in, the checklist in the plan, patched packages back from
   `~/.cache/win12-kde/<pkg>/*.pkg.tar.zst`.
+
+## 12. Addendum (2026-10-17): Readable glass
+
+Decision B (user, 2026-10-17, with photos): the Windows 12 islands are clear glass (tint alpha 0.25 light / 0.3
+dark / 0.15 accent, KWin blur, no edge, no shadow). Over the user's dark wallpaper they look right; over a white
+page (maximized browser under the autohide bar) they almost vanish, dark-on-dark has the same risk. Goal: the bar
+looks about the same on ANY background. Two layers; B is optional and off by default on a stock KWin.
+
+### 12.1 Layer A — edge and shadow in the generated Plasma Style (every KDE)
+- One new `--taskbar` argument, `edge=1`, added to the `windows12` preset by `main.qml` while
+  `cfg.win12ReadableGlass` is on (the argument is part of the theme hash, so toggling makes a new theme). Other
+  presets and the custom taskbar are unchanged.
+- **Two-tone edge**, 1 px each: outer line black at .35, inner line white at .25, on every island and the one-bar
+  panel. One of the two is visible on any background (over white the black line steps luminance by ~.35, over
+  black the white line by ~.25). `frame()` (xptheme.py l.12) gets the inner ring as a generalisation of today's
+  top-only `hi` highlight (all four sides and the corner quarter-rings, radii c-1 and c-2); `ring_frame()` (W15 gap
+  mode, l.274) draws the same two lines as 1 px strokes on its single rounded rect. The fill is inset by the
+  border (b=1) exactly as today, so the tint does not double up under the lines.
+- **Shadow**, two mechanisms because Plasma draws floating-panel shadows from the window, not from the frame:
+  - Floating islands and the docked one bar (no `ring=`): the SVG ships Breeze's 8 `shadow-*` tiles (12 px,
+    black .3 -> 0; corners radial) and 4 `shadow-hint-*-margin` elements (12 px). plasma-workspace 6.8
+    `shell/panelshadows.cpp` l.155-162 turns them into a `KWindowShadow`; its padding is the hint margin plus the
+    panel's `*ShadowMargin` (plasma-desktop `desktoppackage/contents/views/Panel.qml` l.69-72 = minus the floating
+    inset), so KWin draws the tiles hugging the bar inside the floating margin: the shadow's outer edge is always
+    bar edge + 12 px. A docked bottom bar drops its bottom border (`panelview.cpp` l.1667-1689) and shows the top
+    shadow only. The tiles go into all three variants (plain, `translucent/`, `opaque/`), outside the `mask-*`
+    frame, so the blur region stays the bar.
+  - Gap mode (`ring=`; docked panel with the island inside a transparent ring): the panel is not floating, its
+    shadow margins are 0, so a KWin shadow would sit at the window edge, `gap` px away from the island. Gap mode
+    therefore paints the shadow into the ring: 6 nested rounded rects grown 1..6 px, black .05 each (no SVG
+    filter needed; QtSvg feGaussianBlur support is not relied on). No `shadow-*` tiles in that theme.
+- No `plasmarc` change for A. Nothing is drawn around the Start menu popup (out of scope; layer B covers it).
+
+### 12.2 Layer B — the 4th patched package: kwin (patched KDE only)
+- KWin 6.8 has no Background Contrast effect and no contrast protocol any more (`src/plugins/CMakeLists.txt` has
+  `blur` only; plasma-workspace still calls `KWindowEffects::enableBackgroundContrast`, which goes nowhere). But the
+  6.8 blur effect already multiplies the final on-screen pass by a colour matrix: `blur.cpp` l.60
+  `colorTransformMatrix(saturation, contrast)` (the old contrast matrix with translation `(1 - contrast) / 2`,
+  pull toward mid grey), `reconfigure()` l.259 calls it with `contrast = 1.0` (identity), `blur()` l.827 and l.857
+  upload `m_colorMatrix` to the `colorMatrix` uniform of `onscreen.frag` / `onscreen_rounded.frag`
+  (`fragColor = (sum / 12.0) * colorMatrix`, row-vector convention, translation in the 4th row). **No shader
+  change**: the patch only builds a second matrix and picks it per window.
+- Patch `kde/patches/kwin/0001-win12-blur-readable-glass.patch`:
+  - `blur.kcfg`: `Win12Contrast` (Int, default 100 = off: how much of the background's contrast is kept, in %)
+    and `Win12Target` (Int, default 50: the luminance the background is pulled toward, in %). Both under the
+    existing `[Effect-blur]` group of `kwinrc`. Keys absent = defaults = today's output, bit for bit.
+  - `colorTransformMatrix(saturation, contrast, target)` moved to a header `src/plugins/blur/colormatrix.h`
+    (inline; translation `(1 - contrast) * target`, so `target = .5` is the upstream formula). `reconfigure()`
+    builds `m_colorMatrix` as today and `m_win12Matrix = colorTransformMatrix(sat, Win12Contrast / 100,
+    Win12Target / 100)`.
+  - `blur()` uploads `m_win12Matrix` instead of `m_colorMatrix` when `w->isDock() ||
+    w->windowClass().contains("plasmashell")`: panels (Wayland layer-shell scope `dock` = `WindowType::Dock`,
+    `layershellv1window.cpp` l.26; X11 `NET::Dock`), third-party docks, and every plasmashell popup including the
+    Win12 menu. App windows with blur (Konsole, Dolphin) keep the stock matrix. krunner is its own process and is
+    not squeezed (accepted).
+  - Math: `rgb' = contrast * rgb + (1 - contrast) * target`, then the user's `Saturation`. With Win12's values
+    (contrast 30 %, target 20 % dark / 85 % light) a white page becomes .44 / .895 and a black one .14 / .595
+    before the tint; the island tint on top then differs by about .2 instead of .75 between the two.
+  - Test: `autotests/win12_blur_colormatrix_test.cpp` (QTest, links Qt::Test and Qt::Gui only, no libkwin):
+    contrast 100 = identity for any colour; white and black land on the predicted values for (30, 20) and
+    (30, 85); a grey stays grey under saturation 150. Registered as `win12-blur-colormatrix`, so
+    `kde/pkgbuild-win12.sh`'s `check()` (`ctest -R 'win12|coronatest'`) runs it during the build.
+- Build and install: `kde/build.sh kwin` (not in the default three; `BUILD_TESTING=ON` like the others, the
+  kwin PKGBUILD has the shape the script needs: no `prepare()`, `-DBUILD_TESTING=OFF`). Provides `kwin-win12`.
+  Installing and the log out/in are the user's. Way back: `sudo pacman -S kwin`. The pacman hook stays on the
+  three packages: a stock KWin update turns B off silently and Win12 shows the Appearance note again.
+
+### 12.3 Win12 side
+- One key `win12ReadableGlass` (Bool, default true), one checkbox on the Appearance page under the Windows 12
+  blur/grain rows: "Readable glass: edge, shadow and an even background". Below it a note while `kwin-win12` is
+  missing: "The even background needs Win12's KWin patch: run kde/build.sh kwin, then log out and in."
+- Detection: `Tiles.KWIN_CHECK` = `pacman -T kwin-win12 >/dev/null 2>&1 && echo ok`, an executable DataSource
+  in `ConfigAppearance.qml` only (`kwinPatched` gates the note; the pattern of `TaskbarLayoutBox.qml`). `main.qml`
+  needs no check: the keys are written either way. Separate from the three-package check: layouts never depend
+  on kwin.
+- kwinrc: `syncBlurStrength()` (main.qml) writes `Win12Contrast=30` and `Win12Target=<20|85>` next to
+  `BlurStrength`/`NoiseStrength` while `win12Glass && cfg.win12ReadableGlass`, else deletes both (they are Win12's
+  own keys: no save/restore dance; a stock KWin ignores them, so they are written whether or not kwin is
+  patched). Target follows the bar colour the way the theme picks its ink: `brightnessForColor(win12Hex)` light
+  = 85, dark (incl. accent bars) = 20. Same flock + `reconfigureEffect blur` call as today.
+- Strength slider: none in v1 (`// ponytail:` note; the two kwinrc keys are the knob).
+
+### 12.4 Testing
+- A, generated: `python3 xptheme.py --taskbar <windows12 args> edge=1 --out <tmp>` for a floating theme and a
+  `ring=8 size=...` one: every SVG parses, the floating one has the 8 `shadow-*` and 4 `shadow-hint-*-margin`
+  ids in all three variants, the gap one has none; the mask frames are unchanged.
+- A, live on the dev PC (patched KDE, Wayland): `./install.sh --restart`, then screenshots of the revealed
+  autohide bar over a maximized white and a maximized black window (`qml` Window, `tests/tools/w16mouse.py` at
+  the bottom edge, `spectacle -b -n -o`). `tests/tools/w17edge.py <png> <x>` scans one column from the bottom up
+  and prints the biggest luminance step between neighbouring rows in the bottom 120 px (the island's top edge)
+  and the mean luminance of the 10 rows under it. Pass: step >= .06 (15/255) on both backgrounds, both layouts
+  (floating islands and the one-bar gap mode).
+- B, without installing (agents): the QTest proves the matrix math and the kwinrc defaults; the makepkg build
+  proves the patch applies to 6.8.0 and the API use compiles; the shader is untouched, so no runtime GLSL risk.
+  A nested `kwin_wayland --virtual` from the built package with screenshots would prove the per-window pick on a
+  real frame, but needs the package's plugin and library paths and a Wayland client that asks for blur as a
+  dock: not done (the user's login proves the same within minutes). Recipe in the plan's Task 6 notes.
+- B, after the user installs kwin-win12 and logs in: `kreadconfig6 --file kwinrc --group Effect-blur --key
+  Win12Contrast` = 30; `w17edge.py` mean luminance under the edge differs by <= .2 between the white and the black
+  shot (before: ~.5); the Appearance note is gone; `journalctl --user -b | grep -i blur` shows no shader error.
