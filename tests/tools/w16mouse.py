@@ -21,5 +21,8 @@ if sys.argv[1] == "drag":
     time.sleep(float(os.environ.get("W16_HOLD", "0.15"))); ev(EV_KEY, BTN_LEFT, 0); ev(EV_SYN, 0, 0); time.sleep(0.2); sys.argv = sys.argv[:1]
 for a in sys.argv[1:]:
     x, y, *h = a.split(','); mv(int(x), int(y))
+    # KWin pushes the pointer 1 px back from a reserved edge (autohide panel) and fires only on a second push;
+    # an absolute pointer never pushes again by itself, so on the last row: back off, then push once more
+    if int(y) >= H: time.sleep(0.3); mv(int(x), H - 3); time.sleep(0.1); mv(int(x), int(y))
     time.sleep(float(h[0]) if h else 0.3)
 fcntl.ioctl(fd, UI_DEV_DESTROY); os.close(fd)
