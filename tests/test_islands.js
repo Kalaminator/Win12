@@ -21,7 +21,7 @@ assert.strictEqual(L.mergeLists("a,b", "", "c"), "a,b,c");
 assert.strictEqual(L.mergeLists("", "", ""), "");
 
 // ---- fake plasmashell ----
-function shell(screenW = 1920) {
+function shell(screenW = 1920, screens = ["HDMI-A-2"]) {
     let nextId = 1; const panels = [], reg = {};
     const cfg = o => { o.cfg = {}; o.currentConfigGroup = ["General"];
         o.readConfig = function (k, d = "") { const g = this.cfg[this.currentConfigGroup[0]] || {}; return k in g ? g[k] : d; };
@@ -49,7 +49,9 @@ function shell(screenW = 1920) {
             x.panel.ws.splice(x.panel.ws.indexOf(x), 1); x.panel = this; this.ws.push(x); return x; }
         remove() { panels.splice(panels.indexOf(this), 1); for (const w of this.ws) w.panel = null; }
     }
-    const sh = { Panel, panels: () => panels.slice(), screenGeometry: () => ({ x: 0, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)) };
+    // 10: screens like plasmashell's ScreenPool: id = index in the connected list, 0 = primary, -1 = not connected
+    const sh = { Panel, panels: () => panels.slice(), screens, screenForConnector: n => screens.indexOf(n),
+        screenGeometry: id => ({ x: screenW * id, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)) };
     // the user's bar: Start, task manager with two pins, separator, tray, clock, show desktop
     const p = new Panel(); const me = p.addWidget("org.win12.menu"); const tm = p.addWidget("org.kde.plasma.icontasks");
     tm.writeConfig("launchers", ["a.desktop", "b.desktop"]);
@@ -62,13 +64,13 @@ function runIslands(sh, subs) {
     for (const q of sh.panels()) q.gone = q.gone.filter(w => /systemtray/.test(w.type));
     let src = read("islandlogic.js") + "\n" + read("islands.js");
     for (const k in subs) src = src.split("@" + k + "@").join(String(subs[k]));
-    sh.out = []; new Function("panels", "Panel", "screenGeometry", "print", src)(sh.panels, sh.Panel, sh.screenGeometry, sh.print);
+    sh.out = []; new Function("panels", "Panel", "screenGeometry", "screenForConnector", "print", src)(sh.panels, sh.Panel, sh.screenGeometry, sh.screenForConnector, sh.print);
     return sh.out[0];
 }
 // passes until the script prints done (Infinity = never, so "<= n" asserts fail on a loop that never ends)
 function passes(sh, subs, max = 10) { for (let i = 1; i <= max; i++) if (runIslands(sh, subs) === "done") return i; return Infinity; }
 const types = q => q.widgets().filter(w => w.panel === q).map(w => w.type.replace("org.kde.plasma.", "").replace("org.win12.", "w12:"));
-const sub = (sh, WANT, POS = 0, MAG = true) => ({ ID: sh.me.id, WANT, POS, MAG, GAP: 8 });
+const sub = (sh, WANT, POS = 0, MAG = true, SCR = "", ALL = false) => ({ ID: sh.me.id, WANT, POS, MAG, GAP: 8, SCR, ALL, SCREENS: sh.screens.join(",") });
 
 // split-left today (one step per pass, so up to 40 passes): 3 panels, tray/clock/show desktop in the right island
 // after the fresh tray, helpers everywhere
@@ -157,4 +159,18 @@ sh = shell(); sh.me.currentConfigGroup = ["Style"]; sh.me.writeConfig("centerTas
 passes(sh, sub(sh, "islands", 2)); center(sh, "islands"); assert.ok(passes(sh, sub(sh, "single", 2)) <= 3);
 assert.ok(center(sh, "single") <= 3, "Start position sync converges after the restore");
 assert.deepStrictEqual(types(sh.host), ["showdesktop", "digitalclock", "systemtray", "marginsseparator", "panelspacer", "icontasks", "w12:menu"], "mirrored");
+// ---- spec 10: Show islands on (one monitor) ----
+// the chosen monitor by connector name: host and islands move there; One bar puts the host back where it was
+sh = shell(1920, ["HDMI-A-2", "DP-1"]);
+assert.ok(passes(sh, sub(sh, "islands", 0, true, "DP-1")) <= 4, "islands on DP-1 converge");
+assert.deepStrictEqual(sh.panels().map(q => q.screen), [1, 1, 1], "host, A and T on screen 1");
+assert.ok(passes(sh, sub(sh, "single", 0)) <= 3); assert.strictEqual(sh.host.screen, 0, "host back on screen 0");
+// default (empty) = the main monitor (id 0): a host that lives on another screen moves to it and comes back
+sh = shell(1920, ["HDMI-A-2", "DP-1"]); sh.host.screen = 1;
+assert.ok(passes(sh, sub(sh, "split-left", 0, true, "")) <= 4); assert.deepStrictEqual(sh.panels().map(q => q.screen), [0, 0, 0]);
+assert.ok(passes(sh, sub(sh, "single", 0)) <= 3); assert.strictEqual(sh.host.screen, 1, "host back on screen 1");
+// an unplugged (or unknown) name falls back to the main monitor; a saved home screen that is gone is not restored to
+sh = shell(1920, ["HDMI-A-2", "DP-1"]); sh.host.screen = 1;
+assert.ok(passes(sh, sub(sh, "islands", 0, true, "DP-9")) <= 4); assert.deepStrictEqual(sh.panels().map(q => q.screen), [0, 0, 0]);
+sh.screens.pop(); assert.ok(passes(sh, sub(sh, "single", 0)) <= 3); assert.strictEqual(sh.host.screen, 0, "no restore to a missing screen");
 console.log("test_islands OK");

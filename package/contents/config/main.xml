@@ -385,6 +385,14 @@
       <label>Split layouts: islands sit close together, the group centred on the screen (off = pushed to the screen edges)</label>
       <default>true</default>
     </entry>
+    <entry name="islandScreen" type="String">
+      <label>Spec 10 "Show islands on": empty = the main (primary) monitor, "all" = every monitor, else a connector name (HDMI-A-2)</label>
+      <default></default>
+    </entry>
+    <entry name="islandAllApps" type="Bool">
+      <label>Spec 10 "Open apps on other monitors" (with islandScreen = all): false = a copy's task managers show only the windows on its monitor (stock showOnlyCurrentScreen), true = every window on every monitor</label>
+      <default>false</default>
+    </entry>
     <entry name="menuLook" type="String">
       <label>T43 Start menu look, empty = same as menuStyle (the Style card); else a menuStyle id</label>
       <default></default>
@@ -685,6 +693,10 @@
   </group>
 
   <group name="General">
+    <entry name="win12Mirror" type="Int">
+      <label>Set by islands.js on a Start copy made for another monitor: the main Start widget's id. A copy runs no island engine and touches no panel</label>
+      <default>0</default>
+    </entry>
     <entry name="resetRequest" type="String">
       <label>Set by the settings pages: "positions", "all", "backup" or "restore" plus a timestamp (and file); main.qml does the reset and clears it</label>
       <default></default>

@@ -665,6 +665,14 @@ ContainmentItem {
     // W17: the 3 Islands layout follows the Start position (roles + launchers swap, panels re-placed).
     readonly property int islandPos: islandWant === "islands" ? cfg.menuPosition : -1
     onIslandPosChanged: syncIslands()
+    // 10: islands on a chosen monitor (connector name, empty = main) or on every one; the connected names go to the
+    // script (@SCREENS@, resolved there with screenForConnector). A monitor plugged or unplugged re-runs the sync.
+    readonly property string islandScreen: islandWant !== "single" ? cfg.islandScreen : ""
+    onIslandScreenChanged: syncIslands()
+    readonly property bool islandAllApps: cfg.islandAllApps
+    onIslandAllAppsChanged: if (islandScreen === "all") syncIslands()
+    readonly property string screenNames: Array.prototype.map.call(Qt.application.screens, s => s.name).join(",").replace(/[^A-Za-z0-9,_-]/g, "")
+    onScreenNamesChanged: if (islandWant !== "single") islandTimer.restart()
     // W16: auto-hidden split islands show and hide together: KWin script extras/win12-islandreveal (installed by
     // setup.sh) watches the pointer and sets the org.win12.reveal helpers islands.js puts in every split panel.
     readonly property bool islandReveal: islandWant !== "single" && JSON.parse(panelWant).hiding !== "none"
@@ -705,6 +713,7 @@ ContainmentItem {
         const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
             + "/ -e s/@POS@/" + cfg.menuPosition + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ "
+            + "-e s/@SCR@/" + islandScreen.replace(/[^A-Za-z0-9_-]/g, "") + "/ -e s/@ALL@/" + islandAllApps + "/ -e s/@SCREENS@/" + screenNames + "/ "
             + Tiles.shQuote(logic) + " " + Tiles.shQuote(file) + ")\"";
         const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done"
             // a restore applies the unmirrored order without the centre spacers: the Start position goes on again after it

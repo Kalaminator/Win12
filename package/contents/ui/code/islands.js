@@ -2,7 +2,8 @@
 // evaluateScript until it prints "done". Needs Win12's patched KDE (kde/): moves, adds and index sets all land in
 // one pass (immediate panel save, Widget.index fixes), so a switch is 2-3 passes; the loop is the safety net.
 // code/islandlogic.js (roles, trayOrder, listsFor, mergeLists) is put in front of this file by syncIslands.
-// @ID@ = this widget's id, @WANT@ = layout, @POS@ = Start position (0 left, 1 centre, 2 right), @MAG@ = taskbarMagnetic, @GAP@ = taskbarGap.
+// @ID@ = this widget's id, @WANT@ = layout, @POS@ = Start position (0 left, 1 centre, 2 right), @MAG@ = taskbarMagnetic, @GAP@ = taskbarGap,
+// @SCR@ = islandScreen, @ALL@ = islandAllApps, @SCREENS@ = the connected connector names (comma-joined).
 // The host panel (holds this widget) keeps the user's lengthMode/alignment/order and the ids moved out in its
 // win12Layout key; island panels carry win12Island = L/R (splits), A (other app island), T (tray island).
 // split-left: L = weather, host = Start + tasks, R = the widgets after the last Task Manager (tray, clock, ...).
@@ -13,7 +14,11 @@
 // magnetic: all panels 'custom' length (fits content, the only mode where Plasma 6.8 uses offset), left aligned,
 // offsets so the group sits centred with GAP px between islands; each panel carries an org.win12.reveal helper
 // (0 px) that the win12islandreveal KWin script uses to show all the islands together.
-const ID = @ID@, WANT = '@WANT@', POS = @POS@, MAG = @MAG@, GAP = @GAP@, HELPER = 'org.win12.reveal'; let out = 'done';
+const ID = @ID@, WANT = '@WANT@', POS = @POS@, MAG = @MAG@, GAP = @GAP@, SCR = '@SCR@', ALLAPPS = @ALL@, NAMES = '@SCREENS@'.split(',').filter(n => n), HELPER = 'org.win12.reveal'; let out = 'done';
+// 10: screens by connector name (main.qml passes the connected ones). The islands live on the chosen monitor, else on
+// the main one (plasmashell id 0 = primary); a name that is not connected falls back to the main one too. Only ids
+// screenForConnector returned are ever written: a panel sent to a missing screen loses its view.
+const sid = n => screenForConnector(n), ALLMON = SCR === 'all', MAIN = Math.max(0, SCR && !ALLMON ? sid(SCR) : 0);
 const get = (o, g, k, d) => { o.currentConfigGroup = [g]; return String(o.readConfig(k, d)); };
 // launchers go out as a list: a comma-joined string reaches the task manager's QML as ONE launcher
 const put = (o, k, v) => { o.currentConfigGroup = ['General']; o.writeConfig(k, k === 'launchers' ? String(v).split(',').filter(s => s) : v); };
@@ -59,6 +64,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   p.lengthMode = s.lm; p.alignment = s.al; if (s.mx) { p.maximumLength = s.mx; p.minimumLength = s.mn; p.offset = s.off; }
   // the bar now has its unmirrored order: the Start position sync (centerLoop) saves it afresh. Its old saved order
   // was written while this was an island (no moved widgets), and mirroring that flipped them every pass.
+  if (s.scr !== undefined && p.screen !== s.scr && NAMES.some(n => sid(n) === s.scr)) p.screen = s.scr;   // 10: home screen, if still there
   put(p, 'win12Layout', ''); put(p, 'win12PanelOrder', ''); continue; }
  if (mode === 'islands' && !tm) continue;   // no task manager in the bar: nothing to split into islands
  // layout to layout in this pass, no restore: the panel with the moved widgets (R in splits, T in islands) and the
@@ -74,7 +80,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   // order = the unmirrored one syncCenterPanel keeps in win12PanelOrder (else a restore at Left came back mirrored)
   const po = get(p, 'General', 'win12PanelOrder', '').split(';').map(Number), ids = ws.map(w => w.id);
   const side = t >= 0 && ws.findIndex(w => w.id === ID) > t ? ws.slice(0, tms.indexOf(true)).reverse() : ws.slice(t + 1);
-  s = { mode: want, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: po.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => po.indexOf(i) < 0)),
+  s = { mode: want, scr: p.screen, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: po.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => po.indexOf(i) < 0)),
    moved: side.filter(w => w.id !== ID && w.type !== HELPER && !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
  const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); s[k] = q.id; out = 'again'; return q; };
  if (mode === 'islands') {
@@ -108,7 +114,8 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  // W16: Plasma re-checks "a non-normal panel never de-floats" only when floating changes (W7): nudge after a change.
  for (const q of others) { let ch = false; for (const k in W) if (q[k] !== W[k]) { q[k] = W[k]; ch = true; } if (ch && q.floating) { q.floating = false; q.floating = true; } }
  // placement: lengths are read back (a floating window adds 8 px padding each side); the pass after a change re-checks them
- const row = mode === 'islands' ? R.row.map(k => k === 'host' ? p : isl(k)) : mode === 'split-left' ? [isl('L'), p, isl('R')] : [p, isl('R')], sw = screenGeometry(p.screen).width;
+ for (const q of [p].concat(isls())) if (q.screen !== MAIN) { q.screen = MAIN; out = 'again'; }   // 10: all on the chosen monitor
+ const row = mode === 'islands' ? R.row.map(k => k === 'host' ? p : isl(k)) : mode === 'split-left' ? [isl('L'), p, isl('R')] : [p, isl('R')], sw = screenGeometry(MAIN).width;
  let x = Math.round((sw - row.reduce((t, q) => t + q.length, 0) - GAP * (row.length - 1)) / 2);
  row.forEach((q, i) => { const lm = MAG ? 'custom' : 'fit', al = MAG ? 'left' : ['left', 'center', 'right'][row.length === 2 ? i * 2 : i], o = Math.max(0, x - (q.floating ? 8 : 0));
   x += q.length + GAP;
