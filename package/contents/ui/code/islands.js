@@ -5,9 +5,10 @@
 // @ID@ = this widget's id, @WANT@ = layout, @POS@ = Start position (0 left, 1 centre, 2 right), @MAG@ = taskbarMagnetic, @GAP@ = taskbarGap.
 // The host panel (holds this widget) keeps the user's lengthMode/alignment/order and the ids moved out in its
 // win12Layout key; island panels carry win12Island = L/R (splits), A (other app island), T (tray island).
-// split-left: L = fresh weather, host = Start + tasks, R = the widgets after the last Task Manager (tray, clock, ...).
+// split-left: L = weather, host = Start + tasks, R = the widgets after the last Task Manager (tray, clock, ...).
 // split-right: host left, R = weather + those widgets. islands: see roles() (table in the spec, 5.2): a Start
 // position change re-places the panels and swaps the two app task managers' win12Island roles + launchers.
+// layout to layout: no restore, the panels are re-keyed in the same pass (R <-> T, L <-> A) and the weather is kept.
 // single (or another look): widgets moved back, islands removed, order/length/alignment/offset put back.
 // magnetic: all panels 'custom' length (fits content, the only mode where Plasma 6.8 uses offset), left aligned,
 // offsets so the group sits centred with GAP px between islands; each panel carries an org.win12.reveal helper
@@ -30,6 +31,9 @@ const tray = (q, w, s) => { if (!/systemtray/.test(w.type) || get(host, 'General
  for (const k of w.configKeys) n.writeConfig(k, w.readConfig(k)); n.reloadConfig();
  const re = a => a.map(i => i === w.id ? n.id : i); s.moved = re(s.moved); s.order = re(s.order); put(host, 'win12Layout', JSON.stringify(s));
  gone.push(w.id); put(host, 'win12Gone', gone.filter(i => i).join(';')); put(host, 'win12TrayClean', 'true'); w.remove(); return n; };
+// the patched task manager files its launchers in the island registry under the island it has at that moment: the
+// island goes off first, then the launchers, then the new island (a reload is seen at once)
+const setTM = (w, k, l) => { put(w, 'win12Island', ''); w.reloadConfig(); put(w, 'launchers', l); w.reloadConfig(); if (k) { put(w, 'win12Island', k); w.reloadConfig(); } };
 // an island is never a host (Start dragged into one by hand would split it again every pass)
 for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me || get(p, 'General', 'win12Island', '')) continue; host = p;
  const want = WANT;   // main.qml islandWant: the taskbar look is Windows 12, else 'single'
@@ -37,39 +41,52 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  if (want !== 'single' && get(p, 'General', 'win12Saved_height', '')) { out = 'again'; continue; }
  gone = get(p, 'General', 'win12Gone', '').split(';').map(Number);
  const raw = get(p, 'General', 'win12Layout', ''); let s = raw ? JSON.parse(raw) : null;
- const isl = k => s && s[k] ? panels().find(q => q.id === s[k]) : null;
- const mode = s && s.mode !== want ? 'single' : want;
+ const isl = k => s && s[k] ? panels().find(q => q.id === s[k]) : null, isls = () => ['L', 'R', 'A', 'T'].map(isl).filter(q => q);
+ const tm = live(p).find(isTM), mode = want;
+ // leaving 3 Islands: one pin list again for the original task manager (pinned island first), stock again; island TMs go
+ const unisland = () => { if (!tm || !s.atm) return; const tms = [tm].concat([s.atm, s.ttm].map(id => isls().map(q => byId(q, id)).find(w => w)).filter(w => w));
+  const of = r => tms.filter(w => get(w, 'General', 'win12Island', '') === r).map(w => get(w, 'General', 'launchers', '')).join(',');
+  setTM(tm, '', mergeLists(of('pinned'), of('open'), of('tray'))); for (const w of tms.slice(1)) { gone.push(w.id); w.remove(); } delete s.atm; delete s.ttm; };
  if (mode === 'single') { if (!s) continue; out = 'again';
-  // everything back in one pass: helpers out, pins merged into the original task manager (pinned island first),
-  // moved widgets home in their old order, island panels removed; a switch between looks restores first.
-  const isls = ['L', 'R', 'A', 'T'].map(isl).filter(q => q);
-  for (const q of [p].concat(isls)) q.widgets(HELPER).forEach(w => { gone.push(w.id); w.remove(); });
-  const tm = live(p).find(isTM);
-  if (tm && s.atm) { const tms = [tm].concat([s.atm, s.ttm].map(id => isls.map(q => byId(q, id)).find(w => w)).filter(w => w));
-   const of = r => tms.filter(w => get(w, 'General', 'win12Island', '') === r).map(w => get(w, 'General', 'launchers', '')).join(',');
-   put(tm, 'launchers', mergeLists(of('pinned'), of('open'), of('tray'))); put(tm, 'win12Island', ''); tm.reloadConfig(); }
-  for (const id of s.moved) { const w = isls.map(q => byId(q, id)).find(w => w); if (w) tray(p, w, s); }
-  for (const q of isls) q.remove();
+  // everything back in one pass: helpers out, pins merged, moved widgets home in their old order, island panels
+  // removed (also on a switch to another look)
+  const qs = isls();
+  for (const q of [p].concat(qs)) q.widgets(HELPER).forEach(w => { gone.push(w.id); w.remove(); });
+  unisland();
+  for (const id of s.moved) { const w = qs.map(q => byId(q, id)).find(w => w); if (w) tray(p, w, s); }
+  for (const q of qs) q.remove();
   const ids = live(p).map(w => w.id); order(p, s.order.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => s.order.indexOf(i) < 0)));
-  if (want !== 'single') { s.mode = want; for (const k of ['L', 'R', 'A', 'T', 'atm', 'ttm', 'weather']) delete s[k]; put(p, 'win12Layout', JSON.stringify(s)); continue; }
   p.lengthMode = s.lm; p.alignment = s.al; if (s.mx) { p.maximumLength = s.mx; p.minimumLength = s.mn; p.offset = s.off; }
   put(p, 'win12Layout', ''); continue; }
- const tm = live(p).find(isTM);
  if (mode === 'islands' && !tm) continue;   // no task manager in the bar: nothing to split into islands
+ // layout to layout in this pass, no restore: the panel with the moved widgets (R in splits, T in islands) and the
+ // other one (L in split-left, A in islands) are kept and re-keyed; a panel no layout needs goes (its weather stays)
+ if (s && s.mode !== mode) { if (s.mode === 'islands') unisland();
+  const key = m => m === 'islands' ? ['T', 'A'] : ['R', m === 'split-left' ? 'L' : ''], k0 = key(s.mode), k1 = key(mode);
+  for (const i of [0, 1]) { const q = k0[i] && isl(k0[i]); if (!q || k0[i] === k1[i]) continue; delete s[k0[i]];
+   if (k1[i]) { put(q, 'win12Island', k1[i]); s[k1[i]] = q.id; } else { const w = live(q).find(w => /weather/.test(w.type)), r = isl(k1[0]); if (w && r) r.addWidget(w); q.remove(); } }
+  s.mode = mode; out = 'again'; }
  if (!s) { const ws = live(p).sort((a, b) => a.index - b.index), tms = ws.map(isTM), t = tms.lastIndexOf(true);
   // Start at Right mirrors the bar (syncCenterPanel): the tray side is then in front of the task manager. moved keeps
   // the Start-left order (trayOrder mirrors it); this widget never moves (an island holding it would split again).
+  // order = the unmirrored one syncCenterPanel keeps in win12PanelOrder (else a restore at Left came back mirrored)
+  const po = get(p, 'General', 'win12PanelOrder', '').split(';').map(Number), ids = ws.map(w => w.id);
   const side = t >= 0 && ws.findIndex(w => w.id === ID) > t ? ws.slice(0, tms.indexOf(true)).reverse() : ws.slice(t + 1);
-  s = { mode: want, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: ws.map(w => w.id),
+  s = { mode: want, lm: p.lengthMode, al: p.alignment, mn: p.minimumLength, mx: p.maximumLength, off: p.offset, order: po.filter(i => ids.indexOf(i) >= 0).concat(ids.filter(i => po.indexOf(i) < 0)),
    moved: side.filter(w => w.id !== ID && w.type !== HELPER && !/marginsseparator|panelspacer/.test(w.type)).map(w => w.id) }; out = 'again'; }
  const mk = (k, al) => { const q = new Panel(); q.location = p.location; q.height = p.height; q.lengthMode = 'fit'; q.alignment = al; put(q, 'win12Island', k); s[k] = q.id; out = 'again'; return q; };
  if (mode === 'islands') {
   // a new island task manager gets an explicit empty pin list: with no key it shows KDE's default pins, and its
   // island would claim those apps from the pinned island
   const fresh = q => { const w = q.addWidget(tm.type); put(w, 'launchers', ''); return w.id; };
-  if (!isl('A')) s.atm = fresh(mk('A', 'center'));
-  if (!isl('T')) { const q = mk('T', 'right'); s.ttm = fresh(q); s.weather = q.addWidget('org.kde.plasma.weather').id; }
- } else for (const k of mode === 'split-left' ? ['L', 'R'] : ['R']) if (!isl(k)) { const q = mk(k, k === 'L' ? 'left' : 'right'); if (k === 'L' || mode === 'split-right') q.addWidget('org.kde.plasma.weather'); }
+  const A = isl('A') || mk('A', 'center'), T = isl('T') || mk('T', 'right');
+  if (!byId(A, s.atm)) s.atm = fresh(A);
+  if (!byId(T, s.ttm)) s.ttm = fresh(T);
+ } else for (const k of mode === 'split-left' ? ['L', 'R'] : ['R']) if (!isl(k)) mk(k, k === 'L' ? 'left' : 'right');
+ // one weather (not one of the bar's own widgets), kept across layout switches: in L in split-left, else with the moved widgets
+ const wq = isl(mode === 'split-left' ? 'L' : mode === 'islands' ? 'T' : 'R'), wx = [p].concat(isls()).map(q => live(q).find(w => /weather/.test(w.type) && s.order.indexOf(w.id) < 0)).find(w => w);
+ if (wx && !byId(wq, wx.id)) wq.addWidget(wx);
+ s.weather = wx ? wx.id : wq.addWidget('org.kde.plasma.weather').id;
  put(p, 'win12Layout', JSON.stringify(s));
  const dst = mode === 'islands' ? isl('T') : isl('R');
  for (const id of s.moved) { const w = byId(p, id); if (w) { tray(dst, w, s); out = 'again'; } }
@@ -79,10 +96,9 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  // the 0 px reveal helper may sit anywhere, so it is left out of the order (one pass less)
  if (order(dst, mode === 'islands' ? trayOrder(POS, s.ttm, s.weather, s.moved) : live(dst).filter(w => s.moved.indexOf(w.id) < 0 && w.type !== HELPER).sort((a, b) => a.index - b.index).map(w => w.id).concat(s.moved))) out = 'again';
  if (mode === 'islands') { const atm = byId(isl('A'), s.atm), ttm = byId(isl('T'), s.ttm), cur = get(tm, 'General', 'win12Island', '');
-  if (atm && ttm && cur !== R.host) {   // roles (and the pins with them) follow the Start position; written, then reloaded, so each applet sees its final pair
+  if (atm && ttm && cur !== R.host) {   // roles (and the pins with them) follow the Start position (setTM: registry-safe order)
    const [lh, la] = listsFor(cur, R.host, get(tm, 'General', 'launchers', ''), get(atm, 'General', 'launchers', ''));
-   put(tm, 'launchers', lh); put(tm, 'win12Island', R.host); put(atm, 'launchers', la); put(atm, 'win12Island', R.other); put(ttm, 'win12Island', 'tray');
-   tm.reloadConfig(); atm.reloadConfig(); ttm.reloadConfig(); out = 'again'; } }
+   setTM(tm, R.host, lh); setTM(atm, R.other, la); put(ttm, 'win12Island', 'tray'); ttm.reloadConfig(); out = 'again'; } }
  // islands look like the panel; floating/hiding from the keys (syncPanelLook may not have reached the panel yet).
  const W = { floating: get(me, 'XP', 'taskbarFloating', true) !== 'false', hiding: [get(me, 'XP', 'taskbarFloating', true) !== 'false' ? 'autohide' : p.hiding, 'dodgewindows', 'autohide'][Number(get(me, 'XP', 'taskbarHiding', 0))] || p.hiding, height: p.height };
  const others = ['L', 'R', 'A', 'T'].map(isl).filter(q => q);

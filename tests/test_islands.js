@@ -22,12 +22,17 @@ assert.strictEqual(L.mergeLists("", "", ""), "");
 
 // ---- fake plasmashell ----
 function shell(screenW = 1920) {
-    let nextId = 1; const panels = [];
+    let nextId = 1; const panels = [], reg = {};
     const cfg = o => { o.cfg = {}; o.currentConfigGroup = ["General"];
         o.readConfig = function (k, d = "") { const g = this.cfg[this.currentConfigGroup[0]] || {}; return k in g ? g[k] : d; };
         // like the real scripting API: a string written to the StringList "launchers" reaches QML as ONE launcher
         o.writeConfig = function (k, v) { assert.ok(k !== "launchers" || Array.isArray(v), "launchers written as a string: " + v); (this.cfg[this.currentConfigGroup[0]] = this.cfg[this.currentConfigGroup[0]] || {})[k] = v; };
-        o.reloadConfig = () => {}; return o; };
+        // the patched task manager files its launchers in the island registry under the island it has at that moment:
+        // a reload loads launchers before win12Island (each change seen at once), like the live KConfigPropertyMap
+        o.reloadConfig = function () { const g = this.cfg.General || {}, s = this.seen = this.seen || {};
+            for (const k of ["launchers", "win12Island"]) if (String(g[k] || "") !== String(s[k] || "")) { s[k] = g[k];
+                if (s.win12Island) for (const l of s.launchers || []) reg[l] = s.win12Island; } };
+        return o; };
     const widget = (type, panel) => cfg({ id: nextId++, type, panel,
         get configKeys() { return Object.keys(this.cfg.General || {}); },
         get index() { return this.panel ? this.panel.ws.indexOf(this) : -1; },
@@ -49,7 +54,7 @@ function shell(screenW = 1920) {
     const p = new Panel(); const me = p.addWidget("org.win12.menu"); const tm = p.addWidget("org.kde.plasma.icontasks");
     tm.writeConfig("launchers", ["a.desktop", "b.desktop"]);
     for (const t of ["marginsseparator", "systemtray", "digitalclock", "showdesktop"]) p.addWidget("org.kde.plasma." + t);
-    sh.host = p; sh.me = me; sh.tm = tm; return sh;
+    sh.host = p; sh.me = me; sh.tm = tm; sh.reg = reg; return sh;
 }
 function runIslands(sh, subs) {
     // Widget.remove() is applet->destroy() -> deleteLater: gone by the next evaluateScript call. Only a removed
@@ -123,4 +128,24 @@ assert.strictEqual(runIslands(sh, sub(sh, "split-left", 0)), "done"); assert.str
 // no task manager in the host (taken out for real, not a lingering removal): islands does nothing
 sh = shell(); sh.host.ws.splice(sh.host.ws.indexOf(sh.tm), 1); sh.tm.panel = null;
 assert.strictEqual(runIslands(sh, sub(sh, "islands", 0)), "done"); assert.strictEqual(sh.panels().length, 1);
+// leaving islands from Center: the host TM is "open" when the merged pins arrive (live: the pins became =open)
+sh = shell(); passes(sh, sub(sh, "islands", 0)); passes(sh, sub(sh, "islands", 1)); passes(sh, sub(sh, "islands", 0));
+passes(sh, sub(sh, "islands", 1)); assert.ok(passes(sh, sub(sh, "single", 1)) <= 3);
+assert.deepStrictEqual(sh.reg, { "a.desktop": "pinned", "b.desktop": "pinned" }, "registry after leaving islands from Center");
+// layout to layout goes directly (live: restore + rebuild took 1.6-2.4 s): the panels are re-keyed, not rebuilt, and
+// the one weather widget is kept
+const weathers = sh => sh.panels().flatMap(q => q.widgets("org.kde.plasma.weather"));
+sh = shell(); passes(sh, sub(sh, "split-left")); let wid = weathers(sh)[0].id;
+for (const [m, from] of [["islands", "R"], ["split-right", "T"], ["islands", "R"], ["split-left", "T"], ["split-right", "R"], ["split-left", "R"]]) {
+    const id = isl(sh, from).id; assert.ok(passes(sh, sub(sh, m, 2)) <= 3, m + " from a split converges fast");
+    assert.strictEqual(isl(sh, m === "islands" ? "T" : "R").id, id, m + ": tray side panel kept");
+    assert.strictEqual(sh.panels().length, m === "split-right" ? 2 : 3); assert.deepStrictEqual(weathers(sh).map(w => w.id), [wid], m + ": one weather, kept");
+    assert.deepStrictEqual(types(isl(sh, m === "islands" ? "T" : "R")).filter(t => /tray|clock|desktop/.test(t)), m === "islands" ? ["showdesktop", "digitalclock", "systemtray"] : ["systemtray", "digitalclock", "showdesktop"]); }
+assert.ok(passes(sh, sub(sh, "single")) <= 3); assert.strictEqual(sh.panels().length, 1);
+assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
+assert.strictEqual(cfgOf(sh.tm, "win12Island"), ""); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
+// a mirrored bar (Start at Right; syncCenterPanel keeps the unmirrored order in win12PanelOrder) comes back unmirrored
+sh = shell(); sh.host.currentConfigGroup = ["General"]; sh.host.writeConfig("win12PanelOrder", sh.host.widgetIds.join(";")); sh.host.ws.reverse();
+passes(sh, sub(sh, "split-left", 2)); assert.ok(passes(sh, sub(sh, "single", 0)) <= 3);
+assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"], "mirrored bar restored unmirrored");
 console.log("test_islands OK");
