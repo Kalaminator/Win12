@@ -19,6 +19,10 @@ package() {
   DESTDIR="$pkgdir" cmake --install build
 }
 EOP
+# any other package: the edit must succeed too (build.sh runs it under set -e) and add no qt6-wayland
+mkdir "$T/lp" && sed 's/^pkgname=.*/pkgname=libplasma/' "$T/PKGBUILD" > "$T/lp/PKGBUILD"
+(cd "$T/lp" && bash "$HERE/kde/pkgbuild-win12.sh" libplasma "$T/patches") || { echo "FAIL: libplasma edit"; exit 1; }
+! grep -q qt6-wayland "$T/lp/PKGBUILD" || { echo "FAIL: qt6-wayland outside plasma-workspace"; exit 1; }
 cd "$T" && bash "$HERE/kde/pkgbuild-win12.sh" plasma-workspace "$T/patches"
 bash -n PKGBUILD
 S=$(makepkg --printsrcinfo)

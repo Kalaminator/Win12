@@ -18,5 +18,5 @@ SUMS=(); for f in "${FILES[@]}"; do SUMS+=("'$(sha256sum "$f" | cut -c1-64)'"); 
   echo "provides+=(\"$PKG-win12=\$pkgver-\$pkgrel\")"
   echo 'prepare() { cd "$pkgname-$pkgver"; for p in "$srcdir"/*.patch; do patch -Np1 -i "$p"; done; }'
   echo "check() { ctest --test-dir build -R 'win12|coronatest' --output-on-failure; }"
-  [ "$PKG" = plasma-workspace ] && echo 'makedepends+=(qt6-wayland)  # BUILD_TESTING=ON needs Qt6 WaylandCompositor; Arch does not list it'
+  if [ "$PKG" = plasma-workspace ]; then echo 'makedepends+=(qt6-wayland)  # BUILD_TESTING=ON needs Qt6 WaylandCompositor; Arch does not list it'; fi
 } >> PKGBUILD
