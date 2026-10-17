@@ -29,4 +29,9 @@ with tempfile.TemporaryDirectory() as tmp:
             p = os.path.join(out, v, "widgets/panel-background.svg")
             assert count(p, "center") == want, (p, count(p, "center"), want)
             assert count(p, "mask-center")[1] == 0, p
+    # corner tiles reach radius px into the bar (12 + r), so the bits outside its rounded corners get shadow too
+    for name, r in (("edge", 12), ("edge-r2", 2)):
+        t = E.parse(os.path.join(tmp, name, "widgets/panel-background.svg")).getroot()
+        tl = [e for e in t.iter() if e.get("id") == "shadow-topleft"][0][0]
+        assert (tl.get("width"), tl.get("height")) == (str(12 + r),) * 2, (name, tl.attrib)
 print("test_xptheme_edge OK")

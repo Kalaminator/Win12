@@ -90,23 +90,31 @@ def frame(prefix, x0, y0, W, H, c, border, stops, hi=None, margins=(4, 4, 4, 4),
         out.append('<rect id="%shint-%s-margin" x="%d" y="%d" width="%g" height="%g" fill="none"/>' % (p, side, x0 + i * 10, hy, w, h))
     return defs, "".join(out)
 
-def shadow_tiles(x0, y0, S=12, op=.3):
+def shadow_tiles(x0, y0, S=12, op=.3, r=0):
     """Readable glass: Breeze-style shadow-* tiles (a 3x3 grid without its center, black op -> 0 going outward;
     corners radial) and the 4 shadow-hint-*-margin elements. plasmashell hands them to KWin as the panel's shadow
-    (plasma-workspace shell/panelshadows.cpp); a floating panel's negative shadow margins make them hug the bar."""
-    st = '<stop offset="0" stop-color="#000000" stop-opacity="%s"/><stop offset="1" stop-color="#000000" stop-opacity="0"/>' % op
+    (plasma-workspace shell/panelshadows.cpp); a floating panel's negative shadow margins make them hug the bar.
+    r = the bar's corner radius: KWin pads the shadow by the hint margin (S) and lays the corner tiles at their own
+    size, so S + r corner tiles reach r px into the bar (Breeze's overlap) and shade the bits outside its rounded
+    corners, which would show the unblurred page; the gradient is centred on the arc, clear inside it."""
+    stop = lambda o, a: '<stop offset="%s" stop-color="#000000" stop-opacity="%s"/>' % (o, a)
+    T = S + r
+    st = stop(0, op) + stop(1, 0)
+    cst = stop("%.4f" % (max(0, r - 1) / T), 0) + stop("%.4f" % (r / T), op) + stop(1, 0)  # 1 px soft cut at the arc
     defs, out = [], []
     for name, col, row in (("topleft", 0, 0), ("top", 1, 0), ("topright", 2, 0), ("left", 0, 1),
                            ("right", 2, 1), ("bottomleft", 0, 2), ("bottom", 1, 2), ("bottomright", 2, 2)):
         dx, dy = col - 1, row - 1
-        ix, iy = x0 + S * (1 + (dx > 0)), y0 + S * (1 + (dy > 0))  # where the tile touches the panel
+        n = T if dx and dy else S  # tile size; tiles sit in a grid of T cells
+        tx, ty = x0 + col * T, y0 + row * T
+        ix, iy = tx + n * (dx < 0), ty + n * (dy < 0)  # where the tile touches the panel (corners: the arc centre)
         if dx and dy:
-            defs.append('<radialGradient id="sh-%s" gradientUnits="userSpaceOnUse" cx="%d" cy="%d" r="%d">%s</radialGradient>' % (name, ix, iy, S, st))
+            defs.append('<radialGradient id="sh-%s" gradientUnits="userSpaceOnUse" cx="%d" cy="%d" r="%d">%s</radialGradient>' % (name, ix, iy, T, cst))
         else:
             defs.append('<linearGradient id="sh-%s" gradientUnits="userSpaceOnUse" x1="%d" y1="%d" x2="%d" y2="%d">%s</linearGradient>' % (
                 name, ix, iy, ix + dx * S, iy + dy * S, st))
-        out.append('<g id="shadow-%s"><rect x="%d" y="%d" width="%d" height="%d" fill="url(#sh-%s)"/></g>' % (name, x0 + col * S, y0 + row * S, S, S, name))
-    out += ['<rect id="shadow-hint-%s-margin" x="%d" y="%d" width="%d" height="%d" fill="none"/>' % (sd, x0 + i * (S + 10), y0 + 3 * S + 10, S, S)
+        out.append('<g id="shadow-%s"><rect x="%d" y="%d" width="%d" height="%d" fill="url(#sh-%s)"/></g>' % (name, tx, ty, n, n, name))
+    out += ['<rect id="shadow-hint-%s-margin" x="%d" y="%d" width="%d" height="%d" fill="none"/>' % (sd, x0 + i * (S + 10), y0 + 3 * T + 10, S, S)
             for i, sd in enumerate(("top", "right", "bottom", "left"))]
     return "".join(defs), "".join(out)
 
@@ -343,8 +351,8 @@ def taskbar(base, colour="#101010", alpha="0.8", radius="0", line="0", fallback=
             # W12 gap: Plasma reads a floating panel's margins from the "floating" prefix (else 8 px each side);
             # a 0-high hint is "missing" to KSvg (it then uses the 4 px edge piece), .01 rounds to 0
             + ([frame("floating", 10, 30 + 2 * fh, 60, 40, 4, None, [(0, K, 0), (1, K, 0)], margins=(8, 8, 8, int(gap) or .01), gid="float")] if gap else [])
-            + ([shadow_tiles(10, 30 + 2 * fh + 60)] if ed else []),  # below the floating frame and its hints
-            hints.replace('x="200"', 'x="%d"' % (fw + 40)), size=(fw + 60, 2 * fh + (180 if ed else 100)))
+            + ([shadow_tiles(10, 30 + 2 * fh + 60, r=r)] if ed else []),  # below the floating frame and its hints
+            hints.replace('x="200"', 'x="%d"' % (fw + 40)), size=(fw + 60 + (r if ed else 0), 2 * fh + (180 + 3 * r if ed else 100)))
     ink = "#000000" if light(B) else W
     acc = "#" + (accent.lstrip("#")[-6:] or "3d8ee6")
     fa = 2 if solid not in ("0", "", "false") else 1  # T34 Start11 "Paint focused item backgrounds less transparent"
