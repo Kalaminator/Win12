@@ -25,6 +25,9 @@ const sid = n => screenForConnector(n), ALLMON = SCR === 'all', MAIN = Math.max(
 const get = (o, g, k, d) => { o.currentConfigGroup = [g]; return String(o.readConfig(k, d)); };
 // launchers go out as a list: a comma-joined string reaches the task manager's QML as ONE launcher
 const put = (o, k, v) => { o.currentConfigGroup = ['General']; o.writeConfig(k, k === 'launchers' ? String(v).split(',').filter(s => s) : v); };
+// a tray's plasmoid list (extraItems) through f; true when it changed (the tray drops or adds the plasmoid at the reload)
+const extra = (w, f) => { const l = get(w, 'General', 'extraItems', '').split(',').filter(i => i), n = f(l);
+ if (n.join() === l.join()) return false; w.writeConfig('extraItems', n); w.reloadConfig(); return true; };
 // a removed widget stays listed until the script ends (a tray even longer, W16): its id goes in gone
 let host = null, gone = []; const live = q => q.widgets().filter(w => gone.indexOf(w.id) < 0);
 const isTM = w => /icontasks|taskmanager/.test(w.type), byId = (q, id) => live(q).find(w => w.id === id);
@@ -78,6 +81,7 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
   // the bar now has its unmirrored order: the Start position sync (centerLoop) saves it afresh. Its old saved order
   // was written while this was an island (no moved widgets), and mirroring that flipped them every pass.
   if (s.scr !== undefined && p.screen !== s.scr && NAMES.some(n => sid(n) === s.scr)) p.screen = s.scr;   // 10: home screen, if still there
+  const tw = live(p).find(w => /systemtray/.test(w.type)); if (s.trayW && tw) extra(tw, l => l.indexOf(s.trayW) < 0 ? l.concat(s.trayW) : l);   // the tray's weather back
   put(p, 'win12Layout', ''); put(p, 'win12PanelOrder', ''); continue; }
  if (mode === 'islands' && !tm) continue;   // no task manager in the bar: nothing to split into islands
  // layout to layout in this pass, no restore: the panel with the moved widgets (R in splits, T in islands) and the
@@ -112,8 +116,12 @@ for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!
  const wq = isl(mode === 'split-left' ? 'L' : mode === 'islands' ? 'T' : 'R'), wx = [p].concat(isls()).map(q => live(q).find(w => /weather/.test(w.type) && s.order.indexOf(w.id) < 0)).find(w => w);
  if (!wx || !byId(wq, wx.id)) did = true;   // one weather added or moved in
  if (wx && !byId(wq, wx.id)) wq.addWidget(wx);
- s.weather = wx ? wx.id : wq.addWidget('org.kde.plasma.weather').id;
+ const ww = wx || wq.addWidget('org.kde.plasma.weather'); s.weather = ww.id;
  if (stop()) continue;
+ // that weather is on the bar, so the tray (host or island) drops its own one (it sat in the hidden popup too);
+ // s.trayW = the plugin Win12 took from the tray: the restore gives it back
+ const tw = [p].concat(isls()).map(q => live(q).find(w => /systemtray/.test(w.type))).find(w => w);
+ if (tw && extra(tw, l => l.filter(i => i !== ww.type))) s.trayW = ww.type;
  put(p, 'win12Layout', JSON.stringify(s));
  const dst = mode === 'islands' ? isl('T') : isl('R');
  for (const id of s.moved) { const w = byId(p, id); if (w) { tray(dst, w, s); out = 'again'; if (STOCK) break; } }

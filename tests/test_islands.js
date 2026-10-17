@@ -158,6 +158,17 @@ for (const [m, from] of [["islands", "R"], ["split-right", "T"], ["islands", "R"
 assert.ok(passes(sh, sub(sh, "single")) <= 3); assert.strictEqual(sh.panels().length, 1);
 assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"]);
 assert.strictEqual(cfgOf(sh.tm, "win12Island"), ""); assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop");
+// the island weather is on the bar: the tray drops its own weather (it sat in the hidden popup too) and gets it back
+// on the restore, only when Win12 took it (patched and stock)
+const trayOf = sh => sh.panels().flatMap(q => q.widgets("org.kde.plasma.systemtray")).find(w => w.panel);
+for (const stock of [false, true]) for (const had of [true, false]) {
+    sh = shell(1920, ["HDMI-A-2"], stock); trayOf(sh).writeConfig("extraItems", ["org.kde.plasma.volume"].concat(had ? ["org.kde.plasma.weather"] : []));
+    passes(sh, sub(sh, "split-right", 0, true, "", false, stock), 40);
+    assert.strictEqual(cfgOf(trayOf(sh), "extraItems"), "org.kde.plasma.volume", "tray weather dropped, stock " + stock);
+    if (!stock) { passes(sh, sub(sh, "islands"));   // 3 Islands: patched only
+        assert.strictEqual(cfgOf(trayOf(sh), "extraItems"), "org.kde.plasma.volume", "still dropped in islands"); }
+    passes(sh, sub(sh, "single", 0, true, "", false, stock), 40); assert.strictEqual(sh.panels().length, 1);
+    assert.strictEqual(cfgOf(trayOf(sh), "extraItems"), had ? "org.kde.plasma.volume,org.kde.plasma.weather" : "org.kde.plasma.volume", "tray weather back only if taken, stock " + stock); }
 // a mirrored bar (Start at Right; syncCenterPanel keeps the unmirrored order in win12PanelOrder) comes back unmirrored
 sh = shell(); sh.host.currentConfigGroup = ["General"]; sh.host.writeConfig("win12PanelOrder", sh.host.widgetIds.join(";")); sh.host.ws.reverse();
 passes(sh, sub(sh, "split-left", 2)); assert.ok(passes(sh, sub(sh, "single", 0)) <= 3);
