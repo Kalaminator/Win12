@@ -424,6 +424,93 @@ index 0000000..0091847
 +    KConfigGroup apps() const;
 +    KSharedConfig::Ptr m_config;
 +};
+diff --git a/containments/panel/CMakeLists.txt b/containments/panel/CMakeLists.txt
+index cf05e44..1d94fd5 100644
+--- a/containments/panel/CMakeLists.txt
++++ b/containments/panel/CMakeLists.txt
+@@ -8,3 +8,7 @@ plasma_add_applet(org.kde.panel
+         main.xml
+     GENERATE_CONTAINMENT_CLASS
+ )
++
++if(BUILD_TESTING)
++    add_subdirectory(autotests)
++endif()
+diff --git a/containments/panel/LayoutManager.js b/containments/panel/LayoutManager.js
+index 2ab706d..0baff0b 100644
+--- a/containments/panel/LayoutManager.js
++++ b/containments/panel/LayoutManager.js
+@@ -139,11 +139,16 @@ function childAtCoordinates(x, y) {
+ 
+ function indexAtCoordinates(x, y) {
+     let child = childAtCoordinates(x, y)
++    // Win12: childAtCoordinates gives 0 (no item) when the scan ran past the start
++    if (!child) {
++        return 0;
++    }
+     if ((root.plasmoid.formFactor === 3 && y < child.y + child.height/2) ||
+         (root.plasmoid.formFactor !== 3 && x < child.x + child.width/2)) {
+         return child.index;
+     } else {
+-        return child.index+1;
++        // Win12: lastSpacer's index is appletsModel.count, so past it +1 would be out of range
++        return Math.min(child.index + 1, appletsModel.count);
+     }
+ }
+ 
+diff --git a/containments/panel/autotests/CMakeLists.txt b/containments/panel/autotests/CMakeLists.txt
+new file mode 100644
+index 0000000..24afacd
+--- /dev/null
++++ b/containments/panel/autotests/CMakeLists.txt
+@@ -0,0 +1,5 @@
++# Win12: LayoutManager.js indexAtCoordinates (insert position of a widget moved in), run in a bare QJSEngine
++ecm_add_test(win12layoutmanagertest.cpp
++    TEST_NAME win12layoutmanagertest
++    LINK_LIBRARIES Qt::Test Qt::Qml)
++target_compile_definitions(win12layoutmanagertest PRIVATE LAYOUTMANAGER_JS="${CMAKE_CURRENT_SOURCE_DIR}/../LayoutManager.js")
+diff --git a/containments/panel/autotests/win12layoutmanagertest.cpp b/containments/panel/autotests/win12layoutmanagertest.cpp
+new file mode 100644
+index 0000000..51e6ea4
+--- /dev/null
++++ b/containments/panel/autotests/win12layoutmanagertest.cpp
+@@ -0,0 +1,36 @@
++// Win12: indexAtCoordinates never returns past appletsModel.count.  SPDX-License-Identifier: LGPL-2.0-or-later
++#include <QFile>
++#include <QJSEngine>
++#include <QTest>
++
++class Win12LayoutManagerTest : public QObject
++{
++    Q_OBJECT
++private Q_SLOTS:
++    void indexAtCoordinates()
++    {
++        QFile f(QStringLiteral(LAYOUTMANAGER_JS));
++        QVERIFY(f.open(QIODevice::ReadOnly));
++        QJSEngine e;
++        QJSValue r = e.evaluate(QString::fromUtf8(f.readAll()), f.fileName());
++        QVERIFY2(!r.isError(), qPrintable(r.toString()));
++        // horizontal panel: 7 widgets 40 px wide from x = 0, then lastSpacer (index aliased to the count) to 400
++        r = e.evaluate(QStringLiteral(R"(
++            root = {isHorizontal: true, plasmoid: {formFactor: 2}};
++            appletsModel = {count: 7};
++            layout = {height: 40, rowSpacing: 50, childAt: function (x, y) {
++                if (x < 0 || x >= 400) return null;
++                return x < 280 ? {index: Math.floor(x / 40), x: Math.floor(x / 40) * 40, width: 40} : {index: 7, x: 280, width: 120};
++            }};
++            const a = [10, 30, 300, 390, 450].map(x => indexAtCoordinates(x, 0));
++            layout.childAt = function () { return null; };   // nothing hit: the scan runs past x = 0
++            a.concat(indexAtCoordinates(100, 0)).join();
++        )"));
++        QVERIFY2(!r.isError(), qPrintable(r.toString()));
++        // right half of lastSpacer (and past it) is the end, not count + 1; no hit at all is the start
++        QCOMPARE(r.toString(), QStringLiteral("0,1,7,7,7,0"));
++    }
++};
++
++QTEST_GUILESS_MAIN(Win12LayoutManagerTest)
++#include "win12layoutmanagertest.moc"
 diff --git a/containments/panel/main.qml b/containments/panel/main.qml
 index 15fc51a..d401551 100644
 --- a/containments/panel/main.qml
