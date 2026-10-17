@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 08:26+0200\n"
+"POT-Creation-Date: 2026-10-17 08:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1212,7 +1212,7 @@ msgid "Group results by type (Apps, Files, Settings …)"
 msgstr ""
 
 #: package/contents/ui/config/ConfigSearch.qml:43
-msgid "Show the \"Search the internet\" button"
+msgid "Classic search: dense one-line results, no Best match card"
 msgstr ""
 
 #: package/contents/ui/config/ConfigSearch.qml:44
@@ -1220,7 +1220,7 @@ msgid "Show filter icons above the results (Apps, Documents, Web …)"
 msgstr ""
 
 #: package/contents/ui/config/ConfigSearch.qml:45
-msgid "Classic search: dense one-line results, no Best match card"
+msgid "Show the \"Search the internet\" button"
 msgstr ""
 
 #: package/contents/ui/config/ConfigSearch.qml:49

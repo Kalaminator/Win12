@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Start 12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 21:13+0200\n"
+"POT-Creation-Date: 2026-10-17 08:30+0200\n"
 "PO-Revision-Date: 2026-10-14 20:26+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,42 +18,62 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: package/contents/config/config.qml:6
-msgid "Start Menu"
-msgstr "开始菜单"
+#: package/contents/ui/config/ConfigStyle.qml:68
+#, fuzzy
+msgid "Style"
+msgstr "子样式:"
 
 #: package/contents/config/config.qml:11
-msgid "Layout"
-msgstr "布局"
+#, fuzzy
+msgid "Start menu"
+msgstr "开始菜单"
 
 #: package/contents/config/config.qml:16
-#: package/contents/ui/common/AppCanvas.qml:104
-msgid "Shortcuts"
-msgstr "快捷方式"
+#: package/contents/ui/config/ConfigAppsList.qml:40
+msgid "Apps list"
+msgstr "应用列表"
 
 #: package/contents/config/config.qml:21
-msgid "Look"
-msgstr "外观"
+#, fuzzy
+msgid "Start button & shortcuts"
+msgstr "“开始”按钮颜色:"
 
 #: package/contents/config/config.qml:26
-msgid "Colours"
-msgstr "颜色"
-
-#: package/contents/config/config.qml:31
-msgid "Search"
-msgstr "搜索"
-
-#: package/contents/config/config.qml:36
 msgid "Taskbar"
 msgstr "任务栏"
 
+#
+#: package/contents/config/config.qml:31
+#, fuzzy
+msgid "Windows"
+msgstr "窗口边框："
+
+#: package/contents/config/config.qml:36
+msgid "Appearance"
+msgstr ""
+
 #: package/contents/config/config.qml:41
-msgid "Start Button"
-msgstr "开始按钮"
+msgid "Search"
+msgstr "搜索"
+
+#: package/contents/config/config.qml:46
+msgid "Advanced"
+msgstr ""
+
+#: package/contents/ui/AppletPicker.qml:34
+msgid "KDE widgets"
+msgstr ""
+
+#: package/contents/ui/AppletPicker.qml:57
+#, fuzzy
+msgid "Search widgets…"
+msgstr "搜索框宽度:"
 
 #: package/contents/ui/common/AppCanvas.qml:56
 #: package/contents/ui/common/AppCanvas.qml:103
 #: package/contents/ui/common/PinnedPane.qml:42
 #: package/contents/ui/styles/windows11.qml:120
+#: package/contents/ui/styles/windows12.qml:260
 msgid "Pinned"
 msgstr "已固定"
 
@@ -64,13 +84,14 @@ msgid "Apps"
 msgstr "应用"
 
 #: package/contents/ui/common/AppCanvas.qml:56
+#: package/contents/ui/styles/windows12.qml:288
 msgid "Recent"
 msgstr "最近"
 
 #: package/contents/ui/common/AppCanvas.qml:62
 #: package/contents/ui/common/AppCanvas.qml:81
-#: package/contents/ui/win10/TileArea.qml:34
-#: package/contents/ui/win10/TileArea.qml:35
+#: package/contents/ui/win10/TileArea.qml:36
+#: package/contents/ui/win10/TileArea.qml:37
 msgid "New group"
 msgstr "新建组"
 
@@ -107,14 +128,18 @@ msgstr "最近的搜索"
 msgid "Always open on this tab"
 msgstr "始终在此选项卡上打开"
 
+#: package/contents/ui/common/AppCanvas.qml:104
+msgid "Shortcuts"
+msgstr "快捷方式"
+
 #: package/contents/ui/common/AppCanvas.qml:108
-#: package/contents/ui/win10/AppList.qml:67
+#: package/contents/ui/win10/AppList.qml:69
 msgid "Most used"
 msgstr "最常用"
 
 #: package/contents/ui/common/AppCanvas.qml:109
 #: package/contents/ui/common/Places.qml:35
-#: package/contents/ui/config/ConfigRail.qml:33
+#: package/contents/ui/config/ConfigButton.qml:62
 msgid "Recent files"
 msgstr "最近的文件"
 
@@ -123,8 +148,9 @@ msgstr "最近的文件"
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:735 package/contents/ui/styles/windows7.qml:300
-#: package/contents/ui/styles/xp.qml:346
+#: package/contents/ui/main.qml:1044
+#: package/contents/ui/styles/windows7.qml:300
+#: package/contents/ui/styles/xp.qml:411
 msgid "Rename"
 msgstr "重命名"
 
@@ -150,9 +176,13 @@ msgid "Automatic"
 msgstr "自动"
 
 #: package/contents/ui/common/AppCanvas.qml:278
-#: package/contents/ui/config/ConfigLook.qml:111
-#: package/contents/ui/config/ConfigLook.qml:132
-#: package/contents/ui/config/ConfigTaskbar.qml:145
+#: package/contents/ui/config/ConfigAppearance.qml:266
+#: package/contents/ui/config/ConfigStartMenu.qml:162
+#: package/contents/ui/config/ConfigTaskbar.qml:120
+#: package/contents/ui/config/ConfigTaskbar.qml:142
+#: package/contents/ui/config/ConfigTaskbar.qml:207
+#: package/contents/ui/config/ConfigTaskbar.qml:221
+#: package/contents/ui/config/ConfigWindows.qml:100
 msgid "None"
 msgstr "无"
 
@@ -185,18 +215,18 @@ msgid "Icon size"
 msgstr "图标大小"
 
 #: package/contents/ui/common/AppCanvas.qml:288
-#: package/contents/ui/config/ConfigStyle.qml:148
-#: package/contents/ui/win10/Tile.qml:171
+#: package/contents/ui/config/ConfigStartMenu.qml:75
+#: package/contents/ui/win10/Tile.qml:319
 msgid "Small"
 msgstr "小"
 
 #: package/contents/ui/common/AppCanvas.qml:288
-#: package/contents/ui/win10/Tile.qml:171
+#: package/contents/ui/win10/Tile.qml:319
 msgid "Medium"
 msgstr "中"
 
 #: package/contents/ui/common/AppCanvas.qml:288
-#: package/contents/ui/win10/Tile.qml:171
+#: package/contents/ui/win10/Tile.qml:319
 msgid "Large"
 msgstr "大"
 
@@ -219,16 +249,16 @@ msgstr "(空)"
 #: package/contents/ui/common/AppCanvas.qml:457
 #: package/contents/ui/common/AppCanvas.qml:464
 #: package/contents/ui/common/PinnedGrid.qml:135
-#: package/contents/ui/common/Recommended.qml:71
-#: package/contents/ui/win10/AppList.qml:176
+#: package/contents/ui/common/Recommended.qml:72
+#: package/contents/ui/win10/AppList.qml:178
 #: package/contents/ui/win10/SearchView.qml:291
-#: package/contents/ui/win10/Tile.qml:160
+#: package/contents/ui/win10/Tile.qml:297
 msgid "Unpin from Start"
 msgstr "从“开始”屏幕取消固定"
 
 #: package/contents/ui/common/AppCanvas.qml:465
-#: package/contents/ui/common/Recommended.qml:72
-#: package/contents/ui/win10/AppList.qml:177
+#: package/contents/ui/common/Recommended.qml:73
+#: package/contents/ui/win10/AppList.qml:179
 #: package/contents/ui/win10/SearchView.qml:292
 msgid "Pin to Start"
 msgstr "固定到“开始”屏幕"
@@ -240,8 +270,8 @@ msgstr "从组中移除"
 #: package/contents/ui/common/AppCanvas.qml:469
 #: package/contents/ui/common/PinnedGrid.qml:139
 #: package/contents/ui/styles/windows7.qml:301
-#: package/contents/ui/styles/xp.qml:353
-#: package/contents/ui/win10/AppList.qml:178
+#: package/contents/ui/styles/xp.qml:418
+#: package/contents/ui/win10/AppList.qml:180
 msgid "Hide from apps"
 msgstr "从应用中隐藏"
 
@@ -266,176 +296,182 @@ msgstr "移出文件夹"
 #: package/contents/ui/common/PinnedPane.qml:67
 #: package/contents/ui/styles/windows11.qml:121
 #: package/contents/ui/styles/windows11.qml:162
+#: package/contents/ui/styles/windows12.qml:103
+#: package/contents/ui/styles/windows12.qml:261
 msgid "All apps"
 msgstr "所有应用"
 
 #: package/contents/ui/common/PinnedPane.qml:68
 #: package/contents/ui/styles/windows11.qml:163
 #: package/contents/ui/styles/windows11.qml:184
+#: package/contents/ui/styles/windows12.qml:107
+#: package/contents/ui/styles/windows12.qml:291
 #: package/contents/ui/styles/windows7.qml:483
-#: package/contents/ui/styles/xp.qml:467
+#: package/contents/ui/styles/xp.qml:545
 msgid "Back"
 msgstr "返回"
 
 #: package/contents/ui/common/Places.qml:26
-#: package/contents/ui/config/ConfigRail.qml:24
+#: package/contents/ui/config/ConfigButton.qml:53
 #: package/contents/ui/win10/SearchView.qml:32
 msgid "Documents"
 msgstr "文档"
 
 #: package/contents/ui/common/Places.qml:27
-#: package/contents/ui/config/ConfigRail.qml:25
+#: package/contents/ui/config/ConfigButton.qml:54
 msgid "Downloads"
 msgstr "下载"
 
 #: package/contents/ui/common/Places.qml:28
-#: package/contents/ui/config/ConfigRail.qml:26
+#: package/contents/ui/config/ConfigButton.qml:55
 #: package/contents/ui/win10/SearchView.qml:33
 msgid "Music"
 msgstr "音乐"
 
 #: package/contents/ui/common/Places.qml:29
-#: package/contents/ui/config/ConfigRail.qml:27
+#: package/contents/ui/config/ConfigButton.qml:56
 #: package/contents/ui/win10/SearchView.qml:34
 msgid "Pictures"
 msgstr "图片"
 
 #: package/contents/ui/common/Places.qml:30
-#: package/contents/ui/config/ConfigRail.qml:28
+#: package/contents/ui/config/ConfigButton.qml:57
 #: package/contents/ui/win10/SearchView.qml:35
 msgid "Videos"
 msgstr "视频"
 
 #: package/contents/ui/common/Places.qml:31
-#: package/contents/ui/config/ConfigRail.qml:29
+#: package/contents/ui/config/ConfigButton.qml:58
 msgid "Personal folder"
 msgstr "个人文件夹"
 
 #: package/contents/ui/common/Places.qml:32
-#: package/contents/ui/config/ConfigRail.qml:30
+#: package/contents/ui/config/ConfigButton.qml:59
 msgid "Network"
 msgstr "网络"
 
 #: package/contents/ui/common/Places.qml:33
-#: package/contents/ui/config/ConfigRail.qml:31
+#: package/contents/ui/config/ConfigButton.qml:60
 msgid "Computer"
 msgstr "计算机"
 
 #: package/contents/ui/common/Places.qml:34
-#: package/contents/ui/config/ConfigRail.qml:32
+#: package/contents/ui/config/ConfigButton.qml:61
 msgid "Trash"
 msgstr "回收站"
 
 #: package/contents/ui/common/Places.qml:36
-#: package/contents/ui/config/ConfigRail.qml:34
+#: package/contents/ui/config/ConfigButton.qml:63
 msgid "Games"
 msgstr "游戏"
 
 #: package/contents/ui/common/Places.qml:37
-#: package/contents/ui/config/ConfigRail.qml:35
+#: package/contents/ui/config/ConfigButton.qml:64
 msgid "Printers"
 msgstr "打印机"
 
 #: package/contents/ui/common/Places.qml:38
-#: package/contents/ui/config/ConfigRail.qml:36
+#: package/contents/ui/config/ConfigButton.qml:65
 msgid "Users"
 msgstr "用户"
 
 #: package/contents/ui/common/Places.qml:39
-#: package/contents/ui/config/ConfigRail.qml:37
+#: package/contents/ui/config/ConfigButton.qml:66
 msgid "Updates"
 msgstr "更新"
 
 #: package/contents/ui/common/Places.qml:41
-#: package/contents/ui/config/ConfigButton.qml:25
-#: package/contents/ui/config/ConfigRail.qml:39
-#: package/contents/ui/main.qml:995
+#: package/contents/ui/config/ConfigButton.qml:47
+#: package/contents/ui/config/ConfigButton.qml:68
+#: package/contents/ui/main.qml:1452
 msgid "File Explorer"
 msgstr "文件资源管理器"
 
 #: package/contents/ui/common/Places.qml:42
-#: package/contents/ui/config/ConfigRail.qml:40
+#: package/contents/ui/config/ConfigButton.qml:69
 msgid "Personalization"
 msgstr "个性化"
 
 #: package/contents/ui/common/Places.qml:43
-#: package/contents/ui/config/ConfigButton.qml:25
-#: package/contents/ui/config/ConfigRail.qml:41
+#: package/contents/ui/config/ConfigButton.qml:47
+#: package/contents/ui/config/ConfigButton.qml:70
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:989 package/contents/ui/win10/SearchView.qml:31
+#: package/contents/ui/main.qml:1446
+#: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr "设置"
 
 #: package/contents/ui/common/Places.qml:44
-#: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/config/ConfigRail.qml:42
-#: package/contents/ui/main.qml:1007
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/config/ConfigButton.qml:71
+#: package/contents/ui/main.qml:1464
 msgid "Terminal"
 msgstr "终端"
 
 #: package/contents/ui/common/Places.qml:45
-#: package/contents/ui/config/ConfigButton.qml:25
-#: package/contents/ui/config/ConfigRail.qml:43
-#: package/contents/ui/main.qml:1001
+#: package/contents/ui/config/ConfigButton.qml:47
+#: package/contents/ui/config/ConfigButton.qml:72
+#: package/contents/ui/main.qml:1458
 msgid "System Monitor"
 msgstr "系统监视器"
 
 #: package/contents/ui/common/Places.qml:46
-#: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/config/ConfigRail.qml:44
-#: package/contents/ui/main.qml:1013
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/config/ConfigButton.qml:73
+#: package/contents/ui/main.qml:1470
 msgid "Run…"
 msgstr "运行…"
 
 #: package/contents/ui/common/Places.qml:47
-#: package/contents/ui/config/ConfigRail.qml:45
+#: package/contents/ui/config/ConfigButton.qml:74
 msgid "Win12 Settings"
 msgstr "Win12 设置"
 
 #: package/contents/ui/common/Places.qml:48
-#: package/contents/ui/config/ConfigRail.qml:46
+#: package/contents/ui/config/ConfigButton.qml:75
+#: package/contents/ui/config/ConfigButton.qml:311
 #: package/contents/ui/styles/launcher.qml:77
 #: package/contents/ui/styles/pro.qml:193
 msgid "Power"
 msgstr "电源"
 
 #: package/contents/ui/common/Places.qml:63
-#: package/contents/ui/config/ConfigRail.qml:49
-#: package/contents/ui/main.qml:1042
+#: package/contents/ui/config/ConfigButton.qml:78
+#: package/contents/ui/main.qml:1499
 msgid "Lock"
 msgstr "锁定"
 
 #: package/contents/ui/common/Places.qml:64
-#: package/contents/ui/config/ConfigRail.qml:49
-#: package/contents/ui/main.qml:1048
+#: package/contents/ui/config/ConfigButton.qml:78
+#: package/contents/ui/main.qml:1505
 msgid "Sign out"
 msgstr "注销"
 
 #: package/contents/ui/common/Places.qml:65
-#: package/contents/ui/config/ConfigRail.qml:49
+#: package/contents/ui/config/ConfigButton.qml:78
 msgid "Switch user"
 msgstr "切换用户"
 
 #: package/contents/ui/common/Places.qml:66
-#: package/contents/ui/config/ConfigRail.qml:50
-#: package/contents/ui/main.qml:1054
+#: package/contents/ui/config/ConfigButton.qml:79
+#: package/contents/ui/main.qml:1511
 msgid "Sleep"
 msgstr "睡眠"
 
 #: package/contents/ui/common/Places.qml:67
-#: package/contents/ui/config/ConfigRail.qml:50
+#: package/contents/ui/config/ConfigButton.qml:79
 msgid "Hibernate"
 msgstr "休眠"
 
 #: package/contents/ui/common/Places.qml:68
-#: package/contents/ui/config/ConfigRail.qml:50
-#: package/contents/ui/main.qml:1060
+#: package/contents/ui/config/ConfigButton.qml:79
+#: package/contents/ui/main.qml:1517
 msgid "Restart"
 msgstr "重启"
 
 #: package/contents/ui/common/Places.qml:69
-#: package/contents/ui/config/ConfigRail.qml:51
-#: package/contents/ui/main.qml:1066
+#: package/contents/ui/config/ConfigButton.qml:80
+#: package/contents/ui/main.qml:1523
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr "关机"
@@ -444,7 +480,7 @@ msgstr "关机"
 msgid "Change account settings"
 msgstr "更改帐户设置"
 
-#: package/contents/ui/common/Recommended.qml:131
+#: package/contents/ui/common/Recommended.qml:132
 msgid ""
 "The more you use your PC, the more we'll show your new apps and recent files "
 "here."
@@ -454,635 +490,716 @@ msgstr "你使用电脑越多，我们就会在此处显示越多的新应用和
 msgid "Search apps and files"
 msgstr "搜索应用和文件"
 
-#: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1019
-msgid "Show desktop"
-msgstr "显示桌面"
+#: package/contents/ui/config/ConfigAdvanced.qml:42
+#, fuzzy
+msgid "Pick a wallpaper…"
+msgstr "选择图像…"
 
-#: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1025
-msgid "Edit panel"
-msgstr "编辑面板"
-
-#: package/contents/ui/config/ConfigButton.qml:26
-#: package/contents/ui/main.qml:1031
-msgid "Auto-hide panel"
-msgstr "自动隐藏面板"
-
-#: package/contents/ui/config/ConfigButton.qml:26
-msgid "Lock, sign out, sleep, restart, shut down"
-msgstr "锁定、注销、睡眠、重启、关机"
-
-#: package/contents/ui/config/ConfigButton.qml:42
-#: package/contents/ui/config/ConfigButton.qml:69
-msgid "Pick custom image…"
-msgstr "选择自定义图像…"
-
-#: package/contents/ui/config/ConfigButton.qml:43
-msgid "Images (*.png *.svg *.jpg *.webp)"
+#: package/contents/ui/config/ConfigAdvanced.qml:43
+#, fuzzy
+msgid "Images (*.png *.jpg *.jpeg *.webp)"
 msgstr "图像 (*.png *.svg *.jpg *.webp)"
 
-#: package/contents/ui/config/ConfigButton.qml:53
-msgid "What should the Start button look like?"
-msgstr "“开始”按钮应是什么样子?"
+#: package/contents/ui/config/ConfigAdvanced.qml:48
+msgid "Icons and wallpaper (applied at once, not on Apply)"
+msgstr ""
 
-#: package/contents/ui/config/ConfigButton.qml:54
-msgid "Icon"
-msgstr "图标"
-
-#: package/contents/ui/config/ConfigButton.qml:55
-msgid "Start11 button image"
-msgstr "Start11 按钮图像"
-
-#: package/contents/ui/config/ConfigButton.qml:56
-msgid "Four squares"
-msgstr "四个方块"
-
-#: package/contents/ui/config/ConfigButton.qml:62
-#: package/contents/ui/config/ConfigRail.qml:183
-msgid "Icon:"
-msgstr "图标:"
-
-#: package/contents/ui/config/ConfigButton.qml:66
-msgid "Arch Linux (default)"
-msgstr "Arch Linux (默认)"
-
-#: package/contents/ui/config/ConfigButton.qml:72
-msgid "Reset icon"
-msgstr "重置图标"
-
-#: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/config/ConfigRail.qml:87
-msgid "Icon size:"
+#: package/contents/ui/config/ConfigAdvanced.qml:51
+#, fuzzy
+msgid "Icon theme:"
 msgstr "图标大小:"
 
-#: package/contents/ui/config/ConfigButton.qml:87
-msgid "Image:"
-msgstr "图像:"
-
-#: package/contents/ui/config/ConfigButton.qml:120
-msgid "Use a custom start button image…"
-msgstr "使用自定义“开始”按钮图像…"
-
-#: package/contents/ui/config/ConfigButton.qml:126
-msgid ""
-"Custom images hold 3 pictures stacked top to bottom: normal, mouse over, "
-"pressed."
-msgstr "自定义图像包含从上到下依次排列的 3 张图片: 正常、鼠标悬停、按下。"
-
-#: package/contents/ui/config/ConfigButton.qml:136
-msgid "Colours:"
-msgstr "颜色:"
-
-#: package/contents/ui/config/ConfigButton.qml:141
-msgid "Right click menu"
-msgstr "右键菜单"
-
-#: package/contents/ui/config/ConfigColours.qml:65
-msgid ""
-"The Windows XP style uses its own colour scheme (Start Menu page). These "
-"settings are for the other styles."
+#: package/contents/ui/config/ConfigAdvanced.qml:56
+msgid "Download icon themes…"
 msgstr ""
-"Windows XP 样式使用其自己的配色方案(“开始菜单”页面)。这些设置适用于其他样式。"
 
-#: package/contents/ui/config/ConfigColours.qml:68
-msgid "Choose your mode:"
-msgstr "选择你的模式:"
-
-#: package/contents/ui/config/ConfigColours.qml:70
-msgid "Light"
-msgstr "浅色"
-
-#: package/contents/ui/config/ConfigColours.qml:70
-msgid "Dark"
-msgstr "深色"
-
-#: package/contents/ui/config/ConfigColours.qml:70
-#: package/contents/ui/config/ConfigLook.qml:69
-msgid "Automatic (Plasma colours)"
-msgstr "自动 (Plasma 颜色)"
-
-#: package/contents/ui/config/ConfigColours.qml:72
-msgid "Custom (Look page)"
-msgstr "自定义 (“外观”页面)"
-
-#: package/contents/ui/config/ConfigColours.qml:76
-msgid "Accent colour:"
-msgstr "强调色:"
-
-#: package/contents/ui/config/ConfigColours.qml:77
-msgid "Automatic (Plasma accent colour)"
-msgstr "自动 (Plasma 强调色)"
-
-#: package/contents/ui/config/ConfigColours.qml:77
-msgid "Manual"
-msgstr "手动"
-
-#: package/contents/ui/config/ConfigColours.qml:82
-msgid "Recent colours:"
-msgstr "最近使用的颜色:"
-
-#: package/contents/ui/config/ConfigColours.qml:91
-msgid "Windows colours:"
-msgstr "Windows 颜色:"
-
-#: package/contents/ui/config/ConfigColours.qml:101
-msgid "Custom colours:"
-msgstr "自定义颜色:"
-
-#: package/contents/ui/config/ConfigColours.qml:102
-msgid "View colours"
-msgstr "查看颜色"
-
-#: package/contents/ui/config/ConfigColours.qml:107
-msgid "Show accent colour on Start and taskbar"
-msgstr "在“开始”和任务栏上显示强调色"
-
-#: package/contents/ui/config/ConfigColours.qml:112
-msgid "Show accent colour on title bars and window borders"
-msgstr "在标题栏和窗口边框上显示强调色"
-
-#: package/contents/ui/config/ConfigColours.qml:117
-msgid "Transparency effects"
-msgstr "透明效果"
-
-#: package/contents/ui/config/ConfigColours.qml:126
-msgid ""
-"The taskbar follows these when \"Apply the theme to the taskbar\" is on, "
-"title bars when \"Apply the theme to windows\" is on (Taskbar page)."
+#: package/contents/ui/config/ConfigAdvanced.qml:62
+msgid "Download wallpapers…"
 msgstr ""
-"开启“将主题应用于任务栏”时，任务栏会遵循这些设置；开启“将主题应用于窗口”时，"
-"标题栏会遵循这些设置(“任务栏”页面)。"
 
-#: package/contents/ui/config/ConfigLook.qml:51
-#: package/contents/ui/config/ConfigLook.qml:141
+#: package/contents/ui/config/ConfigAdvanced.qml:65
+msgid "Wallpaper:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAdvanced.qml:67
+#, fuzzy
+msgid "Choose image…"
+msgstr "选择图像…"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:72
+msgid "Set as wallpaper"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAdvanced.qml:83
+#, fuzzy
+msgid "Backup and reset"
+msgstr "备份 Win12 设置"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:86
+msgid "Backup settings…"
+msgstr "备份设置…"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:91
+msgid "Restore settings…"
+msgstr "还原设置…"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:99
+msgid ""
+"Settings, tiles and pinned icons go into one file. After picking the file, "
+"press OK/Apply to save or restore it."
+msgstr ""
+"设置、磁贴和固定的图标保存在一个文件中。选择文件后，点击“确定”/“应用”以保存或"
+"还原。"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:102
+msgid "Reset all Win12 settings…"
+msgstr "重置所有 Win12 设置…"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:111
+msgid "Backup Win12 settings"
+msgstr "备份 Win12 设置"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:115
+#: package/contents/ui/config/ConfigAdvanced.qml:121
+msgid "Win12 backup (*.json)"
+msgstr "Win12 备份 (*.json)"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:120
+msgid "Restore Win12 settings"
+msgstr "还原 Win12 设置"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:127
+msgid "Reset all Win12 settings?"
+msgstr "重置所有 Win12 设置?"
+
+#: package/contents/ui/config/ConfigAdvanced.qml:128
+msgid ""
+"Every setting, tile and pinned icon goes back to the fresh-install default. "
+"If the XP taskbar theme is active, your previous Plasma Style is put back. "
+"Press OK in the settings window afterwards to finish; it then closes, so no "
+"old values are written back."
+msgstr ""
+"所有设置、磁贴和固定的图标都将恢复为全新安装时的默认值。如果 XP 任务栏主题处"
+"于启用状态，则会恢复你之前的 Plasma 样式。之后请在设置窗口中点击“确定”以完"
+"成；窗口随后会关闭，因此不会写回旧值。"
+
+#: package/contents/ui/config/ConfigAppearance.qml:107
+#: package/contents/ui/config/ConfigAppearance.qml:275
 msgid "Pick custom texture…"
 msgstr "选择自定义纹理…"
 
-#: package/contents/ui/config/ConfigLook.qml:52
-#: package/contents/ui/config/ConfigLook.qml:59
+#: package/contents/ui/config/ConfigAppearance.qml:108
+#: package/contents/ui/config/ConfigStartMenu.qml:65
+#: package/contents/ui/main.qml:928 package/contents/ui/main.qml:935
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr "图像 (*.png *.jpg *.jpeg *.webp *.svg)"
 
-#: package/contents/ui/config/ConfigLook.qml:58
-msgid "Pick tile image…"
-msgstr "选择磁贴图像…"
-
-#: package/contents/ui/config/ConfigLook.qml:64
-msgid "Colour"
+#: package/contents/ui/config/ConfigAppearance.qml:119
+msgid "Colours"
 msgstr "颜色"
 
-#: package/contents/ui/config/ConfigLook.qml:68
-msgid "Start menu colours:"
-msgstr "“开始”菜单颜色:"
+#: package/contents/ui/config/ConfigAppearance.qml:122
+#, fuzzy
+msgid "Windows XP uses its own colour scheme (Style page)."
+msgstr ""
+"Windows XP 样式使用其自己的配色方案(“开始菜单”页面)。这些设置适用于其他样式。"
 
-#: package/contents/ui/config/ConfigLook.qml:69
-msgid "Force dark mode menu"
-msgstr "强制使用深色模式菜单"
+#: package/contents/ui/config/ConfigAppearance.qml:127
+msgid "Mode:"
+msgstr ""
 
-#: package/contents/ui/config/ConfigLook.qml:69
-msgid "Force light mode menu"
-msgstr "强制使用浅色模式菜单"
+#: package/contents/ui/config/ConfigAppearance.qml:130
+msgid "Light"
+msgstr "浅色"
 
-#: package/contents/ui/config/ConfigLook.qml:69
-msgid "Custom colour"
-msgstr "自定义颜色"
+#: package/contents/ui/config/ConfigAppearance.qml:130
+msgid "Dark"
+msgstr "深色"
 
-#: package/contents/ui/config/ConfigLook.qml:71
+#: package/contents/ui/config/ConfigAppearance.qml:130
+msgid "Automatic (Plasma colours)"
+msgstr "自动 (Plasma 颜色)"
+
+#: package/contents/ui/config/ConfigAppearance.qml:130
+#, fuzzy
+msgid "Custom colours"
+msgstr "自定义颜色:"
+
+#: package/contents/ui/config/ConfigAppearance.qml:134
 msgid "Menu colour:"
 msgstr "菜单颜色:"
 
-#: package/contents/ui/config/ConfigLook.qml:72
+#: package/contents/ui/config/ConfigAppearance.qml:135
 msgid "Text colour:"
 msgstr "文本颜色:"
 
-#: package/contents/ui/config/ConfigLook.qml:74
-msgid "Selected item accent colour:"
-msgstr "所选项的强调色:"
+#: package/contents/ui/config/ConfigAppearance.qml:138
+msgid "Accent colour:"
+msgstr "强调色:"
 
-#: package/contents/ui/config/ConfigLook.qml:75
-msgid "Plasma accent colour"
-msgstr "Plasma 强调色"
+#: package/contents/ui/config/ConfigAppearance.qml:139
+msgid "Automatic (Plasma accent colour)"
+msgstr "自动 (Plasma 强调色)"
 
-#: package/contents/ui/config/ConfigLook.qml:75
-#: package/contents/ui/config/ConfigLook.qml:101
-#: package/contents/ui/config/ConfigStyle.qml:126
-#: package/contents/ui/config/ConfigStyle.qml:136
+#: package/contents/ui/config/ConfigAppearance.qml:139
+#: package/contents/ui/config/ConfigButton.qml:228
+#: package/contents/ui/config/ConfigStartMenu.qml:152
+#: package/contents/ui/config/ConfigStyle.qml:206
 msgid "Custom"
 msgstr "自定义"
 
-#: package/contents/ui/config/ConfigLook.qml:79
-msgid "Transparency"
-msgstr "透明度"
+#: package/contents/ui/config/ConfigAppearance.qml:144
+msgid "Recent colours:"
+msgstr "最近使用的颜色:"
 
-#: package/contents/ui/config/ConfigLook.qml:81
-msgid "Make the start menu solid"
-msgstr "使“开始”菜单不透明"
+#: package/contents/ui/config/ConfigAppearance.qml:153
+msgid "Windows colours:"
+msgstr "Windows 颜色:"
 
-#: package/contents/ui/config/ConfigLook.qml:83
-msgid "Menu background transparency level:"
-msgstr "菜单背景透明度级别:"
+#: package/contents/ui/config/ConfigAppearance.qml:164
+msgid "Custom colours:"
+msgstr "自定义颜色:"
 
-#: package/contents/ui/config/ConfigLook.qml:86
-#: package/contents/ui/config/ConfigLook.qml:107
+#: package/contents/ui/config/ConfigAppearance.qml:166
+msgid "View colours"
+msgstr "查看颜色"
+
+#: package/contents/ui/config/ConfigAppearance.qml:172
+msgid "Show accent colour on Start and taskbar"
+msgstr "在“开始”和任务栏上显示强调色"
+
+#: package/contents/ui/config/ConfigAppearance.qml:178
+msgid "Show accent colour on title bars and window borders"
+msgstr "在标题栏和窗口边框上显示强调色"
+
+#: package/contents/ui/config/ConfigAppearance.qml:188
+msgid ""
+"The taskbar and title bars follow these when their look is not \"Plasma's "
+"own\" (Style page)."
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:192
+#, fuzzy
+msgid "Windows 12 shade"
+msgstr "Windows 10 样式"
+
+#: package/contents/ui/config/ConfigAppearance.qml:195
+msgid "Light mode tint:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:196
+#, fuzzy
+msgid "Soft tint"
+msgstr "自动着色"
+
+#: package/contents/ui/config/ConfigAppearance.qml:198
+msgid "Near white"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:202
+msgid "Dark mode shade:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:203
+msgid "Soft dark"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:205
+msgid "Near black"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:208
+#, fuzzy
+msgid "Transparency and corners"
+msgstr "透明效果"
+
+#: package/contents/ui/config/ConfigAppearance.qml:211
+msgid "Transparency effects"
+msgstr "透明效果"
+
+#: package/contents/ui/config/ConfigAppearance.qml:215
+#, fuzzy
+msgid "Solid Start menu"
+msgstr "固定到“开始”菜单"
+
+#: package/contents/ui/config/ConfigAppearance.qml:217
+#, fuzzy
+msgid "Start menu background:"
+msgstr "“开始”菜单颜色:"
+
+#: package/contents/ui/config/ConfigAppearance.qml:220
+#: package/contents/ui/config/ConfigStartMenu.qml:158
 #, javascript-format
 msgid "%1% solid"
 msgstr "%1% 不透明"
 
-#: package/contents/ui/config/ConfigLook.qml:90
-msgid "Round the corners of the menu:"
-msgstr "菜单圆角:"
+#: package/contents/ui/config/ConfigAppearance.qml:224
+#, fuzzy
+msgid "Windows 12 transparency:"
+msgstr "透明度"
 
-#: package/contents/ui/config/ConfigLook.qml:93
-#: package/contents/ui/config/ConfigTaskbar.qml:91
-#: package/contents/ui/config/ConfigTaskbar.qml:135
+#: package/contents/ui/config/ConfigAppearance.qml:225
+msgid "Solid"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:227
+msgid "Clear"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:231
+#, fuzzy
+msgid "Windows 12 blur:"
+msgstr "Windows 颜色:"
+
+#: package/contents/ui/config/ConfigAppearance.qml:232
+msgid "Soft"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:234
+msgid "Strong"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:238
+#, fuzzy
+msgid "Windows 12 grain:"
+msgstr "Windows 7 (玻璃)"
+
+#: package/contents/ui/config/ConfigAppearance.qml:239
+msgid "Smooth"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:241
+msgid "Grainy"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:248
+msgid ""
+"Taskbar, Start menu and title bars; transparency changes only the "
+"background, icons and text stay solid. Blur strength sets KWin's blur for "
+"all windows while the Windows 12 look is on; your own value comes back when "
+"you leave it."
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:252
+#, fuzzy
+msgid "Menu corner radius:"
+msgstr "圆角半径："
+
+#: package/contents/ui/config/ConfigAppearance.qml:255
+#: package/contents/ui/config/ConfigTaskbar.qml:157
+#: package/contents/ui/config/ConfigTaskbar.qml:185
+#: package/contents/ui/config/ConfigWindows.qml:72
 msgid "Square"
 msgstr "方形"
 
-#: package/contents/ui/config/ConfigLook.qml:97
-#: package/contents/ui/config/ConfigMenu.qml:54
-msgid "Tiles"
-msgstr "磁贴"
-
-#: package/contents/ui/config/ConfigLook.qml:100
-msgid "Tile colour:"
-msgstr "磁贴颜色:"
-
-#: package/contents/ui/config/ConfigLook.qml:101
-msgid "Soft (follows text colour)"
-msgstr "柔和 (跟随文本颜色)"
-
-#: package/contents/ui/config/ConfigLook.qml:101
-msgid "Accent colour"
-msgstr "强调色"
-
-#: package/contents/ui/config/ConfigLook.qml:105
-msgid "Tile background:"
-msgstr "磁贴背景:"
-
-#: package/contents/ui/config/ConfigLook.qml:110
-msgid "Tile image:"
-msgstr "磁贴图像:"
-
-#: package/contents/ui/config/ConfigLook.qml:112
-#: package/contents/ui/config/ConfigTaskbar.qml:146
-msgid "Pick image…"
-msgstr "选择图像…"
-
-#: package/contents/ui/config/ConfigLook.qml:116
-msgid "Tile image opacity:"
-msgstr "磁贴图像不透明度:"
-
-#: package/contents/ui/config/ConfigLook.qml:119
-#, javascript-format
-msgid "%1%"
-msgstr "%1%"
-
-#: package/contents/ui/config/ConfigLook.qml:121
-msgid "Icons:"
-msgstr "图标:"
-
-#: package/contents/ui/config/ConfigLook.qml:121
-msgid "Show app icons in grey"
-msgstr "以灰色显示应用图标"
-
-#: package/contents/ui/config/ConfigLook.qml:122
-msgid "Animation:"
-msgstr "动画:"
-
-#: package/contents/ui/config/ConfigLook.qml:122
-msgid "Fade the menu in when it opens"
-msgstr "打开菜单时淡入"
-
-#: package/contents/ui/config/ConfigLook.qml:124
+#: package/contents/ui/config/ConfigAppearance.qml:259
 msgid "Texture"
 msgstr "纹理"
 
-#: package/contents/ui/config/ConfigLook.qml:127
-msgid "Apply an image to the background:"
-msgstr "将图像应用于背景:"
+#: package/contents/ui/config/ConfigAppearance.qml:261
+#: package/contents/ui/config/ConfigTaskbar.qml:220
+msgid "Texture:"
+msgstr "纹理:"
 
-#: package/contents/ui/config/ConfigLook.qml:145
-msgid "Texture alignment:"
-msgstr "纹理对齐方式:"
+#: package/contents/ui/config/ConfigAppearance.qml:279
+#: package/contents/ui/config/ConfigTaskbar.qml:227
+#: package/contents/ui/config/ConfigWindows.qml:106
+#, fuzzy
+msgid "Placement:"
+msgstr "位置"
 
-#: package/contents/ui/config/ConfigLook.qml:147
-#: package/contents/ui/config/ConfigTaskbar.qml:154
+#: package/contents/ui/config/ConfigAppearance.qml:281
+#: package/contents/ui/config/ConfigTaskbar.qml:230
+#: package/contents/ui/config/ConfigWindows.qml:109
 msgid "Tile"
 msgstr "平铺"
 
-#: package/contents/ui/config/ConfigLook.qml:147
+#: package/contents/ui/config/ConfigAppearance.qml:281
 msgid "Stretch to show entire texture"
 msgstr "拉伸以显示整个纹理"
 
-#: package/contents/ui/config/ConfigLook.qml:147
+#: package/contents/ui/config/ConfigAppearance.qml:281
 msgid "Fit"
 msgstr "适应"
 
-#: package/contents/ui/config/ConfigLook.qml:147
+#: package/contents/ui/config/ConfigAppearance.qml:281
 msgid "Fill"
 msgstr "填充"
 
-#: package/contents/ui/config/ConfigLook.qml:150
+#: package/contents/ui/config/ConfigAppearance.qml:284
 msgid "Fade texture:"
 msgstr "淡化纹理:"
 
-#: package/contents/ui/config/ConfigLook.qml:155
+#: package/contents/ui/config/ConfigAppearance.qml:289
 msgid "Darken texture"
 msgstr "加深纹理"
 
-#: package/contents/ui/config/ConfigLook.qml:156
+#: package/contents/ui/config/ConfigAppearance.qml:290
 msgid "Recolour the texture with the menu colour"
 msgstr "使用菜单颜色重新为纹理着色"
 
-#: package/contents/ui/config/ConfigLook.qml:167
+#: package/contents/ui/config/ConfigAppearance.qml:301
 msgid "Fonts"
 msgstr "字体"
 
-#: package/contents/ui/config/ConfigLook.qml:170
+#: package/contents/ui/config/ConfigAppearance.qml:303
 msgid "Menu font:"
 msgstr "菜单字体:"
 
-#: package/contents/ui/config/ConfigLook.qml:172
+#: package/contents/ui/config/ConfigAppearance.qml:305
 msgid "** Default font **"
 msgstr "** 默认字体 **"
 
-#: package/contents/ui/config/ConfigLook.qml:178
+#: package/contents/ui/config/ConfigAppearance.qml:311
 msgid "Font size:"
 msgstr "字号:"
 
-#: package/contents/ui/config/ConfigLook.qml:185
+#: package/contents/ui/config/ConfigAppearance.qml:318
 msgid "Header font:"
 msgstr "标题字体:"
 
-#: package/contents/ui/config/ConfigLook.qml:187
+#: package/contents/ui/config/ConfigAppearance.qml:320
 msgid "** Menu font **"
 msgstr "** 菜单字体 **"
 
-#: package/contents/ui/config/ConfigLook.qml:193
+#: package/contents/ui/config/ConfigAppearance.qml:326
 msgid "Header font size:"
 msgstr "标题字号:"
 
-#: package/contents/ui/config/ConfigLook.qml:196
-#: package/contents/ui/config/ConfigLook.qml:204
+#: package/contents/ui/config/ConfigAppearance.qml:329
+#: package/contents/ui/config/ConfigAppearance.qml:337
 msgid "Menu size"
 msgstr "菜单大小"
 
-#: package/contents/ui/config/ConfigLook.qml:201
+#: package/contents/ui/config/ConfigAppearance.qml:334
 msgid "Item font size:"
 msgstr "项目字号:"
 
-#: package/contents/ui/config/ConfigMenu.qml:47
-msgid "Section dividers:"
-msgstr "分区分隔线:"
+#: package/contents/ui/config/ConfigAppearance.qml:341
+msgid "Effects"
+msgstr ""
 
-#: package/contents/ui/config/ConfigMenu.qml:48
-msgid "Edit menu layout…"
-msgstr "编辑菜单布局…"
+#: package/contents/ui/config/ConfigAppearance.qml:342
+msgid "Fade the menu in when it opens"
+msgstr "打开菜单时淡入"
 
-#: package/contents/ui/config/ConfigMenu.qml:58
-msgid "Show icons as tiles split into:"
-msgstr "将图标显示为磁贴，分为:"
+#: package/contents/ui/config/ConfigAppearance.qml:343
+msgid "Show app icons in grey"
+msgstr "以灰色显示应用图标"
 
-#: package/contents/ui/config/ConfigMenu.qml:61
-msgid "%1 column"
-msgid_plural "%1 columns"
-msgstr[0] "%1 列"
-
-#: package/contents/ui/config/ConfigMenu.qml:65
-msgid "Space between tiles:"
-msgstr "磁贴间距:"
-
-#: package/contents/ui/config/ConfigMenu.qml:72
-msgid "Tile icon size:"
-msgstr "磁贴图标大小:"
-
-#: package/contents/ui/config/ConfigMenu.qml:76
-msgid "Hide caption on tiles (show it as a tooltip)"
-msgstr "隐藏磁贴上的标题(显示为工具提示)"
-
-#: package/contents/ui/config/ConfigMenu.qml:77
-msgid "Lock menu shortcut positions"
-msgstr "锁定菜单快捷方式位置"
-
-#: package/contents/ui/config/ConfigMenu.qml:79
-msgid "Apps list"
-msgstr "应用列表"
-
-#: package/contents/ui/config/ConfigMenu.qml:81
+#: package/contents/ui/config/ConfigAppsList.qml:42
 msgid "Hide the apps list (tiles only)"
 msgstr "隐藏应用列表(仅显示磁贴)"
 
-#: package/contents/ui/config/ConfigMenu.qml:84
-msgid "Shortcut icons should be sized:"
-msgstr "快捷方式图标大小:"
+#: package/contents/ui/config/ConfigAppsList.qml:45
+#: package/contents/ui/config/ConfigButton.qml:159
+#: package/contents/ui/config/ConfigButton.qml:265
+msgid "Icon size:"
+msgstr "图标大小:"
 
-#: package/contents/ui/config/ConfigMenu.qml:93
+#: package/contents/ui/config/ConfigAppsList.qml:54
 msgid "Row height:"
 msgstr "行高:"
 
-#: package/contents/ui/config/ConfigMenu.qml:100
+#: package/contents/ui/config/ConfigAppsList.qml:61
 msgid "Show recently added apps"
 msgstr "显示最近添加的应用"
 
-#: package/contents/ui/config/ConfigMenu.qml:101
-msgid "Hide folders in the recent list (Windows 11 style)"
-msgstr "在最近列表中隐藏文件夹 (Windows 11 样式)"
-
-#: package/contents/ui/config/ConfigMenu.qml:102
-msgid "Fetch the favicon for pinned web links"
-msgstr "获取已固定网页链接的网站图标"
-
-#: package/contents/ui/config/ConfigMenu.qml:103
+#: package/contents/ui/config/ConfigAppsList.qml:62
 msgid "Show my most used applications"
 msgstr "显示我最常用的应用"
 
-#: package/contents/ui/config/ConfigMenu.qml:104
+#: package/contents/ui/config/ConfigAppsList.qml:63
 msgid "Highlight new applications"
 msgstr "突出显示新应用"
 
-#: package/contents/ui/config/ConfigMenu.qml:105
+#: package/contents/ui/config/ConfigAppsList.qml:64
 msgid "Show app categories as folders"
 msgstr "将应用类别显示为文件夹"
 
-#: package/contents/ui/config/ConfigMenu.qml:106
+#: package/contents/ui/config/ConfigAppsList.qml:69
+#, fuzzy
+msgid "Hide folders in the recent list"
+msgstr "在最近列表中隐藏文件夹 (Windows 11 样式)"
+
+#: package/contents/ui/config/ConfigAppsList.qml:71
 msgid "Place folders at the bottom of the list"
 msgstr "将文件夹放在列表底部"
 
-#: package/contents/ui/config/ConfigMenu.qml:107
-msgid "Auto expand folders on hover (Windows 7, XP)"
-msgstr "悬停时自动展开文件夹 (Windows 7、XP)"
-
-#: package/contents/ui/config/ConfigMenu.qml:108
-msgid "Show the Desktop folder in All Programs (Windows 7, XP)"
+#: package/contents/ui/config/ConfigAppsList.qml:75
+#, fuzzy
+msgid "All Programs (Windows 7 and XP)"
 msgstr "在“所有程序”中显示桌面文件夹 (Windows 7、XP)"
 
-#: package/contents/ui/config/ConfigMenu.qml:109
-msgid "Show categories as a cascading menu (Windows 7, XP)"
+#: package/contents/ui/config/ConfigAppsList.qml:77
+#, fuzzy
+msgid "Auto expand folders on hover"
+msgstr "悬停时自动展开文件夹 (Windows 7、XP)"
+
+#: package/contents/ui/config/ConfigAppsList.qml:78
+#, fuzzy
+msgid "Show the Desktop folder in All Programs"
+msgstr "在“所有程序”中显示桌面文件夹 (Windows 7、XP)"
+
+#: package/contents/ui/config/ConfigAppsList.qml:79
+#, fuzzy
+msgid "Show categories as a cascading menu"
 msgstr "将类别显示为级联菜单 (Windows 7、XP)"
 
-#: package/contents/ui/config/ConfigMenu.qml:111
+#: package/contents/ui/config/ConfigAppsList.qml:81
 msgid "Hidden apps"
 msgstr "隐藏的应用"
 
-#: package/contents/ui/config/ConfigMenu.qml:113
+#: package/contents/ui/config/ConfigAppsList.qml:83
 msgid "None. Right-click an app in the list and choose \"Hide from apps\"."
 msgstr "无。在列表中右键单击某个应用，然后选择“从应用中隐藏”。"
 
-#: package/contents/ui/config/ConfigMenu.qml:120
+#: package/contents/ui/config/ConfigAppsList.qml:90
 msgid "Show"
 msgstr "显示"
 
-#: package/contents/ui/config/ConfigMenu.qml:127
+#: package/contents/ui/config/ConfigAppsList.qml:97
 msgid "Clear hidden list"
 msgstr "清除隐藏列表"
 
-#: package/contents/ui/config/ConfigMenu.qml:132
+#: package/contents/ui/config/ConfigAppsList.qml:102
 msgid "Filtered folders"
 msgstr "筛选文件夹"
 
-#: package/contents/ui/config/ConfigMenu.qml:144
+#: package/contents/ui/config/ConfigAppsList.qml:114
 msgid "Remove"
 msgstr "移除"
 
-#: package/contents/ui/config/ConfigMenu.qml:153
-#: package/contents/ui/config/ConfigRail.qml:175
-#: package/contents/ui/main.qml:749
+#: package/contents/ui/config/ConfigAppsList.qml:123
+#: package/contents/ui/config/ConfigButton.qml:359
+#: package/contents/ui/main.qml:1058
 msgid "Name:"
 msgstr "名称:"
 
-#: package/contents/ui/config/ConfigMenu.qml:153
+#: package/contents/ui/config/ConfigAppsList.qml:123
 msgid "PDFs"
 msgstr "PDF 文件"
 
-#: package/contents/ui/config/ConfigMenu.qml:154
+#: package/contents/ui/config/ConfigAppsList.qml:124
 msgid "Folder:"
 msgstr "文件夹:"
 
-#: package/contents/ui/config/ConfigMenu.qml:155
+#: package/contents/ui/config/ConfigAppsList.qml:125
 msgid "Include (regex):"
 msgstr "包含 (正则表达式):"
 
-#: package/contents/ui/config/ConfigMenu.qml:156
+#: package/contents/ui/config/ConfigAppsList.qml:126
 msgid "Exclude (regex):"
 msgstr "排除 (正则表达式):"
 
-#: package/contents/ui/config/ConfigMenu.qml:158
+#: package/contents/ui/config/ConfigAppsList.qml:128
 msgid "Add filtered folder"
 msgstr "添加筛选文件夹"
 
-#: package/contents/ui/config/ConfigMenu.qml:169
-#: package/contents/ui/config/ConfigStyle.qml:194
-#: package/contents/ui/main.qml:970
-msgid "Reset"
-msgstr "重置"
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/main.qml:1476
+msgid "Show desktop"
+msgstr "显示桌面"
 
-#: package/contents/ui/config/ConfigMenu.qml:171
-msgid "Reset icon positions…"
-msgstr "重置图标位置…"
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/main.qml:1482
+msgid "Edit panel"
+msgstr "编辑面板"
 
-#: package/contents/ui/config/ConfigMenu.qml:179
-msgid "Reset icon positions?"
-msgstr "重置图标位置?"
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/main.qml:1488
+msgid "Auto-hide panel"
+msgstr "自动隐藏面板"
 
-#: package/contents/ui/config/ConfigMenu.qml:180
-msgid ""
-"Tiles, pinned icons and pin names go back to the fresh-install layout. Press "
-"OK in the settings window afterwards to finish; it then closes, so no old "
-"values are written back."
-msgstr ""
-"磁贴、固定的图标和固定项名称将恢复为全新安装时的布局。之后请在设置窗口中点击"
-"“确定”以完成；窗口随后会关闭，因此不会写回旧值。"
+#: package/contents/ui/config/ConfigButton.qml:48
+msgid "Lock, sign out, sleep, restart, shut down"
+msgstr "锁定、注销、睡眠、重启、关机"
 
-#: package/contents/ui/config/ConfigRail.qml:23
+#: package/contents/ui/config/ConfigButton.qml:52
 msgid "User picture"
 msgstr "用户头像"
 
-#: package/contents/ui/config/ConfigRail.qml:38
+#: package/contents/ui/config/ConfigButton.qml:67
 msgid "Separator"
 msgstr "分隔符"
 
-#: package/contents/ui/config/ConfigRail.qml:82
-msgid "Decide how shortcut icons look:"
-msgstr "决定快捷方式图标的外观:"
+#: package/contents/ui/config/ConfigButton.qml:121
+#: package/contents/ui/config/ConfigButton.qml:149
+msgid "Pick custom image…"
+msgstr "选择自定义图像…"
 
-#: package/contents/ui/config/ConfigRail.qml:83
+#: package/contents/ui/config/ConfigButton.qml:122
+msgid "Images (*.png *.svg *.jpg *.webp)"
+msgstr "图像 (*.png *.svg *.jpg *.webp)"
+
+#: package/contents/ui/config/ConfigButton.qml:131
+#, fuzzy
+msgid "Start button"
+msgstr "开始按钮"
+
+#: package/contents/ui/config/ConfigButton.qml:133
+#, fuzzy
+msgid "Start button:"
+msgstr "开始按钮"
+
+#: package/contents/ui/config/ConfigButton.qml:134
+msgid "Icon"
+msgstr "图标"
+
+#: package/contents/ui/config/ConfigButton.qml:135
+#, fuzzy
+msgid "Picture"
+msgstr "图片"
+
+#: package/contents/ui/config/ConfigButton.qml:136
+msgid "Four squares"
+msgstr "四个方块"
+
+#: package/contents/ui/config/ConfigButton.qml:142
+#: package/contents/ui/config/ConfigButton.qml:367
+msgid "Icon:"
+msgstr "图标:"
+
+#: package/contents/ui/config/ConfigButton.qml:146
+msgid "System default"
+msgstr ""
+
+#: package/contents/ui/config/ConfigButton.qml:152
+msgid "Reset icon"
+msgstr "重置图标"
+
+#: package/contents/ui/config/ConfigButton.qml:167
+#, fuzzy
+msgid "Picture:"
+msgstr "图片"
+
+#: package/contents/ui/config/ConfigButton.qml:200
+#, fuzzy
+msgid "Use a custom picture…"
+msgstr "使用自定义“开始”按钮图像…"
+
+#: package/contents/ui/config/ConfigButton.qml:206
+#, fuzzy
+msgid ""
+"A custom picture holds 3 images stacked top to bottom: normal, mouse over, "
+"pressed."
+msgstr "自定义图像包含从上到下依次排列的 3 张图片: 正常、鼠标悬停、按下。"
+
+#: package/contents/ui/config/ConfigButton.qml:216
+#, fuzzy
+msgid "First square:"
+msgstr "四个方块"
+
+#: package/contents/ui/config/ConfigButton.qml:220
+#, fuzzy
+msgid "Other squares:"
+msgstr "四个方块"
+
+#: package/contents/ui/config/ConfigButton.qml:226
+#, fuzzy
+msgid "XP Start button colour:"
+msgstr "“开始”按钮颜色:"
+
+#: package/contents/ui/config/ConfigButton.qml:228
+msgid "XP green"
+msgstr "XP 绿色"
+
+#: package/contents/ui/config/ConfigButton.qml:228
+msgid "Colour scheme"
+msgstr "配色方案"
+
+#: package/contents/ui/config/ConfigButton.qml:238
+#, fuzzy
+msgid "Right-click menu"
+msgstr "右键菜单"
+
+#: package/contents/ui/config/ConfigButton.qml:241
+#, fuzzy
+msgid "Show in the right-click menu:"
+msgstr "在电源菜单中显示:"
+
+#: package/contents/ui/config/ConfigButton.qml:257
+#, fuzzy
+msgid "Menu shortcuts"
+msgstr "快捷方式"
+
+#: package/contents/ui/config/ConfigButton.qml:260
+#, fuzzy
+msgid "Shortcut labels:"
+msgstr "快捷方式"
+
+#: package/contents/ui/config/ConfigButton.qml:261
 msgid "Only show icons"
 msgstr "仅显示图标"
 
-#: package/contents/ui/config/ConfigRail.qml:83
+#: package/contents/ui/config/ConfigButton.qml:261
 msgid "Show names when the mouse is over it"
 msgstr "鼠标悬停时显示名称"
 
-#: package/contents/ui/config/ConfigRail.qml:83
+#: package/contents/ui/config/ConfigButton.qml:261
 msgid "Always show icons and names"
 msgstr "始终显示图标和名称"
 
-#: package/contents/ui/config/ConfigRail.qml:94
-msgid "Align the icons to the bottom (Windows 10 style)"
+#: package/contents/ui/config/ConfigButton.qml:274
+#, fuzzy
+msgid "Align the icons to the bottom"
 msgstr "图标底部对齐 (Windows 10 样式)"
 
-#: package/contents/ui/config/ConfigRail.qml:95
-msgid "Small place rows (Windows 7, XP, Pro styles)"
-msgstr "较小的位置行 (Windows 7、XP、Pro 样式)"
+#: package/contents/ui/config/ConfigButton.qml:278
+msgid "Small place rows"
+msgstr ""
 
-#: package/contents/ui/config/ConfigRail.qml:96
-msgid "Show an icon on the Shut down button (Windows 7 style)"
-msgstr "在“关机”按钮上显示图标 (Windows 7 样式)"
-
-#: package/contents/ui/config/ConfigRail.qml:98
-msgid "Left hand side shortcuts"
-msgstr "左侧快捷方式"
-
-#: package/contents/ui/config/ConfigRail.qml:101
+#: package/contents/ui/config/ConfigButton.qml:281
 msgid "Top to bottom:"
 msgstr "从上到下:"
 
-#: package/contents/ui/config/ConfigRail.qml:125
+#: package/contents/ui/config/ConfigButton.qml:305
 msgid "Add"
 msgstr "添加"
 
-#: package/contents/ui/config/ConfigRail.qml:127
+#: package/contents/ui/config/ConfigButton.qml:307
 msgid "Add custom location…"
 msgstr "添加自定义位置…"
 
-#: package/contents/ui/config/ConfigRail.qml:130
-msgid "Power menu options"
-msgstr "电源菜单选项"
-
-#: package/contents/ui/config/ConfigRail.qml:133
-msgid "Clicking the power button should:"
+#: package/contents/ui/config/ConfigButton.qml:313
+#, fuzzy
+msgid "Clicking the power button:"
 msgstr "单击电源按钮时应:"
 
-#: package/contents/ui/config/ConfigRail.qml:136
+#: package/contents/ui/config/ConfigButton.qml:316
 msgid "Show the power menu"
 msgstr "显示电源菜单"
 
-#: package/contents/ui/config/ConfigRail.qml:141
+#: package/contents/ui/config/ConfigButton.qml:321
 msgid "Show in the power menu:"
 msgstr "在电源菜单中显示:"
 
-#: package/contents/ui/config/ConfigRail.qml:165
+#: package/contents/ui/config/ConfigButton.qml:338
+#, fuzzy
+msgid "Show an icon on the Shut down button"
+msgstr "在“关机”按钮上显示图标 (Windows 7 样式)"
+
+#: package/contents/ui/config/ConfigButton.qml:349
 msgid "Add custom location"
 msgstr "添加自定义位置"
 
-#: package/contents/ui/config/ConfigRail.qml:176
+#: package/contents/ui/config/ConfigButton.qml:360
 msgid "Opens:"
 msgstr "打开:"
 
-#: package/contents/ui/config/ConfigRail.qml:176
+#: package/contents/ui/config/ConfigButton.qml:360
 msgid "Folder or web address"
 msgstr "文件夹或网址"
 
-#: package/contents/ui/config/ConfigRail.qml:176
+#: package/contents/ui/config/ConfigButton.qml:360
 msgid "Command"
 msgstr "命令"
 
-#: package/contents/ui/config/ConfigRail.qml:179
+#: package/contents/ui/config/ConfigButton.qml:363
 msgid "Command:"
 msgstr "命令:"
 
-#: package/contents/ui/config/ConfigRail.qml:179
+#: package/contents/ui/config/ConfigButton.qml:363
 msgid "Location:"
 msgstr "位置:"
 
@@ -1095,6 +1212,7 @@ msgid "Recent documents"
 msgstr "最近的文档"
 
 #: package/contents/ui/config/ConfigSearch.qml:27
+#: package/contents/ui/styles/plasma.qml:227
 msgid "Places"
 msgstr "位置"
 
@@ -1135,547 +1253,1099 @@ msgid "Dictionary"
 msgstr "词典"
 
 #: package/contents/ui/config/ConfigSearch.qml:41
+msgid "Results"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:42
 msgid "Group results by type (Apps, Files, Settings …)"
 msgstr "按类型对结果分组 (应用、文件、设置 …)"
 
-#: package/contents/ui/config/ConfigSearch.qml:42
-msgid "Show search the internet button"
-msgstr "显示“在互联网上搜索”按钮"
-
 #: package/contents/ui/config/ConfigSearch.qml:43
-msgid "Show filter icons above the results (Apps, Documents, Web …)"
-msgstr "在结果上方显示筛选图标 (应用、文档、网页 …)"
-
-#: package/contents/ui/config/ConfigSearch.qml:44
 msgid "Classic search: dense one-line results, no Best match card"
 msgstr "经典搜索: 紧凑的单行结果，无“最佳匹配”卡片"
 
+#: package/contents/ui/config/ConfigSearch.qml:44
+msgid "Show filter icons above the results (Apps, Documents, Web …)"
+msgstr "在结果上方显示筛选图标 (应用、文档、网页 …)"
+
 #: package/contents/ui/config/ConfigSearch.qml:45
-msgid "Remember recent searches"
-msgstr "记住最近的搜索"
+#, fuzzy
+msgid "Show the \"Search the internet\" button"
+msgstr "显示“在互联网上搜索”按钮"
 
-#: package/contents/ui/config/ConfigSearch.qml:47
-msgid "Clear search history"
-msgstr "清除搜索历史记录"
-
-#: package/contents/ui/config/ConfigSearch.qml:54
+#: package/contents/ui/config/ConfigSearch.qml:49
 msgid "Search the internet with:"
 msgstr "使用以下方式搜索互联网:"
 
-#: package/contents/ui/config/ConfigSearch.qml:59
+#: package/contents/ui/config/ConfigSearch.qml:54
 #, javascript-format
 msgid "%s is replaced by what you typed."
 msgstr "%s 将替换为你输入的内容。"
 
-#: package/contents/ui/config/ConfigSearch.qml:64
+#: package/contents/ui/config/ConfigSearch.qml:59
+msgid "History"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:60
+msgid "Remember recent searches"
+msgstr "记住最近的搜索"
+
+#: package/contents/ui/config/ConfigSearch.qml:62
+msgid "Clear search history"
+msgstr "清除搜索历史记录"
+
+#: package/contents/ui/config/ConfigSearch.qml:67
 msgid "What to search"
 msgstr "搜索内容"
 
-#: package/contents/ui/config/ConfigSearch.qml:67
+#: package/contents/ui/config/ConfigSearch.qml:70
 msgid "Use everything KRunner can search"
 msgstr "使用 KRunner 可搜索的全部内容"
 
-#: package/contents/ui/config/ConfigStyle.qml:35
-#: package/contents/ui/config/ConfigStyle.qml:104
-msgid "Windows 7 style"
-msgstr "Windows 7 样式"
+#: package/contents/ui/config/ConfigSearch.qml:75
+msgid "Off: starts with Apps, Settings and Files; tick more below."
+msgstr ""
 
-#: package/contents/ui/config/ConfigStyle.qml:35
-msgid "The classic Windows 7 menu."
-msgstr "经典 Windows 7 菜单。"
+#: package/contents/ui/config/ConfigStartMenu.qml:64
+#: package/contents/ui/main.qml:927
+msgid "Pick tile image…"
+msgstr "选择磁贴图像…"
 
-#: package/contents/ui/config/ConfigStyle.qml:36
-#: package/contents/ui/config/ConfigStyle.qml:111
-msgid "Modern style"
-msgstr "现代样式"
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:70
+#, fuzzy
+msgid "Size and position"
+msgstr "菜单位置："
 
-#: package/contents/ui/config/ConfigStyle.qml:36
-msgid "An updated Windows 7 style."
-msgstr "更新的 Windows 7 样式。"
+#: package/contents/ui/config/ConfigStartMenu.qml:74
+msgid "Size:"
+msgstr ""
 
-#: package/contents/ui/config/ConfigStyle.qml:37
-msgid "Windows 10 style"
-msgstr "Windows 10 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:37
-msgid "Windows 10 style with improvements."
-msgstr "带有改进的 Windows 10 样式。"
-
-#: package/contents/ui/config/ConfigStyle.qml:38
-msgid "Windows 11 style"
-msgstr "Windows 11 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:38
-msgid "Windows 11 style with improvements."
-msgstr "带有改进的 Windows 11 样式。"
-
-#: package/contents/ui/config/ConfigStyle.qml:39
-msgid "Windows App style"
-msgstr "Windows 应用样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:39
-msgid "Shortcuts at the top, groups and tabs, all apps always open."
-msgstr "顶部为快捷方式，含组和选项卡，所有应用始终展开。"
-
-#: package/contents/ui/config/ConfigStyle.qml:40
-msgid "Windows Pro style"
-msgstr "Windows Pro 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:40
-msgid "Two-tone: pinned apps, and a places panel on the right."
-msgstr "双色调: 已固定的应用，右侧为位置面板。"
-
-#: package/contents/ui/config/ConfigStyle.qml:41
-msgid "Windows Launcher style"
-msgstr "Windows 启动器样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:41
-msgid "Big account picture, search, and a large pinned grid."
-msgstr "大帐户头像、搜索和大型固定网格。"
-
-#: package/contents/ui/config/ConfigStyle.qml:42
-msgid "Windows XP style"
-msgstr "Windows XP 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:42
-msgid "The blue Luna menu, classic or modernised."
-msgstr "蓝色 Luna 菜单，经典或现代化。"
-
-#: package/contents/ui/config/ConfigStyle.qml:50
-msgid "Which style of Start Menu would you prefer?"
-msgstr "你更喜欢哪种“开始”菜单样式?"
-
-#: package/contents/ui/config/ConfigStyle.qml:85
-msgid "Coming soon"
-msgstr "即将推出"
-
-#: package/contents/ui/config/ConfigStyle.qml:103
-#: package/contents/ui/config/ConfigStyle.qml:110
-#: package/contents/ui/config/ConfigStyle.qml:116
-msgid "Substyle:"
-msgstr "子样式:"
-
-#: package/contents/ui/config/ConfigStyle.qml:104
-msgid "Windows 7 style with icons"
-msgstr "带图标的 Windows 7 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:104
-msgid "Compact Windows 7 style"
-msgstr "紧凑 Windows 7 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:105
-msgid "Grid Windows 7 style"
-msgstr "网格 Windows 7 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:105
-msgid "Grid Windows 7 style with icons"
-msgstr "带图标的网格 Windows 7 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:105
-msgid "Compact Grid Windows 7 style"
-msgstr "紧凑网格 Windows 7 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:111
-msgid "Modern style with icons"
-msgstr "带图标的现代样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:111
-msgid "Compact Modern style"
-msgstr "紧凑现代样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:112
-msgid "Grid Modern style"
-msgstr "网格现代样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:112
-msgid "Grid Modern style with icons"
-msgstr "带图标的网格现代样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:112
-msgid "Compact Grid Modern style"
-msgstr "紧凑网格现代样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:117
-msgid "Classic Windows XP style"
-msgstr "经典 Windows XP 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:117
-msgid "Modern Windows XP style"
-msgstr "现代 Windows XP 样式"
-
-#: package/contents/ui/config/ConfigStyle.qml:123
-msgid "Colour scheme:"
-msgstr "配色方案:"
-
-#: package/contents/ui/config/ConfigStyle.qml:126
-msgid "Blue"
-msgstr "蓝色"
-
-#: package/contents/ui/config/ConfigStyle.qml:126
-msgid "Olive Green"
-msgstr "橄榄绿"
-
-#: package/contents/ui/config/ConfigStyle.qml:126
-msgid "Silver"
-msgstr "银色"
-
-#: package/contents/ui/config/ConfigStyle.qml:134
-msgid "Start button colour:"
-msgstr "“开始”按钮颜色:"
-
-#: package/contents/ui/config/ConfigStyle.qml:136
-msgid "XP green"
-msgstr "XP 绿色"
-
-#: package/contents/ui/config/ConfigStyle.qml:136
-msgid "Colour scheme"
-msgstr "配色方案"
-
-#: package/contents/ui/config/ConfigStyle.qml:147
-msgid "What size should it be?"
-msgstr "应是多大?"
-
-#: package/contents/ui/config/ConfigStyle.qml:148
+#: package/contents/ui/config/ConfigStartMenu.qml:75
 msgid "Tall"
 msgstr "高"
 
-#: package/contents/ui/config/ConfigStyle.qml:148
+#: package/contents/ui/config/ConfigStartMenu.qml:75
 msgid "Wide (two tile columns)"
 msgstr "宽 (两列磁贴)"
 
-#: package/contents/ui/config/ConfigStyle.qml:148
+#: package/contents/ui/config/ConfigStartMenu.qml:75
 msgid "Large (two tile columns)"
 msgstr "大 (两列磁贴)"
 
-#: package/contents/ui/config/ConfigStyle.qml:152
-#
-msgid "Menu position:"
-msgstr "菜单位置："
-
-#: package/contents/ui/config/ConfigStyle.qml:153
-#
-msgid "Left"
-msgstr "左"
-
-#: package/contents/ui/config/ConfigStyle.qml:153
-msgid "Center"
-msgstr "居中"
-
-#: package/contents/ui/config/ConfigStyle.qml:153
-#
-msgid "Right"
-msgstr "右"
-
-#: package/contents/ui/config/ConfigStyle.qml:158
-#
-msgid "Also centre the Start button and the taskbar icons"
-msgstr "同时将开始按钮和任务栏图标居中"
-
-#: package/contents/ui/config/ConfigStyle.qml:162
+#: package/contents/ui/config/ConfigStartMenu.qml:79
 msgid "Custom height:"
 msgstr "自定义高度:"
 
-#: package/contents/ui/config/ConfigStyle.qml:166
+#: package/contents/ui/config/ConfigStartMenu.qml:83
 msgid "From size"
 msgstr "按大小"
 
-#: package/contents/ui/config/ConfigStyle.qml:171
-msgid "Use full screen menu"
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:88
+#, fuzzy
+msgid "Position:"
+msgstr "菜单位置："
+
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+msgid "Top"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+msgid "Middle"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+msgid "Bottom"
+msgstr ""
+
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+#: package/contents/ui/config/ConfigStartMenu.qml:185
+msgid "Left"
+msgstr "左"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+msgid "Center"
+msgstr "居中"
+
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:89
+#: package/contents/ui/config/ConfigStartMenu.qml:185
+msgid "Right"
+msgstr "右"
+
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:95
+#, fuzzy
+msgid "Also mirror the taskbar (Start button at the bottom)"
+msgstr "同时将开始按钮和任务栏图标居中"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:96
+msgid "Also mirror the taskbar (Start button on the right, clock on the left)"
+msgstr ""
+
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:97
+#, fuzzy
+msgid "Also centre the Start button and the taskbar icons vertically"
+msgstr "同时将开始按钮和任务栏图标居中"
+
+#
+#: package/contents/ui/config/ConfigStartMenu.qml:98
+#, fuzzy
+msgid "Also align the Start button and taskbar icons with the menu"
+msgstr "同时将开始按钮和任务栏图标居中"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:100
+#, fuzzy
+msgid "Full screen menu"
 msgstr "使用全屏菜单"
 
-#: package/contents/ui/config/ConfigStyle.qml:176
+#: package/contents/ui/config/ConfigStartMenu.qml:101
 msgid "Keep the panel visible"
 msgstr "保持面板可见"
 
-#: package/contents/ui/config/ConfigStyle.qml:179
-msgid "Adjust global menu scaling:"
-msgstr "调整全局菜单缩放:"
+#: package/contents/ui/config/ConfigStartMenu.qml:103
+#, fuzzy
+msgid "Menu scale:"
+msgstr "菜单大小"
 
-#: package/contents/ui/config/ConfigStyle.qml:189
+#: package/contents/ui/config/ConfigStartMenu.qml:112
 #, javascript-format
 msgid "%1% of original size"
 msgstr "原始大小的 %1%"
 
-#: package/contents/ui/config/ConfigStyle.qml:196
-msgid "Reset all Win12 settings…"
-msgstr "重置所有 Win12 设置…"
+#: package/contents/ui/config/ConfigStartMenu.qml:115
+msgid "Tiles"
+msgstr "磁贴"
 
-#: package/contents/ui/config/ConfigStyle.qml:201
-msgid "Backup"
-msgstr "备份"
+#: package/contents/ui/config/ConfigStartMenu.qml:121
+msgid "Edit menu layout…"
+msgstr "编辑菜单布局…"
 
-#: package/contents/ui/config/ConfigStyle.qml:204
-msgid "Backup settings…"
-msgstr "备份设置…"
-
-#: package/contents/ui/config/ConfigStyle.qml:209
-msgid "Restore settings…"
-msgstr "还原设置…"
-
-#: package/contents/ui/config/ConfigStyle.qml:217
-msgid ""
-"Settings, tiles and pinned icons go into one file. After picking the file, "
-"press OK/Apply to save or restore it."
+#: package/contents/ui/config/ConfigStartMenu.qml:127
+#: package/contents/ui/config/ConfigTaskbar.qml:301
+msgid "(applies at once)"
 msgstr ""
-"设置、磁贴和固定的图标保存在一个文件中。选择文件后，点击“确定”/“应用”以保存或"
-"还原。"
 
-#: package/contents/ui/config/ConfigStyle.qml:224
-msgid "Backup Win12 settings"
-msgstr "备份 Win12 设置"
+#: package/contents/ui/config/ConfigStartMenu.qml:131
+#, fuzzy
+msgid "Tile columns:"
+msgstr "磁贴颜色:"
 
-#: package/contents/ui/config/ConfigStyle.qml:228
-#: package/contents/ui/config/ConfigStyle.qml:234
-msgid "Win12 backup (*.json)"
-msgstr "Win12 备份 (*.json)"
+#: package/contents/ui/config/ConfigStartMenu.qml:134
+msgid "%1 column"
+msgid_plural "%1 columns"
+msgstr[0] "%1 列"
 
-#: package/contents/ui/config/ConfigStyle.qml:233
-msgid "Restore Win12 settings"
-msgstr "还原 Win12 设置"
+#: package/contents/ui/config/ConfigStartMenu.qml:138
+msgid "Space between tiles:"
+msgstr "磁贴间距:"
 
-#: package/contents/ui/config/ConfigStyle.qml:240
-msgid "Reset all Win12 settings?"
-msgstr "重置所有 Win12 设置?"
+#: package/contents/ui/config/ConfigStartMenu.qml:145
+msgid "Tile icon size:"
+msgstr "磁贴图标大小:"
 
-#: package/contents/ui/config/ConfigStyle.qml:241
-msgid ""
-"Every setting, tile and pinned icon goes back to the fresh-install default. "
-"If the XP taskbar theme is active, your previous Plasma Style is put back. "
-"Press OK in the settings window afterwards to finish; it then closes, so no "
-"old values are written back."
+#: package/contents/ui/config/ConfigStartMenu.qml:149
+#, fuzzy
+msgid "Hide tile captions (show them as tooltips)"
+msgstr "隐藏磁贴上的标题(显示为工具提示)"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:151
+msgid "Tile colour:"
+msgstr "磁贴颜色:"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:152
+msgid "Soft (follows text colour)"
+msgstr "柔和 (跟随文本颜色)"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:152
+msgid "Accent colour"
+msgstr "强调色"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:156
+msgid "Tile background:"
+msgstr "磁贴背景:"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:161
+msgid "Tile image:"
+msgstr "磁贴图像:"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:163
+#: package/contents/ui/config/ConfigTaskbar.qml:222
+#: package/contents/ui/config/ConfigWindows.qml:101
+msgid "Pick image…"
+msgstr "选择图像…"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:167
+msgid "Tile image opacity:"
+msgstr "磁贴图像不透明度:"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:170
+#, javascript-format
+msgid "%1%"
+msgstr "%1%"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:172
+#, fuzzy
+msgid "Fetch favicons for pinned web links"
+msgstr "获取已固定网页链接的网站图标"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:173
+#, fuzzy
+msgid "Lock tile and pin positions"
+msgstr "锁定菜单快捷方式位置"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:175
+#, fuzzy
+msgid "Reset tile and pin positions…"
+msgstr "重置图标位置…"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:180
+#, fuzzy
+msgid "Windows 12"
+msgstr "Windows 10 样式"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:184
+#, fuzzy
+msgid "Apps list side:"
+msgstr "应用列表"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:185
+msgid "Automatic (menu on the left: left, else right)"
 msgstr ""
-"所有设置、磁贴和固定的图标都将恢复为全新安装时的默认值。如果 XP 任务栏主题处"
-"于启用状态，则会恢复你之前的 Plasma 样式。之后请在设置窗口中点击“确定”以完"
-"成；窗口随后会关闭，因此不会写回旧值。"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:46
+#: package/contents/ui/config/ConfigStartMenu.qml:190
+msgid "Greeting with picture:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:191
+msgid "Automatic (when the list is on the left)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:191
+msgid "On"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:191
+#: package/contents/ui/config/ConfigTaskbar.qml:260
+#, fuzzy
+msgid "Off"
+msgstr "注销"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:193
+msgid "Show Documents, Pictures and Music above the cards"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:194
+msgid "Show the clock and date above the cards"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStartMenu.qml:199
+msgid "Reset icon positions?"
+msgstr "重置图标位置?"
+
+#: package/contents/ui/config/ConfigStartMenu.qml:200
+msgid ""
+"Tiles, pinned icons and pin names go back to the fresh-install layout. Press "
+"OK in the settings window afterwards to finish; it then closes, so no old "
+"values are written back."
+msgstr ""
+"磁贴、固定的图标和固定项名称将恢复为全新安装时的布局。之后请在设置窗口中点击"
+"“确定”以完成；窗口随后会关闭，因此不会写回旧值。"
+
+#: package/contents/ui/config/ConfigStyle.qml:52
+#: package/contents/ui/config/ConfigStyle.qml:128
+#: package/contents/ui/config/ConfigStyle.qml:140
+#: package/contents/ui/config/ConfigStyle.qml:154
+#: package/contents/ui/config/ConfigStyle.qml:181
+msgid "Windows 7 style"
+msgstr "Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:52
+#, fuzzy
+msgid "The Windows 7 menu, classic or modern."
+msgstr "蓝色 Luna 菜单，经典或现代化。"
+
+#: package/contents/ui/config/ConfigStyle.qml:53
+#: package/contents/ui/config/ConfigStyle.qml:129
+#: package/contents/ui/config/ConfigStyle.qml:140
+#: package/contents/ui/config/ConfigStyle.qml:154
+msgid "Windows 10 style"
+msgstr "Windows 10 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:53
+msgid "Windows 10 style with improvements."
+msgstr "带有改进的 Windows 10 样式。"
+
+#: package/contents/ui/config/ConfigStyle.qml:54
+#: package/contents/ui/config/ConfigStyle.qml:129
+#: package/contents/ui/config/ConfigStyle.qml:141
+#: package/contents/ui/config/ConfigStyle.qml:155
+msgid "Windows 11 style"
+msgstr "Windows 11 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:54
+msgid "Windows 11 style with improvements."
+msgstr "带有改进的 Windows 11 样式。"
+
+#: package/contents/ui/config/ConfigStyle.qml:55
+#: package/contents/ui/config/ConfigStyle.qml:130
+#: package/contents/ui/config/ConfigStyle.qml:141
+#, fuzzy
+msgid "Windows 12 style"
+msgstr "Windows 10 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:55
+msgid "Concept-art menu: app list beside pinned cards and widgets."
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:56
+#: package/contents/ui/config/ConfigStyle.qml:130
+msgid "Windows App style"
+msgstr "Windows 应用样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:56
+msgid "Shortcuts at the top, groups and tabs, all apps always open."
+msgstr "顶部为快捷方式，含组和选项卡，所有应用始终展开。"
+
+#: package/contents/ui/config/ConfigStyle.qml:57
+#: package/contents/ui/config/ConfigStyle.qml:130
+msgid "Windows Pro style"
+msgstr "Windows Pro 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:57
+msgid "Two-tone: pinned apps, and a places panel on the right."
+msgstr "双色调: 已固定的应用，右侧为位置面板。"
+
+#: package/contents/ui/config/ConfigStyle.qml:58
+#: package/contents/ui/config/ConfigStyle.qml:131
+msgid "Windows Launcher style"
+msgstr "Windows 启动器样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:58
+msgid "Big account picture, search, and a large pinned grid."
+msgstr "大帐户头像、搜索和大型固定网格。"
+
+#: package/contents/ui/config/ConfigStyle.qml:59
+#: package/contents/ui/config/ConfigStyle.qml:131
+#: package/contents/ui/config/ConfigStyle.qml:140
+#: package/contents/ui/config/ConfigStyle.qml:154
+msgid "Windows XP style"
+msgstr "Windows XP 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:59
+msgid "The blue Luna menu, classic or modernised."
+msgstr "蓝色 Luna 菜单，经典或现代化。"
+
+#: package/contents/ui/config/ConfigStyle.qml:60
+msgid "KDE Plasma"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:60
+msgid "Plasma's own launcher look, taskbar and title bars."
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:73
+msgid ""
+"A style sets the Start menu, the taskbar and the window title bars together. "
+"Mix them below."
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:109
+msgid "Coming soon"
+msgstr "即将推出"
+
+#: package/contents/ui/config/ConfigStyle.qml:124
+msgid "Mix and match"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:127
+#, fuzzy
+msgid "Start menu:"
+msgstr "开始菜单"
+
+#: package/contents/ui/config/ConfigStyle.qml:128
+#: package/contents/ui/config/ConfigStyle.qml:139
+#: package/contents/ui/config/ConfigStyle.qml:153
+msgid "Same as the style"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:129
+#: package/contents/ui/config/ConfigStyle.qml:188
+msgid "Modern style"
+msgstr "现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:131
+#: package/contents/ui/config/ConfigStyle.qml:139
+#: package/contents/ui/config/ConfigStyle.qml:153
+msgid "KDE Plasma (default)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:137
+#, fuzzy
+msgid "Taskbar:"
+msgstr "任务栏"
+
+#: package/contents/ui/config/ConfigStyle.qml:151
+#, fuzzy
+msgid "Window title bars:"
+msgstr "Windows 颜色:"
+
+#: package/contents/ui/config/ConfigStyle.qml:165
+msgid "KDE Plasma (default): your own Plasma Style and title bars come back."
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:168
+#, fuzzy
+msgid "Windows 7"
+msgstr "Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:172
+#, fuzzy
+msgid "Menu look:"
+msgstr "菜单颜色:"
+
+#: package/contents/ui/config/ConfigStyle.qml:173
+msgid "Classic"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:173
+#: package/contents/ui/config/ConfigStyle.qml:197
+#, fuzzy
+msgid "Modern"
+msgstr "现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:180
+#, fuzzy
+msgid "Windows 7 list:"
+msgstr "Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:181
+msgid "Windows 7 style with icons"
+msgstr "带图标的 Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:181
+msgid "Compact Windows 7 style"
+msgstr "紧凑 Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:182
+msgid "Grid Windows 7 style"
+msgstr "网格 Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:182
+msgid "Grid Windows 7 style with icons"
+msgstr "带图标的网格 Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:182
+msgid "Compact Grid Windows 7 style"
+msgstr "紧凑网格 Windows 7 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:187
+#, fuzzy
+msgid "Modern list:"
+msgstr "现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:188
+msgid "Modern style with icons"
+msgstr "带图标的现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:188
+msgid "Compact Modern style"
+msgstr "紧凑现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:189
+msgid "Grid Modern style"
+msgstr "网格现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:189
+msgid "Grid Modern style with icons"
+msgstr "带图标的网格现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:189
+msgid "Compact Grid Modern style"
+msgstr "紧凑网格现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:191
+#: package/contents/ui/config/ConfigWindows.qml:125
+#, fuzzy
+msgid "Windows XP"
+msgstr "Windows XP 样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:194
+msgid "XP theme:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:197
+msgid "Classic XP"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:197
+#, fuzzy
+msgid "Modern classic"
+msgstr "现代样式"
+
+#: package/contents/ui/config/ConfigStyle.qml:203
+msgid "Colour scheme:"
+msgstr "配色方案:"
+
+#: package/contents/ui/config/ConfigStyle.qml:206
+#: package/contents/ui/win10/Tile.qml:213
+msgid "Blue"
+msgstr "蓝色"
+
+#: package/contents/ui/config/ConfigStyle.qml:206
+msgid "Olive Green"
+msgstr "橄榄绿"
+
+#: package/contents/ui/config/ConfigStyle.qml:206
+msgid "Silver"
+msgstr "银色"
+
+#: package/contents/ui/config/ConfigStyle.qml:215
+msgid "Use an XP icon theme while XP is active"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:221
+msgid "XP icon theme:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigStyle.qml:231
+msgid ""
+"No XP icon theme is installed. Get one on the Advanced page (Download icon "
+"themes…, search for \"XP\")."
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:70
 msgid "Pick taskbar texture…"
 msgstr "选择任务栏纹理…"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:47
+#: package/contents/ui/config/ConfigTaskbar.qml:71
+#: package/contents/ui/config/ConfigWindows.qml:35
 msgid "Images (*.png *.jpg *.jpeg)"
 msgstr "图像 (*.png *.jpg *.jpeg)"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:54
-msgid "Apply the theme to the taskbar"
-msgstr "将主题应用于任务栏"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:61
+#: package/contents/ui/config/ConfigTaskbar.qml:80
 msgid ""
-"Taskbar colours and buttons that match the menu style. Your own Plasma Style "
-"comes back when this is off."
-msgstr "与菜单样式匹配的任务栏颜色和按钮。关闭后将恢复你自己的 Plasma 样式。"
+"Your own Plasma Style is in use. Pick a Windows taskbar on the Style page to "
+"change its layout and colours."
+msgstr ""
 
-#: package/contents/ui/config/ConfigTaskbar.qml:65
-msgid "Apply the theme to windows"
-msgstr "将主题应用于窗口"
+#: package/contents/ui/config/ConfigTaskbar.qml:85
+#, fuzzy
+msgid "Windows 12 taskbar"
+msgstr "固定到任务栏"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:67
+#: package/contents/ui/config/ConfigTaskbar.qml:86
+#, fuzzy
+msgid "Layout:"
+msgstr "布局"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:92
+msgid "Show islands on:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:95
+msgid "%1 (main)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:95
+msgid "All monitors"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:102
+msgid "Open apps on other monitors:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:103
+msgid "Only apps on that monitor"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:103
+msgid "All apps on every monitor"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:112
 msgid ""
-"Title bars and colours of every window. Your own ones come back when this is "
-"off."
-msgstr "每个窗口的标题栏和颜色。关闭后将恢复你自己的设置。"
+"All monitors: every monitor gets Start and the app islands; the tray island "
+"stays on the main monitor. Moving an app icon to another island moves it on "
+"every monitor. Pin apps from the main monitor."
+msgstr ""
 
-#: package/contents/ui/config/ConfigTaskbar.qml:72
-#
-msgid "Window frames:"
-msgstr "窗口边框："
+#: package/contents/ui/config/ConfigTaskbar.qml:114
+msgid "Floating bar"
+msgstr ""
 
-#: package/contents/ui/config/ConfigTaskbar.qml:75
+#: package/contents/ui/config/ConfigTaskbar.qml:119
+msgid "Bottom spacing:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:122
+#: package/contents/ui/config/ConfigTaskbar.qml:144
+msgid "%1 px"
+msgstr ""
+
 #: package/contents/ui/config/ConfigTaskbar.qml:129
-#: package/contents/ui/config/ConfigTaskbar.qml:162
+#, fuzzy
+msgid "Maximised windows:"
+msgstr "打开的窗口"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:130
+msgid "Fill the screen"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:130
+msgid "Keep a gap above the taskbar"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:137
+msgid ""
+"Fill the screen: maximized windows use the whole screen and the bar auto-"
+"hides as an island over them. Keep a gap: the bar always shows and maximized "
+"windows stop one bottom spacing above it (single bar only; split islands "
+"always fill the screen)."
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:141
+#, fuzzy
+msgid "Menu gap:"
+msgstr "菜单字体:"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:151
+#, fuzzy
+msgid "Pop-up animation:"
+msgstr "动画:"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:152
+msgid "Slide (Plasma)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:152
+msgid "Fade"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:152
+msgid "Zoom"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:152
+msgid "Rise"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:156
+#, fuzzy
+msgid "Corner roundness:"
+msgstr "圆角半径："
+
+#: package/contents/ui/config/ConfigTaskbar.qml:159
+msgid "Round"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:163
+#, fuzzy
+msgid "Taskbar colour and texture"
+msgstr "背景纹理"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:167
+msgid "Use a custom taskbar colour instead of your Plasma Style"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:171
+#, fuzzy
+msgid "Available with a custom taskbar colour."
+msgstr "替代任务栏颜色"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:172
+#, fuzzy
+msgid "Colour:"
+msgstr "颜色:"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:175
+#: package/contents/ui/config/ConfigWindows.qml:49
+msgid "Opacity:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:177
+#: package/contents/ui/config/ConfigTaskbar.qml:240
+#: package/contents/ui/config/ConfigWindows.qml:51
+#: package/contents/ui/config/ConfigWindows.qml:117
 #, javascript-format
 msgid "%1% opaque"
 msgstr "%1% 不透明"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:77
-msgid "Blur behind translucent frames"
-msgstr "半透明边框后方模糊"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:81
+#: package/contents/ui/config/ConfigTaskbar.qml:182
+#: package/contents/ui/config/ConfigWindows.qml:60
 msgid "Corner radius:"
 msgstr "圆角半径："
 
-#: package/contents/ui/config/ConfigTaskbar.qml:99
-msgid "Title bar height:"
-msgstr "标题栏高度："
-
-#: package/contents/ui/config/ConfigTaskbar.qml:119
-msgid "Override the taskbar colour"
-msgstr "替代任务栏颜色"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:125
-msgid "Custom taskbar:"
-msgstr "自定义任务栏:"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:138
+#: package/contents/ui/config/ConfigTaskbar.qml:188
 msgid "Light line on the taskbar edge"
 msgstr "任务栏边缘的浅色线条"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:143
-msgid "Texture:"
-msgstr "纹理:"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:154
-msgid "Stretch"
-msgstr "拉伸"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:155
-msgid "Align top"
-msgstr "顶端对齐"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:155
-msgid "Align middle"
-msgstr "居中对齐"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:156
-msgid "Align bottom"
-msgstr "底端对齐"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:164
-msgid "Tint with the accent colour"
-msgstr "使用强调色着色"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:170
+#: package/contents/ui/config/ConfigTaskbar.qml:192
 msgid "Task buttons:"
 msgstr "任务按钮:"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:173
+#: package/contents/ui/config/ConfigTaskbar.qml:195
 msgid "Plasma Style"
 msgstr "Plasma 样式"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:173
+#: package/contents/ui/config/ConfigTaskbar.qml:195
 msgid "Windows 10 (bar under active)"
 msgstr "Windows 10 (活动项下方为条形)"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:174
+#: package/contents/ui/config/ConfigTaskbar.qml:196
 msgid "Windows 11 (pill under active)"
 msgstr "Windows 11 (活动项下方为药丸形)"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:174
+#: package/contents/ui/config/ConfigTaskbar.qml:196
 msgid "Windows 7 (glass)"
 msgstr "Windows 7 (玻璃)"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:181
+#: package/contents/ui/config/ConfigTaskbar.qml:203
+msgid "Gradient:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:207
+#, fuzzy
+msgid "Left to right"
+msgstr "向右移动选项卡"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:208
+msgid "Right to left"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:208
+#, fuzzy
+msgid "Top to bottom"
+msgstr "从上到下:"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:209
+msgid "Bottom to top"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:214
+#, javascript-format
+msgid "Gradient strength: %1%"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:230
+#: package/contents/ui/config/ConfigWindows.qml:109
+msgid "Stretch"
+msgstr "拉伸"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:231
+msgid "Align top"
+msgstr "顶端对齐"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:231
+msgid "Align middle"
+msgstr "居中对齐"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:232
+msgid "Align bottom"
+msgstr "底端对齐"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:238
+#, fuzzy
+msgid "Texture opacity:"
+msgstr "纹理对齐方式:"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:245
+#: package/contents/ui/config/ConfigWindows.qml:122
+msgid "Tint with the accent colour"
+msgstr "使用强调色着色"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:250
 msgid "Paint the active button less transparent"
 msgstr "使活动按钮更不透明"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:187
-msgid "Search:"
-msgstr "搜索:"
+#: package/contents/ui/config/ConfigTaskbar.qml:253
+msgid "Behaviour"
+msgstr ""
 
-#: package/contents/ui/config/ConfigTaskbar.qml:188
-msgid "Show search on taskbar"
+#: package/contents/ui/config/ConfigTaskbar.qml:259
+#, fuzzy
+msgid "Auto-hide:"
+msgstr "自动隐藏面板"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:260
+msgid "Hide when a window covers it"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:260
+msgid "Always auto-hide"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:263
+msgid "Off (the floating bar still auto-hides)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:270
+msgid ""
+"The floating Windows 12 bar always auto-hides, so it stays an island over "
+"maximized windows. Turn off \"Floating bar\" for a fixed one."
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:271
+msgid "A hidden taskbar shows again when the mouse touches the screen edge."
+msgstr ""
+
+#: package/contents/ui/config/ConfigTaskbar.qml:274
+#, fuzzy
+msgid "Show a search box on the taskbar"
 msgstr "在任务栏上显示搜索"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:193
+#: package/contents/ui/config/ConfigTaskbar.qml:278
 msgid "Search box width:"
 msgstr "搜索框宽度:"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:205
-msgid ""
-"Panel height, position, floating, auto-hide and task grouping are handled by "
-"Plasma itself."
+#: package/contents/ui/config/ConfigTaskbar.qml:286
+#, fuzzy
+msgid "Plasma panel"
+msgstr "Plasma 样式"
+
+#: package/contents/ui/config/ConfigTaskbar.qml:290
+#, fuzzy
+msgid "Panel height, position and task grouping are set by Plasma itself."
 msgstr "面板高度、位置、浮动、自动隐藏和任务分组由 Plasma 自行处理。"
 
-#: package/contents/ui/config/ConfigTaskbar.qml:208
-msgid "Plasma settings:"
-msgstr "Plasma 设置:"
-
-#: package/contents/ui/config/ConfigTaskbar.qml:210
+#: package/contents/ui/config/ConfigTaskbar.qml:296
 msgid "Edit panel…"
 msgstr "编辑面板…"
+
+#: package/contents/ui/config/ConfigWindows.qml:34
+#, fuzzy
+msgid "Pick title bar picture…"
+msgstr "选择任务栏纹理…"
+
+#: package/contents/ui/config/ConfigWindows.qml:40
+msgid "Title bars and frames"
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:43
+msgid "Pick a Windows title bar on the Style page to change these."
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:56
+msgid "Blur behind translucent frames"
+msgstr "半透明边框后方模糊"
+
+#: package/contents/ui/config/ConfigWindows.qml:79
+msgid "Title bar height:"
+msgstr "标题栏高度："
+
+#: package/contents/ui/config/ConfigWindows.qml:99
+#, fuzzy
+msgid "Title bar picture:"
+msgstr "标题栏高度："
+
+#: package/contents/ui/config/ConfigWindows.qml:115
+#, fuzzy
+msgid "Picture opacity:"
+msgstr "磁贴图像不透明度:"
+
+#: package/contents/ui/config/ConfigWindows.qml:129
+msgid "Use the system title bar in Firefox"
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:131
+msgid ""
+"Firefox draws its own title bar, so the XP one does not show. Restart "
+"Firefox for this to take effect."
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:25
+msgid ""
+"The taskbar layouts and the Start position need Win12's patched KDE "
+"packages. Run kde/build.sh from the Win12 source folder, then log out and in."
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:28
+msgid "One floating bar"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:28
+msgid "Split: widgets left, apps centre, tray right"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+msgid "Split: Start and apps left, tray right"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:29
+msgid "3 Islands: pinned apps, open apps, tray"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:34
+msgid ""
+"Split layouts put the tray, clock and weather into separate floating panels "
+"(islands). 3 Islands also splits pinned and open apps; drag an app icon to "
+"another island to move it there. Touching the bottom edge shows all of them."
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:41
+msgid "Magnetic islands"
+msgstr ""
+
+#: package/contents/ui/config/TaskbarLayoutBox.qml:46
+msgid ""
+"On: the islands sit close together in the middle of the screen. Off: pushed "
+"to the screen edges."
+msgstr ""
 
 #: package/contents/ui/ContextMenu.qml:36
 msgid "Open file location"
 msgstr "打开文件位置"
 
-#: package/contents/ui/main.qml:144 package/contents/ui/win10/Tile.qml:48
+#: package/contents/ui/main.qml:154 package/contents/ui/win10/Tile.qml:53
 msgid "Folder"
 msgstr "文件夹"
 
-#: package/contents/ui/main.qml:454
+#: package/contents/ui/main.qml:565
 msgid "Unpin from taskbar"
 msgstr "从任务栏取消固定"
 
-#: package/contents/ui/main.qml:454
+#: package/contents/ui/main.qml:565
 msgid "Pin to taskbar"
 msgstr "固定到任务栏"
 
-#: package/contents/ui/main.qml:689
+#: package/contents/ui/main.qml:934 package/contents/ui/win10/Tile.qml:302
+#, fuzzy
+msgid "Choose picture…"
+msgstr "用户头像"
+
+#: package/contents/ui/main.qml:941 package/contents/ui/win10/Tile.qml:303
+#, fuzzy
+msgid "Choose folder…"
+msgstr "固定文件夹…"
+
+#: package/contents/ui/main.qml:998
 msgid "Pin file to Start"
 msgstr "将文件固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:695
+#: package/contents/ui/main.qml:1004
 msgid "Add a folder as group"
 msgstr "将文件夹添加为组"
 
-#: package/contents/ui/main.qml:695
+#: package/contents/ui/main.qml:1004
 msgid "Pin folder to Start"
 msgstr "将文件夹固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:701
+#: package/contents/ui/main.qml:1010
 msgid "Pin website to Start"
 msgstr "将网站固定到“开始”屏幕"
 
-#: package/contents/ui/main.qml:716
+#: package/contents/ui/main.qml:1025
 msgid "Web address:"
 msgstr "网址:"
 
-#: package/contents/ui/main.qml:726
+#: package/contents/ui/main.qml:1035
 msgid "Pin"
 msgstr "固定"
 
-#: package/contents/ui/main.qml:727 package/contents/ui/main.qml:759
+#: package/contents/ui/main.qml:1036 package/contents/ui/main.qml:1068
 msgid "Cancel"
 msgstr "取消"
 
-#: package/contents/ui/main.qml:749
+#: package/contents/ui/main.qml:1058
 msgid "Name (empty = original):"
 msgstr "名称 (留空 = 原名):"
 
-#: package/contents/ui/main.qml:758
+#: package/contents/ui/main.qml:1067
 msgid "OK"
 msgstr "确定"
 
-#: package/contents/ui/main.qml:774
+#: package/contents/ui/main.qml:1083
 msgid "Pin website…"
 msgstr "固定网站…"
 
-#: package/contents/ui/main.qml:775
+#: package/contents/ui/main.qml:1084
 msgid "Pin file…"
 msgstr "固定文件…"
 
-#: package/contents/ui/main.qml:776
+#: package/contents/ui/main.qml:1085
 msgid "Pin folder…"
 msgstr "固定文件夹…"
 
-#: package/contents/ui/main.qml:965
+#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+msgid "Clock"
+msgstr ""
+
+#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+msgid "Calendar"
+msgstr ""
+
+#: package/contents/ui/main.qml:1089 package/contents/ui/win10/Tile.qml:57
+#, fuzzy
+msgid "System monitor"
+msgstr "系统监视器"
+
+#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+msgid "Drives"
+msgstr ""
+
+#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+msgid "Weather"
+msgstr ""
+
+#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+msgid "Notes"
+msgstr ""
+
+#: package/contents/ui/main.qml:1090 package/contents/ui/win10/Tile.qml:58
+msgid "Photo"
+msgstr ""
+
+#: package/contents/ui/main.qml:1092
+msgid "KDE widgets…"
+msgstr ""
+
+#: package/contents/ui/main.qml:1422
 msgid "Design mode — drag the dividers"
 msgstr "设计模式 — 拖动分隔线"
 
-#: package/contents/ui/main.qml:975
+#: package/contents/ui/main.qml:1427 package/contents/ui/win10/Tile.qml:282
+msgid "Reset"
+msgstr "重置"
+
+#: package/contents/ui/main.qml:1432
 msgid "Done"
 msgstr "完成"
 
-#: package/contents/ui/main.qml:1075
+#: package/contents/ui/main.qml:1532
 msgid "Edit menu layout"
 msgstr "编辑菜单布局"
 
-#: package/contents/ui/main.qml:1080
+#: package/contents/ui/main.qml:1537
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr "编辑应用程序…"
 
-#: package/contents/ui/StartButton.qml:59
+#: package/contents/ui/StartButton.qml:90
 #: package/contents/ui/styles/windows11.qml:87
 #: package/contents/ui/win10/SearchView.qml:160
 msgid "Type here to search"
 msgstr "在此键入以搜索"
 
-#: package/contents/ui/StartButton.qml:302
+#: package/contents/ui/StartButton.qml:470
 msgid "start"
 msgstr "开始"
+
+#: package/contents/ui/styles/plasma.qml:45
+msgid "Favorites"
+msgstr ""
+
+#: package/contents/ui/styles/plasma.qml:46
+#, fuzzy
+msgid "All Applications"
+msgstr "编辑应用程序…"
+
+#: package/contents/ui/styles/plasma.qml:226
+#, fuzzy
+msgid "Applications"
+msgstr "编辑应用程序…"
 
 #: package/contents/ui/styles/windows11.qml:138
 #: package/contents/ui/styles/windows11.qml:183
@@ -1683,21 +2353,34 @@ msgid "Recommended"
 msgstr "推荐的项目"
 
 #: package/contents/ui/styles/windows11.qml:139
+#: package/contents/ui/styles/windows12.qml:291
 msgid "More"
 msgstr "更多"
 
+#: package/contents/ui/styles/windows12.qml:96
+msgid "Good morning, %1!"
+msgstr ""
+
+#: package/contents/ui/styles/windows12.qml:96
+msgid "Good afternoon, %1!"
+msgstr ""
+
+#: package/contents/ui/styles/windows12.qml:97
+msgid "Good evening, %1!"
+msgstr ""
+
 #: package/contents/ui/styles/windows7.qml:298
-#: package/contents/ui/styles/xp.qml:345
+#: package/contents/ui/styles/xp.qml:410
 msgid "Unpin from Start menu"
 msgstr "从“开始”菜单取消固定"
 
 #: package/contents/ui/styles/windows7.qml:299
-#: package/contents/ui/styles/xp.qml:352
+#: package/contents/ui/styles/xp.qml:417
 msgid "Pin to Start menu"
 msgstr "固定到“开始”菜单"
 
 #: package/contents/ui/styles/windows7.qml:483
-#: package/contents/ui/styles/xp.qml:467
+#: package/contents/ui/styles/xp.qml:545
 msgid "All Programs"
 msgstr "所有程序"
 
@@ -1705,35 +2388,84 @@ msgstr "所有程序"
 msgid "Search programs and files"
 msgstr "搜索程序和文件"
 
-#: package/contents/ui/styles/xp.qml:347
+#: package/contents/ui/styles/xp.qml:412
 msgid "Move up"
 msgstr "上移"
 
-#: package/contents/ui/styles/xp.qml:348
+#: package/contents/ui/styles/xp.qml:413
 msgid "Move down"
 msgstr "下移"
 
-#: package/contents/ui/styles/xp.qml:665
+#: package/contents/ui/styles/xp.qml:758
 msgid "Log Off"
 msgstr "注销"
 
-#: package/contents/ui/styles/xp.qml:672
+#: package/contents/ui/styles/xp.qml:765
 msgid "Turn Off Computer"
 msgstr "关闭计算机"
+
+#: package/contents/ui/widgets/Drives.qml:62
+msgid "%1 TB"
+msgstr ""
+
+#: package/contents/ui/widgets/Drives.qml:63
+msgid "%1 GB"
+msgstr ""
+
+#: package/contents/ui/widgets/Drives.qml:140
+msgid "%1 free"
+msgstr ""
+
+#: package/contents/ui/widgets/Drives.qml:141
+msgid "%1 free of %2"
+msgstr ""
+
+#: package/contents/ui/widgets/Notes.qml:25
+msgid "Write a note…"
+msgstr ""
+
+#: package/contents/ui/widgets/Photo.qml:54
+msgid "Right-click to choose a picture or folder"
+msgstr ""
+
+#: package/contents/ui/widgets/SysMon.qml:90
+msgid "CPU"
+msgstr ""
+
+#: package/contents/ui/widgets/SysMon.qml:91
+msgid "RAM"
+msgstr ""
+
+#: package/contents/ui/widgets/Weather.qml:16
+msgid "Weather unavailable"
+msgstr ""
+
+#: package/contents/ui/widgets/Weather.qml:17
+msgid "Location not found"
+msgstr ""
+
+#: package/contents/ui/widgets/Weather.qml:82
+#, fuzzy
+msgid "Right-click to set location"
+msgstr "右键菜单"
+
+#: package/contents/ui/widgets/Weather.qml:82
+msgid "Loading…"
+msgstr ""
 
 #: package/contents/ui/win10/AppList.qml:35
 msgid "Desktop"
 msgstr "桌面"
 
-#: package/contents/ui/win10/AppList.qml:63
+#: package/contents/ui/win10/AppList.qml:65
 msgid "Recently added"
 msgstr "最近添加"
 
-#: package/contents/ui/win10/AppList.qml:90
+#: package/contents/ui/win10/AppList.qml:92
 msgid "Folders"
 msgstr "文件夹"
 
-#: package/contents/ui/win10/AppList.qml:281
+#: package/contents/ui/win10/AppList.qml:305
 msgctxt "newly installed app"
 msgid "New"
 msgstr "新"
@@ -1758,105 +2490,353 @@ msgstr "在网络上搜索“%1”"
 msgid "No items match your search"
 msgstr "没有与你的搜索匹配的项目"
 
-#: package/contents/ui/win10/TileArea.qml:38
+#: package/contents/ui/win10/TileArea.qml:39
+#: package/contents/ui/win10/TileGroup.qml:161
+msgid "Add widget"
+msgstr ""
+
+#: package/contents/ui/win10/TileArea.qml:41
 msgid "New page"
 msgstr "新页面"
 
-#: package/contents/ui/win10/TileArea.qml:40
+#: package/contents/ui/win10/TileArea.qml:43
 msgid "Delete this page"
 msgstr "删除此页面"
 
-#: package/contents/ui/win10/TileArea.qml:43
+#: package/contents/ui/win10/TileArea.qml:46
 msgid "Unlock menu"
 msgstr "解锁菜单"
 
-#: package/contents/ui/win10/TileArea.qml:43
+#: package/contents/ui/win10/TileArea.qml:46
 msgid "Lock menu"
 msgstr "锁定菜单"
 
-#: package/contents/ui/win10/TileArea.qml:46
+#: package/contents/ui/win10/TileArea.qml:49
 msgid "Refresh icons"
 msgstr "刷新图标"
 
-#: package/contents/ui/win10/TileArea.qml:48
+#: package/contents/ui/win10/TileArea.qml:51
 msgid "Configure Win12…"
 msgstr "配置 Win12…"
 
-#: package/contents/ui/win10/TileArea.qml:139
+#: package/contents/ui/win10/TileArea.qml:142
 msgid "Drag apps here, or right-click an app and choose \"Pin to Start\"."
 msgstr "将应用拖到此处，或右键单击某个应用并选择“固定到‘开始’屏幕”。"
 
-#: package/contents/ui/win10/TileGroup.qml:87
+#: package/contents/ui/win10/TileGroup.qml:89
 msgid "Group"
 msgstr "组"
 
-#: package/contents/ui/win10/TileGroup.qml:118
+#: package/contents/ui/win10/TileGroup.qml:119
 #: package/contents/ui/win10/TileGroup.qml:131
-#: package/contents/ui/win10/TileGroup.qml:144
+#: package/contents/ui/win10/TileGroup.qml:160
 msgid "Name group"
 msgstr "命名组"
 
-#: package/contents/ui/win10/TileGroup.qml:145
+#: package/contents/ui/win10/TileGroup.qml:163
 msgid "Resort group A-Z"
 msgstr "按 A-Z 重新排序组"
 
-#: package/contents/ui/win10/TileGroup.qml:147
+#: package/contents/ui/win10/TileGroup.qml:165
 msgid "Move group up"
 msgstr "上移组"
 
-#: package/contents/ui/win10/TileGroup.qml:149
+#: package/contents/ui/win10/TileGroup.qml:167
 msgid "Move group down"
 msgstr "下移组"
 
-#: package/contents/ui/win10/TileGroup.qml:151
+#: package/contents/ui/win10/TileGroup.qml:169
 msgid "Move to previous page"
 msgstr "移到上一页"
 
-#: package/contents/ui/win10/TileGroup.qml:153
+#: package/contents/ui/win10/TileGroup.qml:171
 msgid "Move to next page"
 msgstr "移到下一页"
 
-#: package/contents/ui/win10/TileGroup.qml:156
+#: package/contents/ui/win10/TileGroup.qml:174
 msgid "Unpin group from Start"
 msgstr "从“开始”屏幕取消固定组"
 
-#: package/contents/ui/win10/TileGroup.qml:230
-#: package/contents/ui/win10/Tile.qml:158
+#: package/contents/ui/win10/TileGroup.qml:248
+#: package/contents/ui/win10/Tile.qml:291
 msgid "Name folder"
 msgstr "命名文件夹"
 
-#: package/contents/ui/win10/Tile.qml:159
+#: package/contents/ui/win10/Tile.qml:56
+msgid "Widget"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:212
+msgid "Red"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:212
+msgid "Orange"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:212
+msgid "Yellow"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:212
+msgid "Lime"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:213
+#, fuzzy
+msgid "Green"
+msgstr "橄榄绿"
+
+#: package/contents/ui/win10/Tile.qml:213
+msgid "Teal"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:213
+msgid "Cyan"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:214
+msgid "Indigo"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:214
+msgid "Purple"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:214
+msgid "Pink"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:214
+msgid "Brown"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:215
+msgid "Grey"
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:281
+#, fuzzy
+msgid "Custom colour…"
+msgstr "自定义颜色"
+
+#: package/contents/ui/win10/Tile.qml:292
 msgid "Unpin folder from Start"
 msgstr "从“开始”屏幕取消固定文件夹"
 
-#: package/contents/ui/win10/Tile.qml:162
+#: package/contents/ui/win10/Tile.qml:294
+#, fuzzy
+msgid "Configure widget…"
+msgstr "配置 Win12…"
+
+#: package/contents/ui/win10/Tile.qml:295
+#: package/contents/ui/win10/Tile.qml:296
+#, fuzzy
+msgid "Remove widget"
+msgstr "移除"
+
+#: package/contents/ui/win10/Tile.qml:300
+#, fuzzy
+msgid "Set location…"
+msgstr "设置图标…"
+
+#: package/contents/ui/win10/Tile.qml:305
 msgid "Set icon…"
 msgstr "设置图标…"
 
-#: package/contents/ui/win10/Tile.qml:163
+#: package/contents/ui/win10/Tile.qml:306
 msgid "Reset custom icon"
 msgstr "重置自定义图标"
 
-#: package/contents/ui/win10/Tile.qml:165
+#: package/contents/ui/win10/Tile.qml:308
 msgid "Hide icon text"
 msgstr "隐藏图标文本"
 
-#: package/contents/ui/win10/Tile.qml:165
+#: package/contents/ui/win10/Tile.qml:308
 msgid "Show icon text"
 msgstr "显示图标文本"
 
-#: package/contents/ui/win10/Tile.qml:167
+#: package/contents/ui/win10/Tile.qml:310
 msgid "Tile colour…"
 msgstr "磁贴颜色…"
 
-#: package/contents/ui/win10/Tile.qml:168
-msgid "Reset tile colour"
-msgstr "重置磁贴颜色"
+#: package/contents/ui/win10/Tile.qml:312
+#, fuzzy
+msgid "Set tile image…"
+msgstr "选择磁贴图像…"
 
-#: package/contents/ui/win10/Tile.qml:170
+#: package/contents/ui/win10/Tile.qml:313
+#, fuzzy
+msgid "Remove tile image"
+msgstr "磁贴图像:"
+
+#: package/contents/ui/win10/Tile.qml:315
+#, fuzzy
+msgid "Show icon"
+msgstr "显示图标文本"
+
+#: package/contents/ui/win10/Tile.qml:315
+#, fuzzy
+msgid "Hide icon"
+msgstr "隐藏图标文本"
+
+#: package/contents/ui/win10/Tile.qml:318
 msgid "Resize"
 msgstr "调整大小"
 
-#: package/contents/ui/win10/Tile.qml:171
+#: package/contents/ui/win10/Tile.qml:319
 msgid "Wide"
 msgstr "宽"
+
+#: package/contents/ui/win10/Tile.qml:320
+#, fuzzy
+msgid "W. Large H."
+msgstr "大"
+
+#: package/contents/ui/win10/Tile.qml:320
+#, fuzzy
+msgid "W. Large V."
+msgstr "大"
+
+#: package/contents/ui/win10/Tile.qml:321
+msgid "3x6 H."
+msgstr ""
+
+#: package/contents/ui/win10/Tile.qml:321
+msgid "3x6 V."
+msgstr ""
+
+#~ msgid "Look"
+#~ msgstr "外观"
+
+#~ msgid "What should the Start button look like?"
+#~ msgstr "“开始”按钮应是什么样子?"
+
+#~ msgid "Start11 button image"
+#~ msgstr "Start11 按钮图像"
+
+#~ msgid "Arch Linux (default)"
+#~ msgstr "Arch Linux (默认)"
+
+#~ msgid "Image:"
+#~ msgstr "图像:"
+
+#~ msgid "Choose your mode:"
+#~ msgstr "选择你的模式:"
+
+#~ msgid "Custom (Look page)"
+#~ msgstr "自定义 (“外观”页面)"
+
+#~ msgid "Manual"
+#~ msgstr "手动"
+
+#~ msgid ""
+#~ "The taskbar follows these when \"Apply the theme to the taskbar\" is on, "
+#~ "title bars when \"Apply the theme to windows\" is on (Taskbar page)."
+#~ msgstr ""
+#~ "开启“将主题应用于任务栏”时，任务栏会遵循这些设置；开启“将主题应用于窗口”"
+#~ "时，标题栏会遵循这些设置(“任务栏”页面)。"
+
+#~ msgid "Colour"
+#~ msgstr "颜色"
+
+#~ msgid "Force dark mode menu"
+#~ msgstr "强制使用深色模式菜单"
+
+#~ msgid "Force light mode menu"
+#~ msgstr "强制使用浅色模式菜单"
+
+#~ msgid "Selected item accent colour:"
+#~ msgstr "所选项的强调色:"
+
+#~ msgid "Plasma accent colour"
+#~ msgstr "Plasma 强调色"
+
+#~ msgid "Make the start menu solid"
+#~ msgstr "使“开始”菜单不透明"
+
+#~ msgid "Menu background transparency level:"
+#~ msgstr "菜单背景透明度级别:"
+
+#~ msgid "Round the corners of the menu:"
+#~ msgstr "菜单圆角:"
+
+#~ msgid "Icons:"
+#~ msgstr "图标:"
+
+#~ msgid "Apply an image to the background:"
+#~ msgstr "将图像应用于背景:"
+
+#~ msgid "Section dividers:"
+#~ msgstr "分区分隔线:"
+
+#~ msgid "Show icons as tiles split into:"
+#~ msgstr "将图标显示为磁贴，分为:"
+
+#~ msgid "Shortcut icons should be sized:"
+#~ msgstr "快捷方式图标大小:"
+
+#~ msgid "Decide how shortcut icons look:"
+#~ msgstr "决定快捷方式图标的外观:"
+
+#~ msgid "Small place rows (Windows 7, XP, Pro styles)"
+#~ msgstr "较小的位置行 (Windows 7、XP、Pro 样式)"
+
+#~ msgid "Left hand side shortcuts"
+#~ msgstr "左侧快捷方式"
+
+#~ msgid "Power menu options"
+#~ msgstr "电源菜单选项"
+
+#~ msgid "The classic Windows 7 menu."
+#~ msgstr "经典 Windows 7 菜单。"
+
+#~ msgid "An updated Windows 7 style."
+#~ msgstr "更新的 Windows 7 样式。"
+
+#~ msgid "Which style of Start Menu would you prefer?"
+#~ msgstr "你更喜欢哪种“开始”菜单样式?"
+
+#~ msgid "Classic Windows XP style"
+#~ msgstr "经典 Windows XP 样式"
+
+#~ msgid "Modern Windows XP style"
+#~ msgstr "现代 Windows XP 样式"
+
+#~ msgid "What size should it be?"
+#~ msgstr "应是多大?"
+
+#~ msgid "Adjust global menu scaling:"
+#~ msgstr "调整全局菜单缩放:"
+
+#~ msgid "Backup"
+#~ msgstr "备份"
+
+#~ msgid "Apply the theme to the taskbar"
+#~ msgstr "将主题应用于任务栏"
+
+#~ msgid ""
+#~ "Taskbar colours and buttons that match the menu style. Your own Plasma "
+#~ "Style comes back when this is off."
+#~ msgstr ""
+#~ "与菜单样式匹配的任务栏颜色和按钮。关闭后将恢复你自己的 Plasma 样式。"
+
+#~ msgid "Apply the theme to windows"
+#~ msgstr "将主题应用于窗口"
+
+#~ msgid ""
+#~ "Title bars and colours of every window. Your own ones come back when this "
+#~ "is off."
+#~ msgstr "每个窗口的标题栏和颜色。关闭后将恢复你自己的设置。"
+
+#~ msgid "Custom taskbar:"
+#~ msgstr "自定义任务栏:"
+
+#~ msgid "Search:"
+#~ msgstr "搜索:"
+
+#~ msgid "Plasma settings:"
+#~ msgstr "Plasma 设置:"
+
+#~ msgid "Reset tile colour"
+#~ msgstr "重置磁贴颜色"

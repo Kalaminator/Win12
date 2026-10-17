@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Win12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 08:26+0200\n"
+"POT-Creation-Date: 2026-10-17 08:30+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0000\n"
 "Last-Translator: Win12\n"
 "Language-Team: Spanish\n"
@@ -1226,8 +1226,10 @@ msgid "Group results by type (Apps, Files, Settings …)"
 msgstr "Agrupar resultados por tipo (Aplicaciones, Archivos, Configuración …)"
 
 #: package/contents/ui/config/ConfigSearch.qml:43
-msgid "Show the \"Search the internet\" button"
-msgstr "Mostrar el botón «Buscar en internet»"
+msgid "Classic search: dense one-line results, no Best match card"
+msgstr ""
+"Búsqueda clásica: resultados densos de una línea, sin tarjeta de mejor "
+"coincidencia"
 
 #: package/contents/ui/config/ConfigSearch.qml:44
 msgid "Show filter icons above the results (Apps, Documents, Web …)"
@@ -1236,10 +1238,8 @@ msgstr ""
 "…)"
 
 #: package/contents/ui/config/ConfigSearch.qml:45
-msgid "Classic search: dense one-line results, no Best match card"
-msgstr ""
-"Búsqueda clásica: resultados densos de una línea, sin tarjeta de mejor "
-"coincidencia"
+msgid "Show the \"Search the internet\" button"
+msgstr "Mostrar el botón «Buscar en internet»"
 
 #: package/contents/ui/config/ConfigSearch.qml:49
 msgid "Search the internet with:"
