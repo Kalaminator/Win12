@@ -44,6 +44,11 @@ ConfigModel {
         source: "config/ConfigTaskbar.qml"
     }
     ConfigCategory {
+        name: i18n("Windows")
+        icon: "preferences-system-windows"
+        source: "config/ConfigWindows.qml"
+    }
+    ConfigCategory {
         name: i18n("Icons")
         icon: "preferences-desktop-icons"
         source: "config/ConfigIcons.qml"

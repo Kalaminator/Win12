@@ -13,16 +13,7 @@ KCM.SimpleKCM {
     id: page
     property string cfg_menuStyle   // read only, to show the XP option
     property string cfg_taskbarLook   // read only (T43, picked on the Style page)
-    property alias cfg_xpFirefoxTitlebar: ffBox.checked
     property bool cfg_windowTheme   // read only (T43: the Style page "Windows:" combo)
-    property alias cfg_windowOpacity: winAlpha.value
-    property alias cfg_windowBlur: winBlur.checked
-    property int cfg_windowRadius
-    property int cfg_titleHeight
-    property string cfg_windowImage
-    property string cfg_windowImageMode
-    property alias cfg_windowImageAlpha: winImageAlpha.value
-    property alias cfg_windowImageTint: winImageTint.checked
     property bool cfg_taskbarFollowsStyle   // read only
     property string cfg_taskbarTheme
     property alias cfg_taskbarColor: tbColor.color
@@ -73,12 +64,6 @@ KCM.SimpleKCM {
         nameFilters: [i18n("Images (*.png *.jpg *.jpeg)")]
         onAccepted: page.cfg_taskbarImage = decodeURIComponent(selectedFile.toString().replace("file://", ""))
     }
-    Dialogs.FileDialog {
-        id: winImageFile
-        title: i18n("Pick title bar picture…")
-        nameFilters: [i18n("Images (*.png *.jpg *.jpeg)")]
-        onAccepted: page.cfg_windowImage = decodeURIComponent(selectedFile.toString().replace("file://", ""))
-    }
 
     Kirigami.FormLayout {
         // T43: which taskbar and window look is used moved to the Style page ("Taskbar:" / "Windows:").
@@ -87,79 +72,6 @@ KCM.SimpleKCM {
             wrapMode: Text.Wrap
             text: i18n("The taskbar and window looks are picked on the Style page.")
             enabled: false
-        }
-        QQC2.CheckBox {
-            id: ffBox
-            visible: page.cfg_menuStyle === "xp"
-            text: i18n("Use the system title bar in Firefox with XP themes")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.text: i18n("Firefox draws its own title bar, so the XP one does not show. Restart Firefox for this to take effect.")
-        }
-        // T41: glass options for the windowTheme decoration (main.qml glassSuffix), every style.
-        ColumnLayout {
-            enabled: page.cfg_windowTheme
-            Kirigami.FormData.label: i18n("Window frames:")
-            RowLayout {
-                QQC2.Slider { id: winAlpha; from: 30; to: 100; stepSize: 5 }
-                QQC2.Label { text: i18n("%1% opaque", Math.round(winAlpha.value)) }
-            }
-            QQC2.CheckBox { id: winBlur; enabled: winAlpha.value < 100; text: i18n("Blur behind translucent frames") }
-            RowLayout {
-                QQC2.CheckBox {
-                    id: ownRadius
-                    text: i18n("Corner radius:")
-                    checked: page.cfg_windowRadius >= 0
-                    onToggled: page.cfg_windowRadius = checked ? radiusSpin.value : -1
-                }
-                QQC2.SpinBox {
-                    id: radiusSpin
-                    enabled: ownRadius.checked
-                    from: 0
-                    to: 12
-                    value: Math.max(0, page.cfg_windowRadius < 0 ? 8 : page.cfg_windowRadius)
-                    textFromValue: v => v === 0 ? i18n("Square") : v + " px"
-                    valueFromText: t => parseInt(t) || 0
-                    onValueModified: page.cfg_windowRadius = value
-                }
-            }
-            RowLayout {
-                QQC2.CheckBox {
-                    id: ownTitle
-                    text: i18n("Title bar height:")
-                    checked: page.cfg_titleHeight > 0
-                    onToggled: page.cfg_titleHeight = checked ? titleSpin.value : 0
-                }
-                QQC2.SpinBox {
-                    id: titleSpin
-                    enabled: ownTitle.checked
-                    from: 20
-                    to: 48
-                    value: page.cfg_titleHeight > 0 ? page.cfg_titleHeight : 30
-                    textFromValue: v => v + " px"
-                    valueFromText: t => parseInt(t) || 30
-                    onValueModified: page.cfg_titleHeight = value
-                }
-            }
-            // W14: picture over the title bar (xptheme.py --deco --image), same opacity/blur as the frame
-            RowLayout {
-                QQC2.Label { text: i18n("Title bar picture:") }
-                QQC2.Label { text: page.cfg_windowImage ? page.cfg_windowImage.split("/").pop() : i18n("None") }
-                QQC2.Button { text: i18n("Pick image…"); icon.name: "document-open"; onClicked: winImageFile.open() }
-                QQC2.Button { icon.name: "edit-clear"; visible: page.cfg_windowImage !== ""; onClicked: page.cfg_windowImage = "" }
-            }
-            RowLayout {
-                enabled: page.cfg_windowImage !== ""
-                QQC2.ComboBox {
-                    textRole: "text"
-                    valueRole: "value"
-                    model: [{ value: "stretch", text: i18n("Stretch") }, { value: "tile", text: i18n("Tile") }]
-                    Component.onCompleted: currentIndex = Math.max(0, indexOfValue(page.cfg_windowImageMode))
-                    onActivated: page.cfg_windowImageMode = currentValue
-                }
-                QQC2.Slider { id: winImageAlpha; from: 0; to: 100; stepSize: 1 }
-                QQC2.Label { text: i18n("%1% opaque", Math.round(winImageAlpha.value)) }
-                QQC2.CheckBox { id: winImageTint; text: i18n("Tint with the accent colour") }
-            }
         }
         // W4: Windows 12 taskbar group (floating bar, corners, colour, layout)
         ColumnLayout {
