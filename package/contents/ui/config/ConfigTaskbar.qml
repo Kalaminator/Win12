@@ -168,27 +168,27 @@ KCM.SimpleKCM {
             checked: page.cfg_taskbarTheme === "custom"
             onToggled: page.cfg_taskbarTheme = checked ? "custom" : "off"
         }
-        QQC2.Label { visible: !page.customColour; text: i18n("Available with a custom taskbar colour."); enabled: false }
-        KQuickControls.ColorButton { id: tbColor; enabled: page.customColour; Kirigami.FormData.label: i18n("Colour:"); showAlphaChannel: false }
+        QQC2.Label { visible: customBox.visible && !page.customColour; text: i18n("Available with a custom taskbar colour."); enabled: false }
+        KQuickControls.ColorButton { id: tbColor; visible: customBox.visible; enabled: page.customColour; Kirigami.FormData.label: i18n("Colour:"); showAlphaChannel: false }
         RowLayout {
-            enabled: page.customColour
+            visible: customBox.visible; enabled: page.customColour
             Kirigami.FormData.label: i18n("Opacity:")
             QQC2.Slider { id: tbAlpha; from: 0; to: 100; stepSize: 1 }
             QQC2.Label { text: i18n("%1% opaque", Math.round(tbAlpha.value)) }
         }
         QQC2.SpinBox {
             id: tbRadius
-            enabled: page.customColour
+            visible: customBox.visible; enabled: page.customColour
             Kirigami.FormData.label: i18n("Corner radius:")
             from: 2
             to: 24
             textFromValue: v => v <= 2 ? i18n("Square") : v + " px"
             valueFromText: t => parseInt(t) || 2
         }
-        QQC2.CheckBox { id: tbLine; enabled: page.customColour; text: i18n("Light line on the taskbar edge") }
+        QQC2.CheckBox { id: tbLine; visible: customBox.visible; enabled: page.customColour; text: i18n("Light line on the taskbar edge") }
         // T34: task button look in the generated tasks.svg (presets pick their own; "Plasma" keeps the style's)
         QQC2.ComboBox {
-            enabled: page.customColour
+            visible: customBox.visible; enabled: page.customColour
             Kirigami.FormData.label: i18n("Task buttons:")
             textRole: "text"
             valueRole: "value"

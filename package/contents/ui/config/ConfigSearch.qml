@@ -40,9 +40,9 @@ KCM.SimpleKCM {
     Kirigami.FormLayout {
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Results") }
         QQC2.CheckBox { id: group; text: i18n("Group results by type (Apps, Files, Settings …)") }
-        QQC2.CheckBox { id: web; text: i18n("Show the \"Search the internet\" button") }
-        QQC2.CheckBox { id: filterIcons; text: i18n("Show filter icons above the results (Apps, Documents, Web …)") }
         QQC2.CheckBox { id: classic; text: i18n("Classic search: dense one-line results, no Best match card") }
+        QQC2.CheckBox { id: filterIcons; text: i18n("Show filter icons above the results (Apps, Documents, Web …)") }
+        QQC2.CheckBox { id: web; text: i18n("Show the \"Search the internet\" button") }
         QQC2.TextField {
             id: webUrl
             enabled: web.checked
