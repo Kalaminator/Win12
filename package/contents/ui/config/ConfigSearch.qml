@@ -38,16 +38,11 @@ KCM.SimpleKCM {
     readonly property bool all: cfg_searchRunners.length === 0
 
     Kirigami.FormLayout {
+        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Results") }
         QQC2.CheckBox { id: group; text: i18n("Group results by type (Apps, Files, Settings …)") }
-        QQC2.CheckBox { id: web; text: i18n("Show search the internet button") }
+        QQC2.CheckBox { id: web; text: i18n("Show the \"Search the internet\" button") }
         QQC2.CheckBox { id: filterIcons; text: i18n("Show filter icons above the results (Apps, Documents, Web …)") }
         QQC2.CheckBox { id: classic; text: i18n("Classic search: dense one-line results, no Best match card") }
-        QQC2.CheckBox { id: history; text: i18n("Remember recent searches") }
-        QQC2.Button {
-            text: i18n("Clear search history")
-            enabled: page.cfg_searchHistory.length > 0
-            onClicked: page.cfg_searchHistory = []
-        }
         QQC2.TextField {
             id: webUrl
             enabled: web.checked
@@ -61,12 +56,25 @@ KCM.SimpleKCM {
             font: Kirigami.Theme.smallFont
         }
 
+        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("History") }
+        QQC2.CheckBox { id: history; text: i18n("Remember recent searches") }
+        QQC2.Button {
+            text: i18n("Clear search history")
+            enabled: page.cfg_searchHistory.length > 0
+            onClicked: page.cfg_searchHistory = []
+        }
+
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("What to search") }
 
         QQC2.CheckBox {
             text: i18n("Use everything KRunner can search")
             checked: page.all
             onToggled: page.cfg_searchRunners = checked ? [] : page.runners.slice(0, 3).map(r => r[0])
+        }
+        QQC2.Label {
+            text: i18n("Off: starts with Apps, Settings and Files; tick more below.")
+            enabled: false
+            font: Kirigami.Theme.smallFont
         }
         Repeater {
             model: page.runners

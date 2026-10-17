@@ -186,3 +186,5 @@ another island assigns the app (+ launcher). Win12: `main.qml kdePatched` (pacma
 menuPosition; `islands` mode: host + A (other app island) + T (tray island), keys `win12Layout` {A,T,atm,ttm,weather},
 `win12TrayClean`); `tests/test_islands.js` = pure tests + fake-shell harness (<= 3 passes per switch);
 `tests/tools/` = setlayout.sh (timing), state.sh, w16mouse.py (drag). Spec + plan + progress: docs/superpowers/.
+
+Settings pages (2026-10-17): nine pages in `config/config.qml` (Style, Start menu, Apps list, Start button & shortcuts, Taskbar, Windows, Appearance, Search, Advanced); style gating through `config/StyleKinds.qml` (`kinds.menuKind/taskbarKind/windowKind/anyXp`), never `cfg_menuStyle` directly; read-only key declarations end with `// read only`; `tests/test_settings_keys.js --strict` guards one control per key; `tests/test_stylekinds.qml` tests the rules (`QT_QPA_PLATFORM=offscreen /usr/lib/qt6/bin/qml`). Dialog for screenshots: `win12-settings`, click the sidebar with `tests/tools/w16mouse.py drag X,Y X,Y 1`.

@@ -1,6 +1,6 @@
 import org.kde.plasma.configuration
 
-// The Win12 settings window, laid out like Start11Config.
+// The Win12 settings window: nine pages, one topic each (docs/research/settings-reorg-proposal.md).
 ConfigModel {
     ConfigCategory {
         name: i18n("Style")
@@ -12,7 +12,6 @@ ConfigModel {
         icon: "view-grid"
         source: "config/ConfigStartMenu.qml"
     }
-
     ConfigCategory {
         name: i18n("Apps list")
         icon: "view-list-details"
@@ -24,6 +23,16 @@ ConfigModel {
         source: "config/ConfigButton.qml"
     }
     ConfigCategory {
+        name: i18n("Taskbar")
+        icon: "preferences-desktop-plasma"
+        source: "config/ConfigTaskbar.qml"
+    }
+    ConfigCategory {
+        name: i18n("Windows")
+        icon: "preferences-system-windows"
+        source: "config/ConfigWindows.qml"
+    }
+    ConfigCategory {
         name: i18n("Appearance")
         icon: "preferences-desktop-color"
         source: "config/ConfigAppearance.qml"
@@ -32,16 +41,6 @@ ConfigModel {
         name: i18n("Search")
         icon: "search"
         source: "config/ConfigSearch.qml"
-    }
-    ConfigCategory {
-        name: i18n("Taskbar")
-        icon: "preferences-desktop-icons"
-        source: "config/ConfigTaskbar.qml"
-    }
-    ConfigCategory {
-        name: i18n("Windows")
-        icon: "preferences-system-windows"
-        source: "config/ConfigWindows.qml"
     }
     ConfigCategory {
         name: i18n("Advanced")
