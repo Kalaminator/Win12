@@ -1,6 +1,7 @@
 // Run: node tests/test_islands.js
 // 1) pure helpers in code/islandlogic.js; 2) code/islands.js against a fake plasmashell scripting API (enough of
 // Panel/Widget for the script: ids never reused, index = live position, a removed widget lingers with empty config).
+// shell(..., stock = true) models a KDE without Win12's patches (spec 11.5): see the comment in shell().
 const fs = require("fs"), path = require("path"), assert = require("assert");
 const read = f => fs.readFileSync(path.join(__dirname, "../package/contents/ui/code/" + f), "utf8");
 const L = new Function(read("islandlogic.js") + "; return { roles, trayOrder, listsFor, mergeLists };")();
@@ -21,7 +22,7 @@ assert.strictEqual(L.mergeLists("a,b", "", "c"), "a,b,c");
 assert.strictEqual(L.mergeLists("", "", ""), "");
 
 // ---- fake plasmashell ----
-function shell(screenW = 1920, screens = ["HDMI-A-2"]) {
+function shell(screenW = 1920, screens = ["HDMI-A-2"], stock = false) {
     let nextId = 1; const panels = [], reg = {};
     const cfg = o => { o.cfg = {}; o.currentConfigGroup = ["General"];
         o.readConfig = function (k, d = "") { const g = this.cfg[this.currentConfigGroup[0]] || {}; return k in g ? g[k] : d; };
@@ -33,30 +34,40 @@ function shell(screenW = 1920, screens = ["HDMI-A-2"]) {
             for (const k of ["launchers", "win12Island"]) if (String(g[k] || "") !== String(s[k] || "")) { s[k] = g[k];
                 if (s.win12Island) for (const l of s.launchers || []) reg[l] = s.win12Island; } };
         return o; };
-    const widget = (type, panel) => cfg({ id: nextId++, type, panel,
+    // stock (sh.stock): index reads the panel's saved order, snapshotted only by endPass() after each script; the setter
+    // removes the id, clamps to the last slot of what is left (lands one short) and saves; a moved widget is inserted at
+    // its old slot x (the laid-out index, 0 right after an add or move) or, past the target's widgets, goes to lost
+    // (listed by widgets(), index -1, not laid out)
+    const unlink = w => { for (const a of [w.panel.ws, w.panel.lost]) if (a.indexOf(w) >= 0) a.splice(a.indexOf(w), 1); };
+    const widget = (type, panel) => cfg({ id: nextId++, type, panel, x: 0,
         get configKeys() { return Object.keys(this.cfg[this.currentConfigGroup[0]] || {}); }, get configGroups() { return Object.keys(this.cfg); },
-        get index() { return this.panel ? this.panel.ws.indexOf(this) : -1; },
-        set index(i) { const ws = this.panel.ws; ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); },
-        remove() { this.panel.ws.splice(this.panel.ws.indexOf(this), 1); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
+        get index() { return !this.panel ? -1 : sh.stock ? this.panel.saved.indexOf(this.id) : this.panel.ws.indexOf(this); },
+        set index(i) { const ws = this.panel.ws; if (!sh.stock) { ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); return; }
+            const o = this.panel.saved.filter(d => d !== this.id); o.splice(Math.min(i, Math.max(0, o.length - 1)), 0, this.id); this.panel.saved = o;
+            const at = ws.map((w, k) => o.indexOf(w.id) < 0 ? o.length + k : o.indexOf(w.id));   // unsaved ones after, in order
+            ws.splice(0, ws.length, ...ws.map((w, k) => [w, at[k]]).sort((a, b) => a[1] - b[1]).map(a => a[0])); },
+        remove() { unlink(this); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
     class Panel {
-        constructor() { cfg(this); this.id = nextId++; this.ws = []; this.gone = []; this.location = "bottom"; this.height = 44;
+        constructor() { cfg(this); this.id = nextId++; this.ws = []; this.gone = []; this.saved = []; this.lost = []; this.location = "bottom"; this.height = 44;
             this.lengthMode = "fill"; this.alignment = "left"; this.minimumLength = 0; this.maximumLength = 0; this.offset = 0;
             this.floating = true; this.hiding = "none"; this.screen = 0; panels.push(this); }
         get length() { return this.lengthMode === "fill" ? 1920 : this.ws.length * 40 + 16; }
-        widgets(type) { const all = this.ws.concat(this.gone); return type ? all.filter(w => w.type === type && w.panel === this) : all; }
+        widgets(type) { const all = this.ws.concat(this.lost, this.gone); return type ? all.filter(w => w.type === type && w.panel === this) : all; }
         get widgetIds() { return this.widgets().map(w => w.id); }
         addWidget(x) { if (typeof x === "string") { const w = widget(x, this); this.ws.push(w); return w; }
-            x.panel.ws.splice(x.panel.ws.indexOf(x), 1); x.panel = this; this.ws.push(x); return x; }
-        remove() { panels.splice(panels.indexOf(this), 1); for (const w of this.ws) w.panel = null; }
+            unlink(x); x.panel = this; if (!sh.stock) this.ws.push(x); else if (x.x > this.ws.length) this.lost.push(x); else this.ws.splice(x.x, 0, x);
+            x.x = 0; return x; }
+        remove() { panels.splice(panels.indexOf(this), 1); for (const w of this.ws.concat(this.lost)) w.panel = null; }
     }
     // 10: screens like plasmashell's ScreenPool: id = index in the connected list, 0 = primary, -1 = not connected
     const sh = { Panel, panels: () => panels.slice(), screens, screenForConnector: n => screens.indexOf(n),
-        screenGeometry: id => ({ x: screenW * id, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)) };
+        screenGeometry: id => ({ x: screenW * id, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)), stock,
+        endPass: () => { if (sh.stock) for (const q of panels) { q.saved = q.ws.map(w => w.id); q.ws.forEach((w, i) => w.x = i); } } };
     // the user's bar: Start, task manager with two pins, separator, tray, clock, show desktop
     const p = new Panel(); const me = p.addWidget("org.win12.menu"); const tm = p.addWidget("org.kde.plasma.icontasks");
     tm.writeConfig("launchers", ["a.desktop", "b.desktop"]);
     for (const t of ["marginsseparator", "systemtray", "digitalclock", "showdesktop"]) p.addWidget("org.kde.plasma." + t);
-    sh.host = p; sh.me = me; sh.tm = tm; sh.reg = reg; return sh;
+    sh.endPass(); sh.host = p; sh.me = me; sh.tm = tm; sh.reg = reg; return sh;
 }
 function runIslands(sh, subs) {
     // Widget.remove() is applet->destroy() -> deleteLater: gone by the next evaluateScript call. Only a removed
@@ -65,12 +76,12 @@ function runIslands(sh, subs) {
     let src = read("islandlogic.js") + "\n" + read("islands.js");
     for (const k in subs) src = src.split("@" + k + "@").join(String(subs[k]));
     sh.out = []; new Function("panels", "Panel", "screenGeometry", "screenForConnector", "print", src)(sh.panels, sh.Panel, sh.screenGeometry, sh.screenForConnector, sh.print);
-    return sh.out[0];
+    sh.endPass(); return sh.out[0];
 }
 // passes until the script prints done (Infinity = never, so "<= n" asserts fail on a loop that never ends)
 function passes(sh, subs, max = 10) { for (let i = 1; i <= max; i++) if (runIslands(sh, subs) === "done") return i; return Infinity; }
 const types = q => q.widgets().filter(w => w.panel === q).map(w => w.type.replace("org.kde.plasma.", "").replace("org.win12.", "w12:"));
-const sub = (sh, WANT, POS = 0, MAG = true, SCR = "", ALL = false) => ({ ID: sh.me.id, WANT, POS, MAG, GAP: 8, SCR, ALL, SCREENS: sh.screens.join(",") });
+const sub = (sh, WANT, POS = 0, MAG = true, SCR = "", ALL = false, STOCK = false) => ({ ID: sh.me.id, WANT, POS, MAG, GAP: 8, SCR, ALL, SCREENS: sh.screens.join(","), STOCK });
 
 // split-left today (one step per pass, so up to 40 passes): 3 panels, tray/clock/show desktop in the right island
 // after the fresh tray, helpers everywhere
@@ -217,4 +228,35 @@ assert.strictEqual(cfgOf(mtm, "win12Island"), ""); assert.strictEqual(cfgOf(mtm,
 // Right mirrors the copy too: task manager before Start
 assert.ok(passes(sh, sub(sh, "split-right", 2, true, "all")) <= 4);
 assert.deepStrictEqual(types(onScr(sh, 1)[0]).filter(t => t !== "w12:reveal"), ["icontasks", "w12:menu"]);
+// ---- stock KDE (no patch): one step per pass, spec 11 ----
+const ssub = (sh, WANT, POS = 0) => sub(sh, WANT, POS, true, "", false, true), nr = q => types(q).filter(t => t !== "w12:reveal");
+const noLost = sh => sh.panels().every(q => !q.lost.length), trayId = sh => sh.panels().flatMap(q => q.widgets("org.kde.plasma.systemtray"))[0].id;
+const BAR = ["w12:menu", "icontasks", "marginsseparator", "systemtray", "digitalclock", "showdesktop"];
+// split-left: more than 3 passes (one step each), still converges; nothing left unplaced; a fresh tray
+sh = shell(1920, ["HDMI-A-2"], true); let tray0 = trayId(sh), n = passes(sh, ssub(sh, "split-left"), 40);
+assert.ok(3 < n && n <= 40, "stock split-left converges in one step per pass: " + n);
+assert.strictEqual(sh.panels().length, 3); assert.ok(noLost(sh), "stock split-left: nothing lost");
+assert.deepStrictEqual(nr(sh.host), ["w12:menu", "icontasks", "marginsseparator"]);
+assert.deepStrictEqual(nr(isl(sh, "R")), ["systemtray", "digitalclock", "showdesktop"]); assert.deepStrictEqual(nr(isl(sh, "L")), ["weather"]);
+assert.ok(isl(sh, "L").offset < sh.host.offset && sh.host.offset < isl(sh, "R").offset, "stock magnetic row L, host, R");
+let tray1 = trayId(sh); assert.notStrictEqual(tray1, tray0, "stock split: fresh tray");
+// back to One bar: the original order, a fresh tray again
+n = passes(sh, ssub(sh, "single"), 40); assert.ok(3 < n && n <= 40, "stock single converges: " + n);
+assert.strictEqual(sh.panels().length, 1); assert.ok(noLost(sh)); assert.deepStrictEqual(types(sh.host), BAR);
+assert.ok(trayId(sh) !== tray0 && trayId(sh) !== tray1, "stock single: fresh tray");
+// split-left again: the clean marker (written by the first fresh tray) does not allow a live tray move on stock
+assert.strictEqual(cfgOf(sh.host, "win12TrayClean"), "true"); tray1 = trayId(sh);
+assert.ok(passes(sh, ssub(sh, "split-left"), 40) <= 40); assert.notStrictEqual(trayId(sh), tray1, "stock ignores win12TrayClean");
+// split-right from a fresh stock bar and back
+sh = shell(1920, ["HDMI-A-2"], true); n = passes(sh, ssub(sh, "split-right"), 40); assert.ok(3 < n && n <= 40, "stock split-right converges: " + n);
+assert.strictEqual(sh.panels().length, 2); assert.ok(noLost(sh));
+assert.deepStrictEqual(nr(isl(sh, "R")), ["weather", "systemtray", "digitalclock", "showdesktop"]);
+assert.ok(passes(sh, ssub(sh, "single"), 40) <= 40); assert.strictEqual(sh.panels().length, 1); assert.deepStrictEqual(types(sh.host), BAR);
+// patch lost (a Plasma update replaced the patched packages): 3 Islands made patched, then split-left on stock
+sh = shell(); assert.ok(passes(sh, sub(sh, "islands", 0)) <= 3); sh.stock = true; sh.endPass();
+assert.ok(passes(sh, ssub(sh, "split-left"), 40) <= 40, "patch lost: split-left converges on stock");
+assert.deepStrictEqual(sh.panels().map(q => cfgOf(q, "win12Island")).sort(), ["", "L", "R"]); assert.ok(noLost(sh));
+assert.strictEqual(sh.panels().flatMap(q => q.widgets("org.kde.plasma.icontasks")).length, 1, "one task manager left");
+assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop", "pins merged back");
+assert.deepStrictEqual(nr(isl(sh, "R")), ["systemtray", "digitalclock", "showdesktop"]); assert.deepStrictEqual(nr(isl(sh, "L")), ["weather"]);
 console.log("test_islands OK");
