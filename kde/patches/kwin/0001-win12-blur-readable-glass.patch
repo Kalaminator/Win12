@@ -1,0 +1,289 @@
+Win12 readable glass (spec section 12.2): the blur effect's on-screen pass already multiplies the blurred
+background by a colour matrix (saturation only upstream). This patch builds a second matrix that keeps
+Win12Contrast % of the background's contrast and pulls it toward Win12Target % luminance, and uses it for
+docks (layer-shell scope dock / NET::Dock) and every plasmashell window (panels, popups, the Win12 menu), so a
+translucent bar looks about the same over a white page and a black wallpaper. App windows keep the stock matrix.
+Keys: kwinrc [Effect-blur] Win12Contrast (default 100 = off) and Win12Target (default 50); absent keys give
+upstream's output. No shader change. colorTransformMatrix moves to colormatrix.h (target .5 = upstream) so the
+QTest win12-blur-colormatrix checks the maths without libkwin.
+
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index 714e288..ea428a5 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -207,6 +207,14 @@ target_link_libraries(testFtrace
+ add_test(NAME kwin-testFtrace COMMAND testFtrace)
+ ecm_mark_as_test(testFtrace)
+ 
++########################################################
++# Win12: blur colour matrix (readable glass), header only
++########################################################
++add_executable(win12BlurColorMatrix win12_blur_colormatrix_test.cpp)
++target_link_libraries(win12BlurColorMatrix Qt::Test Qt::Gui)
++add_test(NAME win12-blur-colormatrix COMMAND win12BlurColorMatrix)
++ecm_mark_as_test(win12BlurColorMatrix)
++
+ ########################################################
+ # Test KWin Utils
+ ########################################################
+diff --git a/autotests/win12_blur_colormatrix_test.cpp b/autotests/win12_blur_colormatrix_test.cpp
+new file mode 100644
+index 0000000..8c04330
+--- /dev/null
++++ b/autotests/win12_blur_colormatrix_test.cpp
+@@ -0,0 +1,85 @@
++/*
++    SPDX-FileCopyrightText: 2026 Win12
++
++    SPDX-License-Identifier: GPL-2.0-or-later
++*/
++// Win12 readable glass: the blur colour matrix (src/plugins/blur/colormatrix.h). Header only, no libkwin.
++#include "../src/plugins/blur/colormatrix.h"
++
++#include <QTest>
++#include <QVector4D>
++
++#include <cmath>
++
++using KWin::win12ColorTransformMatrix;
++
++class Win12BlurColorMatrixTest : public QObject
++{
++    Q_OBJECT
++private Q_SLOTS:
++    void identityByDefault();
++    void saturationKeepsGreysAndLuminance();
++    void squeezeDark();
++    void squeezeLight();
++};
++
++// onscreen.frag does `colour * colorMatrix`: a row vector times the matrix, alpha 1.
++static QVector4D apply(const QMatrix4x4 &m, float r, float g, float b)
++{
++    return QVector4D(r, g, b, 1) * m;
++}
++
++static bool near(float a, float b)
++{
++    return std::abs(a - b) < 1e-4;
++}
++
++static float luminance(const QVector4D &c)
++{
++    return 0.2126 * c.x() + 0.7152 * c.y() + 0.0722 * c.z();
++}
++
++static const QList<QVector4D> s_colours{{0, 0, 0, 1}, {1, 1, 1, 1}, {.5, .5, .5, 1}, {1, 0, 0, 1}, {.2, .6, .9, 1}};
++
++void Win12BlurColorMatrixTest::identityByDefault()
++{
++    // contrast 1 = upstream with no squeeze; the kcfg defaults 100/50 after /100 are the same call.
++    for (const QMatrix4x4 &m : {win12ColorTransformMatrix(1.0, 1.0, 0.5), win12ColorTransformMatrix(1.0, 100 / 100.0, 50 / 100.0)}) {
++        QVERIFY(m.isIdentity());
++        for (const QVector4D &c : s_colours) {
++            const QVector4D o = apply(m, c.x(), c.y(), c.z());
++            QVERIFY(near(o.x(), c.x()) && near(o.y(), c.y()) && near(o.z(), c.z()) && near(o.w(), 1));
++        }
++    }
++}
++
++void Win12BlurColorMatrixTest::saturationKeepsGreysAndLuminance()
++{
++    const QMatrix4x4 m = win12ColorTransformMatrix(1.5, 1.0, 0.5); // kwin's default Saturation 150
++    for (float v : {0.f, .3f, .5f, 1.f}) {
++        const QVector4D o = apply(m, v, v, v);
++        QVERIFY(near(o.x(), v) && near(o.y(), v) && near(o.z(), v));
++    }
++    const QVector4D o = apply(m, .2, .6, .9);
++    QVERIFY(near(luminance(o), luminance(QVector4D(.2, .6, .9, 1))));
++    QVERIFY(!near(o.x(), .2)); // it did change the colour
++}
++
++void Win12BlurColorMatrixTest::squeezeDark()
++{
++    // Win12Contrast=30, Win12Target=20 (a dark or accent bar)
++    const QMatrix4x4 m = win12ColorTransformMatrix(1.0, .3, .2);
++    QVERIFY(near(apply(m, 1, 1, 1).x(), .44) && near(apply(m, 1, 1, 1).z(), .44));
++    QVERIFY(near(apply(m, 0, 0, 0).y(), .14));
++}
++
++void Win12BlurColorMatrixTest::squeezeLight()
++{
++    // Win12Contrast=30, Win12Target=85 (a light bar)
++    const QMatrix4x4 m = win12ColorTransformMatrix(1.0, .3, .85);
++    QVERIFY(near(apply(m, 1, 1, 1).y(), .895));
++    QVERIFY(near(apply(m, 0, 0, 0).x(), .595) && near(apply(m, 0, 0, 0).w(), 1));
++}
++
++QTEST_GUILESS_MAIN(Win12BlurColorMatrixTest)
++#include "win12_blur_colormatrix_test.moc"
+diff --git a/src/plugins/blur/blur.cpp b/src/plugins/blur/blur.cpp
+index f81c644..1799ee4 100644
+--- a/src/plugins/blur/blur.cpp
++++ b/src/plugins/blur/blur.cpp
+@@ -9,6 +9,7 @@
+ #include "blur.h"
+ // KConfigSkeleton
+ #include "blurconfig.h"
++#include "colormatrix.h"
+ 
+ #include "core/rendertarget.h"
+ #include "core/renderviewport.h"
+@@ -57,34 +58,6 @@ namespace KWin
+ 
+ static const QByteArray s_blurAtomName = QByteArrayLiteral("_KDE_NET_WM_BLUR_BEHIND_REGION");
+ 
+-static QMatrix4x4 colorTransformMatrix(qreal saturation, qreal contrast)
+-{
+-    QMatrix4x4 saturationMatrix;
+-    QMatrix4x4 contrastMatrix;
+-
+-    if (!qFuzzyCompare(saturation, 1.0)) {
+-        const qreal rval = (1.0 - saturation) * 0.2126;
+-        const qreal gval = (1.0 - saturation) * 0.7152;
+-        const qreal bval = (1.0 - saturation) * 0.0722;
+-
+-        saturationMatrix = QMatrix4x4(rval + saturation, rval, rval, 0.0,
+-                                      gval, gval + saturation, gval, 0.0,
+-                                      bval, bval, bval + saturation, 0.0,
+-                                      0.0, 0.0, 0.0, 1.0);
+-    }
+-
+-    if (!qFuzzyCompare(contrast, 1.0)) {
+-        const float transl = (1.0 - contrast) / 2.0;
+-
+-        contrastMatrix = QMatrix4x4(contrast, 0.0, 0.0, 0.0,
+-                                    0.0, contrast, 0.0, 0.0,
+-                                    0.0, 0.0, contrast, 0.0,
+-                                    transl, transl, transl, 1.0);
+-    }
+-
+-    return contrastMatrix * saturationMatrix;
+-}
+-
+ BlurEffect::BlurEffect()
+ {
+     BlurConfig::instance(effects->config());
+@@ -256,7 +229,8 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
+     m_offset = blurStrengthValues[blurStrength].offset;
+     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
+     m_noiseStrength = BlurConfig::noiseStrength();
+-    m_colorMatrix = colorTransformMatrix(BlurConfig::saturation() / 100.0, 1.0);
++    m_colorMatrix = win12ColorTransformMatrix(BlurConfig::saturation() / 100.0, 1.0, 0.5);
++    m_win12Matrix = win12ColorTransformMatrix(BlurConfig::saturation() / 100.0, BlurConfig::win12Contrast() / 100.0, BlurConfig::win12Target() / 100.0);
+     for (auto &[window, data] : m_windows) {
+         data.blurItem->setPixelsToExpandRepaintsBelowOpaqueRegions(m_expandSize);
+     }
+@@ -798,6 +772,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
+     }
+ 
+     const float modulation = opacity * opacity;
++    // Win12 readable glass: panels (layer-shell dock / NET::Dock) and plasmashell popups get the squeezed matrix.
++    const bool squeeze = w->isDock() || w->windowClass().contains(QLatin1String("plasmashell"));
++    const QMatrix4x4 &colorMatrix = squeeze ? m_win12Matrix : m_colorMatrix;
+ 
+     if (const BorderRadius cornerRadius = w->window()->borderRadius(); !cornerRadius.isNull()) {
+         ShaderManager::instance()->pushShader(m_roundedOnscreenPass.shader.get());
+@@ -824,7 +801,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
+         const BorderRadius nativeCornerRadius = cornerRadius.scaled(viewport.scale()).rounded();
+ 
+         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.mvpMatrixLocation, projectionMatrix);
+-        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.colorMatrixLocation, m_colorMatrix);
++        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.colorMatrixLocation, colorMatrix);
+         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.halfpixelLocation, halfpixel);
+         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.offsetLocation, float(m_offset));
+         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.boxLocation, QVector4D(nativeBox.horizontalCenter(), nativeBox.verticalCenter(), nativeBox.width() * 0.5, nativeBox.height() * 0.5));
+@@ -854,7 +831,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
+                                   0.5 / read->colorAttachment()->height());
+ 
+         m_onscreenPass.shader->setUniform(m_onscreenPass.mvpMatrixLocation, projectionMatrix);
+-        m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, m_colorMatrix);
++        m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, colorMatrix);
+         m_onscreenPass.shader->setUniform(m_onscreenPass.halfpixelLocation, halfpixel);
+         m_onscreenPass.shader->setUniform(m_onscreenPass.offsetLocation, float(m_offset));
+ 
+diff --git a/src/plugins/blur/blur.h b/src/plugins/blur/blur.h
+index ee23016..834762c 100644
+--- a/src/plugins/blur/blur.h
++++ b/src/plugins/blur/blur.h
+@@ -147,6 +147,7 @@ private:
+     RenderView *m_currentView = nullptr;
+ 
+     QMatrix4x4 m_colorMatrix;
++    QMatrix4x4 m_win12Matrix; // Win12 readable glass: docks and plasmashell popups, see colormatrix.h
+     size_t m_iterationCount; // number of times the texture will be downsized to half size
+     int m_offset;
+     int m_expandSize;
+diff --git a/src/plugins/blur/blur.kcfg b/src/plugins/blur/blur.kcfg
+index c8d827a..e3d92da 100644
+--- a/src/plugins/blur/blur.kcfg
++++ b/src/plugins/blur/blur.kcfg
+@@ -14,5 +14,13 @@
+         <entry name="Saturation" type="Int">
+             <default>150</default>
+         </entry>
++        <!-- Win12 readable glass: % of the background contrast kept behind docks/plasmashell popups (100 = off) -->
++        <entry name="Win12Contrast" type="Int">
++            <default>100</default>
++        </entry>
++        <!-- Win12 readable glass: the luminance (%) the squeezed background is pulled toward -->
++        <entry name="Win12Target" type="Int">
++            <default>50</default>
++        </entry>
+     </group>
+ </kcfg>
+diff --git a/src/plugins/blur/colormatrix.h b/src/plugins/blur/colormatrix.h
+new file mode 100644
+index 0000000..340829b
+--- /dev/null
++++ b/src/plugins/blur/colormatrix.h
+@@ -0,0 +1,49 @@
++/*
++    SPDX-FileCopyrightText: 2010 Fredrik Höglund <fredrik@kde.org>
++    SPDX-FileCopyrightText: 2026 Win12
++
++    SPDX-License-Identifier: GPL-2.0-or-later
++*/
++
++#pragma once
++
++#include <QMatrix4x4>
++
++namespace KWin
++{
++
++// Win12 readable glass: the blur's on-screen pass multiplies the blurred background by this matrix. A second
++// one (kwinrc [Effect-blur] Win12Contrast/Win12Target) squeezes panels and plasmashell popups toward one
++// brightness, so a translucent bar looks the same over a white page and a black wallpaper.
++// onscreen.frag does `colour * colorMatrix`: colours are ROW vectors, so the 4th row is the translation and the
++// result is rgb' = contrast * rgb + (1 - contrast) * target, then saturation (Rec.709 weights keep luminance).
++// target .5 is the upstream formula; header-only so autotests can check the maths without libkwin.
++inline QMatrix4x4 win12ColorTransformMatrix(qreal saturation, qreal contrast, qreal target)
++{
++    QMatrix4x4 saturationMatrix;
++    QMatrix4x4 contrastMatrix;
++
++    if (!qFuzzyCompare(saturation, 1.0)) {
++        const qreal rval = (1.0 - saturation) * 0.2126;
++        const qreal gval = (1.0 - saturation) * 0.7152;
++        const qreal bval = (1.0 - saturation) * 0.0722;
++
++        saturationMatrix = QMatrix4x4(rval + saturation, rval, rval, 0.0,
++                                      gval, gval + saturation, gval, 0.0,
++                                      bval, bval, bval + saturation, 0.0,
++                                      0.0, 0.0, 0.0, 1.0);
++    }
++
++    if (!qFuzzyCompare(contrast, 1.0)) {
++        const float transl = (1.0 - contrast) * target;
++
++        contrastMatrix = QMatrix4x4(contrast, 0.0, 0.0, 0.0,
++                                    0.0, contrast, 0.0, 0.0,
++                                    0.0, 0.0, contrast, 0.0,
++                                    transl, transl, transl, 1.0);
++    }
++
++    return contrastMatrix * saturationMatrix;
++}
++
++} // namespace KWin

@@ -23,6 +23,11 @@ EOP
 mkdir "$T/lp" && sed 's/^pkgname=.*/pkgname=libplasma/' "$T/PKGBUILD" > "$T/lp/PKGBUILD"
 (cd "$T/lp" && bash "$HERE/kde/pkgbuild-win12.sh" libplasma "$T/patches") || { echo "FAIL: libplasma edit"; exit 1; }
 ! grep -q qt6-wayland "$T/lp/PKGBUILD" || { echo "FAIL: qt6-wayland outside plasma-workspace"; exit 1; }
+# kwin (kde/build.sh kwin, readable glass): same edit, provides kwin-win12, no qt6-wayland line
+mkdir "$T/kw" && sed 's/^pkgname=.*/pkgname=kwin/' "$T/PKGBUILD" > "$T/kw/PKGBUILD"
+(cd "$T/kw" && bash "$HERE/kde/pkgbuild-win12.sh" kwin "$T/patches" \
+  && makepkg --printsrcinfo | grep -q 'provides = kwin-win12=6.8.0-1') || { echo "FAIL: kwin edit"; exit 1; }
+! grep -q qt6-wayland "$T/kw/PKGBUILD" || { echo "FAIL: qt6-wayland in kwin"; exit 1; }
 cd "$T" && bash "$HERE/kde/pkgbuild-win12.sh" plasma-workspace "$T/patches"
 bash -n PKGBUILD
 S=$(makepkg --printsrcinfo)
