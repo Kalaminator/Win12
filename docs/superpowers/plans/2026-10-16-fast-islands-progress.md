@@ -212,3 +212,24 @@ left: (1) live, single 2 still took 19 s and came out tray,clock,desk,sep,spacer
 notes: USER DESKTOP RESTORED from ~/.config/*.bak-t17-20261017-0637 (appletsrc, plasmashellrc, win12islandsrc) + restart; state.sh: host 29,4,5,6 + reveal, R 343 = weather, tray (19 extra), clock, desk; layout=split-right, look empty, pos=0. The installed plasmoid has this commit's islands.js. Screen DPMS off, no job left.
 next: Task 17 left (1), then the full switch matrix at pos 0 and 2 with timings + host width in 3 Islands
 next-model: opus
+
+## 2026-10-17 08:05 Task 18: single 2 restore (19 s, tray first), KDE-fixed bounce, switch matrix at pos 0 and 2
+status: done
+done: ROOT CAUSE of islands 2 -> single 2 (19 s, tray, clock, desk first): main.qml centerLoop mirrors the bar at Start=Right from win12PanelOrder; in 3 Islands it saved that key from the host island alone (29;4;5;6;345). After the restore, base = saved + the 3 moved widgets in their CURRENT order, mirrored -> each pass reversed them again (instrumented pass: want 278,21,22 while cur 22,21,278), never done, 25 passes, final order by parity. Fix b06a0b4: islands.js restore clears win12PanelOrder (the restored order is unmirrored; centerLoop saves it afresh). Harness case runs centerLoop's script sliced from main.qml in the fake shell (fails without the fix). Live: islands 2 -> single 2 1270 ms, desk, clock, tray. bdd2d2a: e8a51c7's move() bounce + harness orphan model removed (KDE clamp 0875f3c installed covers every caller; islands.js runs only on the patched shell); older `lost` safety net kept. `test_islands OK`, `tiles.js: all checks passed`.
+ Matrix after both commits (install.sh + restart; each switch from the one before, Euler circuit R s L R I s R L I L s I R; 0 "insert: index" errors, no widget @-1, orders right in all 25 states; ms, row = from, column = to):
+ | pos 0 | single | split-left | split-right | islands |
+ | single | - | 947 | 1194 | 1061 |
+ | split-left | 690 | - | 440 | 548 |
+ | split-right | 501 | 763 | - | 846 |
+ | islands | 737 | 497 | 459 | - |
+ | pos 2 | single | split-left | split-right | islands |
+ | single | - | 1225 | 1188 | 1344 |
+ | split-left | 1071 | - | 742 | 540 |
+ | split-right | 1038 | 1062 | - | 852 |
+ | islands | 1125 | 448 | 762 | - |
+ All 24 < 1.5 s (max 1344). split-right 0 -> split-right 2 388 ms; layout + pos at once (split-right 0 -> islands 2) 1548 ms once.
+ HOST WIDTH in 3 Islands: 245 px live (islands 2, read while revealed; offsets T 536 | A 1042 | host 1124, centred). The 1913 is Panel.length = PanelView m_contentLength from the containment's GridLayout implicitWidth, which Qt only recomputes when the window is laid out: an autohidden panel keeps its One-bar value (TM/menu geometry still at the single-2 x) until shown. DPMS on alone does not help; the first reveal does, and main.qml's panelWidth watcher re-places the islands ~1 s later.
+left: (1) the first reveal after a switch shows islands placed from those stale lengths for ~1 s (host window capped by maxLength 1346, R/T at off ~1648 squeezed). Next step if it matters: make the hidden panels lay out before placing (e.g. place again on the first reveal only; already happens via the panelWidth watcher), or accept. (2) every islands -> single prints 2x `panel main.qml:404 ListModel: remove: indices [-1 - 0]` (removal of a widget the layout no longer lists, during island panel removal); harmless, not traced.
+notes: USER DESKTOP RESTORED: split-right, pos 0, look empty; state.sh host 29,4,5,6 + reveal 416, R 412 = weather 415, tray 278 (19 extra), clock, desk (the old weather 344 had no settings, nothing lost). Backups ~/.config/*.bak-t18-20261017-0703 (appletsrc, plasmashellrc, win12islandsrc). Screen DPMS off, pointer centre, no job left. Helpers: <scratchpad>/matrix.sh (12 switches at one pos), <scratchpad>/center.js (instrumented centerLoop pass).
+next: none (optional: left 1)
+next-model: none
