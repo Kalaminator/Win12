@@ -20,11 +20,6 @@ KCM.SimpleKCM {
     property alias cfg_menuOpacity: opacity.value
     property alias cfg_solidMenu: solid.checked
     property alias cfg_cornerRadius: radius.value
-    property alias cfg_tileColorMode: tileMode.currentIndex
-    property alias cfg_tileColor: tileColor.color
-    property alias cfg_tileOpacity: tileOpacity.value
-    property string cfg_tileImage
-    property alias cfg_tileImageOpacity: tileImageOpacity.value
     property alias cfg_greyIcons: greyIcons.checked
     property alias cfg_animateMenu: animateMenu.checked
     property string cfg_texture
@@ -53,12 +48,6 @@ KCM.SimpleKCM {
         onAccepted: page.cfg_texture = decodeURIComponent(selectedFile.toString().replace("file://", ""))
     }
 
-    Dialogs.FileDialog {
-        id: tileImageFile
-        title: i18n("Pick tile image…")
-        nameFilters: [i18n("Images (*.png *.jpg *.jpeg *.webp *.svg)")]
-        onAccepted: page.cfg_tileImage = decodeURIComponent(selectedFile.toString().replace("file://", ""))
-    }
 
     Kirigami.FormLayout {
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Colour") }
@@ -94,30 +83,6 @@ KCM.SimpleKCM {
             valueFromText: t => parseInt(t) || 0
         }
 
-        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Tiles") }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("Tile colour:")
-            QQC2.ComboBox { id: tileMode; model: [i18n("Soft (follows text colour)"), i18n("Accent colour"), i18n("Custom")] }
-            KQuickControls.ColorButton { id: tileColor; visible: tileMode.currentIndex === 2; showAlphaChannel: false }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Tile background:")
-            QQC2.Slider { id: tileOpacity; from: 0; to: 100; stepSize: 1 }
-            QQC2.Label { text: i18n("%1% solid", Math.round(tileOpacity.value)) }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Tile image:")
-            QQC2.Label { text: page.cfg_tileImage ? page.cfg_tileImage.split("/").pop() : i18n("None") }
-            QQC2.Button { text: i18n("Pick image…"); icon.name: "document-open"; onClicked: tileImageFile.open() }
-            QQC2.Button { icon.name: "edit-clear"; visible: page.cfg_tileImage !== ""; onClicked: page.cfg_tileImage = "" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Tile image opacity:")
-            enabled: page.cfg_tileImage !== ""
-            QQC2.Slider { id: tileImageOpacity; from: 0; to: 100; stepSize: 1 }
-            QQC2.Label { text: i18n("%1%", Math.round(tileImageOpacity.value)) }
-        }
         QQC2.CheckBox { id: greyIcons; Kirigami.FormData.label: i18n("Icons:"); text: i18n("Show app icons in grey") }
         QQC2.CheckBox { id: animateMenu; Kirigami.FormData.label: i18n("Animation:"); text: i18n("Fade the menu in when it opens") }
 

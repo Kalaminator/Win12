@@ -8,8 +8,14 @@ ConfigModel {
         source: "config/ConfigStyle.qml"
     }
     ConfigCategory {
-        name: i18n("Layout")
+        name: i18n("Start menu")
         icon: "view-grid"
+        source: "config/ConfigStartMenu.qml"
+    }
+
+    ConfigCategory {
+        name: i18n("Layout")
+        icon: "view-list-details"
         source: "config/ConfigMenu.qml"
     }
     ConfigCategory {

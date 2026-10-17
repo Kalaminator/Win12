@@ -13,13 +13,6 @@ import QtCore
 KCM.SimpleKCM {
     id: page
     property string cfg_menuStyle
-    property alias cfg_menuSize: sizeBox.currentIndex
-    property alias cfg_menuPosition: positionBox.currentIndex
-    property alias cfg_centerTaskbar: centerTaskbarBox.checked
-    property alias cfg_menuHeight: heightSpin.value
-    property alias cfg_fullScreen: fullScreenBox.checked
-    property alias cfg_keepPanelVisible: keepPanelBox.checked
-    property real cfg_uiScale
     property alias cfg_win7Substyle: subBox.currentIndex
     property alias cfg_modernSubstyle: modernSubBox.currentIndex
     property string cfg_xpSubstyle
@@ -46,10 +39,6 @@ KCM.SimpleKCM {
         menuStyle: page.cfg_menuStyle; menuLook: page.cfg_menuLook; taskbarLook: page.cfg_taskbarLook
         taskbarFollowsStyle: page.cfg_taskbarFollowsStyle; windowLook: page.cfg_windowLook; windowTheme: page.cfg_windowTheme
     }
-
-    // Vertical panel (Types.LeftEdge 5 / RightEdge 6): positions read Top/Middle/Bottom. `plasmoid` is the
-    // applet in the config dialog; guarded in case it is missing.
-    readonly property bool vertical: typeof plasmoid !== "undefined" && !!plasmoid && (plasmoid.location === 5 || plasmoid.location === 6)
 
     readonly property var built: ["windows7", "modern", "windows10", "windows11", "windows12", "app", "pro", "launcher", "xp", "plasma"]
     readonly property var styles: [
@@ -229,57 +218,6 @@ KCM.SimpleKCM {
                     }
                 }
                 KQuickControls.ColorButton { id: xpStartColor; visible: page.cfg_xpStartCustom; showAlphaChannel: false }
-            }
-            QQC2.ComboBox {
-                id: sizeBox
-                Kirigami.FormData.label: i18n("What size should it be?")
-                model: [i18n("Small"), i18n("Tall"), i18n("Wide (two tile columns)"), i18n("Large (two tile columns)")]
-            }
-            QQC2.ComboBox {
-                id: positionBox
-                Kirigami.FormData.label: i18n("Menu position:")
-                model: page.vertical ? [i18n("Top"), i18n("Middle"), i18n("Bottom")] : [i18n("Left"), i18n("Center"), i18n("Right")]
-            }
-            QQC2.CheckBox {
-                id: centerTaskbarBox
-                visible: positionBox.currentIndex !== 0
-                text: positionBox.currentIndex === 2
-                    ? (page.vertical ? i18n("Also mirror the taskbar (Start button at the bottom)")
-                                     : i18n("Also mirror the taskbar (Start button on the right, clock on the left)"))
-                    : (page.vertical ? i18n("Also centre the Start button and the taskbar icons vertically")
-                                     : i18n("Also centre the Start button and the taskbar icons"))
-            }
-            QQC2.SpinBox {
-                id: heightSpin
-                Kirigami.FormData.label: i18n("Custom height:")
-                from: 0
-                to: 1600
-                stepSize: 20
-                textFromValue: v => v === 0 ? i18n("From size") : v + " px"
-                valueFromText: t => parseInt(t) || 0
-            }
-            QQC2.CheckBox {
-                id: fullScreenBox
-                text: i18n("Use full screen menu")
-            }
-            QQC2.CheckBox {
-                id: keepPanelBox
-                enabled: fullScreenBox.checked
-                text: i18n("Keep the panel visible")
-            }
-            RowLayout {
-                Kirigami.FormData.label: i18n("Adjust global menu scaling:")
-                QQC2.Slider {
-                    id: scaleSlider
-                    from: 50
-                    to: 200
-                    stepSize: 5
-                    value: page.cfg_uiScale * 100
-                    onMoved: page.cfg_uiScale = value / 100
-                }
-                QQC2.Label {
-                    text: i18n("%1% of original size", Math.round(scaleSlider.value))
-                }
             }
         }
 
