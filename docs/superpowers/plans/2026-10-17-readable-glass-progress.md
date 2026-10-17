@@ -10,3 +10,11 @@ left: nothing
 notes: Key finding: KWin 6.8's blur already applies a colour matrix in its on-screen pass (`blur.cpp` l.60 `colorTransformMatrix`, `onscreen.frag` `* colorMatrix`), so layer B is a kcfg + C++ change with NO shader edit. Plasma 6 floating panels get their shadow from the theme's `shadow-*` tiles through KWindowShadow with negative padding (Panel.qml `*ShadowMargin`), which gap mode (docked + ring) cannot use: it paints the shadow into the ring. Arch's kwin PKGBUILD fits `pkgbuild-win12.sh` unchanged; no makedepend missing on this PC. Tasks 1-4 are layer A (visible on every KDE), 5-6 layer B (build only; install is the user's Task 8). This PC: floating split-right islands, accent glass, Wayland.
 next: Task 1 — `xptheme.py`: `edge=1` (two-tone edge, shadow tiles, gap-ring shadow) + generation checks
 next-model: opus
+
+## 2026-10-17 15:53 User approved
+status: done
+done: the user approved the plan and asked for the install to be done for them.
+left: Tasks 1-8
+notes: The user agreed to the plasmashell restarts of Task 4 (at most 2; this chat runs in its own service and survives). sudo is still not available to agents: Task 6 builds only; Task 8 (install, log out/in) stays the user's.
+next: Task 1 — `xptheme.py`: `edge=1` (two-tone edge, shadow tiles, gap-ring shadow) + generation checks
+next-model: opus
