@@ -645,19 +645,24 @@ ContainmentItem {
     readonly property string islandWant: win12Taskbar && !isMirror ? cfg.taskbarLayout : "single"
     // back to One bar: syncIslands puts the bar's own order back first, then runs the Start position sync (centerLoop)
     onIslandWantChanged: { if (islandWant !== "single") syncCenterPanel(); syncIslands(); }
-    // W17: the layouts and the Start position need Win12's patched KDE (kde/build.sh): one script moves everything.
-    // Without it no panel is touched (the settings page shows the command). Checked once per start through pacman.
+    // W17 + spec 11: on Win12's patched KDE (kde/build.sh) one script moves everything. On a stock KDE the layouts and
+    // the Start position take the old slow path (STOCK: one layout step per pass); 3 Islands needs the patch, so with
+    // it wanted on stock no panel is touched (the settings page says why). Checked once per start (Tiles.PATCH_CHECK).
     property bool kdePatched: false
+    property bool kdeChecked: false   // no sync before the answer: the engine must know which path to take
+    // islandWant, not the raw key: another style (layout box hidden) still gets its one bar back on stock
+    readonly property bool islandsNeedPatch: !kdePatched && islandWant === "islands"
     P5Support.DataSource {
         id: patchCheck
         engine: "executable"
-        connectedSources: ["pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null 2>&1 && echo ok"]
+        connectedSources: [Tiles.PATCH_CHECK]
         onNewData: (sourceName, data) => {
             disconnectSource(sourceName);
             root.kdePatched = String(data.stdout).trim() === "ok";
+            root.kdeChecked = true;
         }
     }
-    onKdePatchedChanged: if (kdePatched) { syncCenterPanel(); syncIslands(); }
+    onKdeCheckedChanged: { syncCenterPanel(); syncIslands(); }
     // W9: magnetic islands are placed from their widths: re-run when this panel's width changes (tasks opened or
     // closed) and every 30 s for the other islands (tray icons, weather), which this widget cannot watch.
     readonly property bool islandMagnetic: islandWant !== "single" && cfg.taskbarMagnetic
@@ -713,12 +718,12 @@ ContainmentItem {
         }
     }
     function syncIslands() {
-        if (!configReady || !kdePatched || isMirror) return;
+        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch) return;
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
         const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
             + "/ -e s/@POS@/" + cfg.menuPosition + "/ -e s/@MAG@/" + islandMagnetic + "/ -e s/@GAP@/" + cfg.taskbarGap + "/ "
-            + "-e s/@SCR@/" + islandScreen.replace(/[^A-Za-z0-9_-]/g, "") + "/ -e s/@ALL@/" + islandAllApps + "/ -e s/@SCREENS@/" + screenNames + "/ "
+            + "-e s/@SCR@/" + islandScreen.replace(/[^A-Za-z0-9_-]/g, "") + "/ -e s/@ALL@/" + islandAllApps + "/ -e s/@SCREENS@/" + screenNames + "/ -e s/@STOCK@/" + !kdePatched + "/ "
             + Tiles.shQuote(logic) + " " + Tiles.shQuote(file) + ")\"";
         const loop = "for i in $(seq 130); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done"
             // a restore applies the unmirrored order without the centre spacers: the Start position goes on again after it
@@ -740,11 +745,12 @@ ContainmentItem {
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
     }
     function syncCenterPanel() {
-        if (!configReady || !kdePatched || isMirror) return;   // never act on default settings before migrateConfig is done
+        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch) return;   // never act on default settings before migrateConfig is done
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(centerLoop()));
     }
     function centerLoop() {
-        const js = "const ID = " + Plasmoid.id + ", M = 'win12Centre'; let out = 'done';"
+        // STOCK (spec 11.4): no patched KDE, each layout change is saved only after the script: one step per pass
+        const js = "const ID = " + Plasmoid.id + ", M = 'win12Centre', STOCK = " + !kdePatched + "; let out = 'done';"
             + "const get = (w, g, k, d) => { w.currentConfigGroup = [g]; return String(w.readConfig(k, d)); };"
             + "for (const p of panels()) { const me = p.widgets().find(w => w.id === ID); if (!me) continue;"
             + " const pos = Number(get(me, 'Style', 'menuPosition', 0)), on = get(me, 'Style', 'centerTaskbar', false) === 'true';"
@@ -756,7 +762,9 @@ ContainmentItem {
             + " const mine = live().filter(w => mark(w) !== '');"
             + " while (mine.length > n) { const s = mine.pop(); gone.push(s.id); s.remove(); out = 'again'; }"
             + " p.currentConfigGroup = ['General']; if (gone.join(';') !== goneWas) p.writeConfig('win12Gone', gone.join(';'));"
-            + " while (mine.length < n) { const s = p.addWidget('org.kde.plasma.panelspacer'); s.currentConfigGroup = ['General']; s.writeConfig(M, '1'); s.writeConfig('expanding', true); s.reloadConfig(); mine.push(s); }"
+            + " while (mine.length < n) { const s = p.addWidget('org.kde.plasma.panelspacer'); s.currentConfigGroup = ['General']; s.writeConfig(M, '1'); s.writeConfig('expanding', true); s.reloadConfig(); mine.push(s); if (STOCK) out = 'again'; }"
+            // stock: a pass that removed or added a spacer ends there (a just-added spacer reads index -1 until saved)
+            + " if (STOCK && out === 'again') continue;"
             + " const others = live().filter(w => mark(w) === '').sort((a, b) => a.index - b.index), ids = others.map(w => w.id);"
             + " const tasks = others.filter(w => /icontasks|taskmanager/.test(w.type)).map(w => w.id), isTask = id => tasks.indexOf(id) >= 0;"
             + " p.currentConfigGroup = ['General']; const saved = String(p.readConfig('win12PanelOrder', '')).split(';').map(Number).filter(i => ids.indexOf(i) >= 0);"
@@ -767,11 +775,12 @@ ContainmentItem {
             + " if (mode === 2 && n) { const t = want.findIndex(isTask); want.splice(t < 0 ? want.indexOf(ID) : t, 0, mine[0].id); }"
             + " const all = others.concat(mine), byId = id => all.find(w => w.id === id);"
             + " const cur = all.slice().sort((a, b) => a.index - b.index).map(w => w.id);"
-            // all index sets in one pass (patched KDE: each set is saved at once), the next pass checks them.
-            + " const bad = want.some((id, k) => byId(id).index < 0 || cur[k] !== id);"
+            // all index sets in one pass (patched KDE: each set is saved at once), the next pass checks them. Stock: only
+            // the first mismatch (several sets in one script land out of order; f70da6e), the next pass sets the next one.
+            + " const miss = (id, k) => byId(id).index < 0 || cur[k] !== id, bad = want.some(miss);"
             // the saved order goes only once it is back (each pass rebuilds the wanted order from it).
             + " if (!bad && mode !== 2 && saved.length) { p.currentConfigGroup = ['General']; p.writeConfig('win12PanelOrder', ''); }"
-            + " if (bad) { want.forEach((id, k) => { if (byId(id).index !== k) byId(id).index = k; });"
+            + " if (bad) { if (STOCK) { const i = want.findIndex(miss); byId(want[i]).index = i; } else want.forEach((id, k) => { if (byId(id).index !== k) byId(id).index = k; });"
             // the spacers' optimalSize binding misses the move: flip "expanding" so it recomputes.
             + "  for (const s of mine) { s.currentConfigGroup = ['General']; s.writeConfig('expanding', false); s.reloadConfig(); s.writeConfig('expanding', true); s.reloadConfig(); } out = 'again'; }"
             + " for (const id of tasks) { const w = byId(id), f = get(w, 'General', 'win12Fill', '');"

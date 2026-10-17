@@ -3,6 +3,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasma5support as P5Support
+import "../code/tiles.js" as Tiles
 
 // Windows 12 taskbar layout (keys taskbarLayout, taskbarMagnetic), shown on the Taskbar page (one instance).
 // `cfgPage` is the config page holding cfg_taskbarLayout and cfg_taskbarMagnetic.
@@ -10,11 +11,11 @@ ColumnLayout {
     id: box
     required property var cfgPage
     readonly property var values: ["single", "split-left", "split-right", "islands"]
-    // W17: the layouts need the patched KDE packages (same pacman check as main.qml kdePatched).
+    // W17: the patched KDE packages (same check as main.qml kdePatched).
     property bool kdePatched: true   // until the check answers
     P5Support.DataSource {
         engine: "executable"
-        connectedSources: ["pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null 2>&1 && echo ok"]
+        connectedSources: [Tiles.PATCH_CHECK]
         onNewData: (sourceName, data) => { disconnectSource(sourceName); box.kdePatched = String(data.stdout).trim() === "ok"; }
     }
     QQC2.Label {

@@ -37,16 +37,17 @@ function shell(screenW = 1920, screens = ["HDMI-A-2"], stock = false) {
     // stock (sh.stock): index reads the panel's saved order, snapshotted only by endPass() after each script; the setter
     // removes the id, clamps to the last slot of what is left (lands one short) and saves; a moved widget is inserted at
     // its old slot x (the laid-out index, 0 right after an add or move) or, past the target's widgets, goes to lost
-    // (listed by widgets(), index -1, not laid out)
+    // (listed by widgets(), index -1, not laid out). Each layout change marks the pass (mut): an index read or set after
+    // one in the same pass fails (spec 11.4: that index is stale on stock; the fake itself would still answer it right)
     const unlink = w => { for (const a of [w.panel.ws, w.panel.lost]) if (a.indexOf(w) >= 0) a.splice(a.indexOf(w), 1); };
     const widget = (type, panel) => cfg({ id: nextId++, type, panel, x: 0,
         get configKeys() { return Object.keys(this.cfg[this.currentConfigGroup[0]] || {}); }, get configGroups() { return Object.keys(this.cfg); },
-        get index() { return !this.panel ? -1 : sh.stock ? this.panel.saved.indexOf(this.id) : this.panel.ws.indexOf(this); },
-        set index(i) { const ws = this.panel.ws; if (!sh.stock) { ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); return; }
+        get index() { assert.ok(!sh.stock || !sh.mut, "index read after a layout change in the same pass"); return !this.panel ? -1 : sh.stock ? this.panel.saved.indexOf(this.id) : this.panel.ws.indexOf(this); },
+        set index(i) { if (sh.stock) { assert.ok(!sh.mut, "index set after a layout change in the same pass"); sh.mut = 1; } const ws = this.panel.ws; if (!sh.stock) { ws.splice(ws.indexOf(this), 1); ws.splice(Math.min(i, ws.length), 0, this); return; }
             const o = this.panel.saved.filter(d => d !== this.id); o.splice(Math.min(i, Math.max(0, o.length - 1)), 0, this.id); this.panel.saved = o;
             const at = ws.map((w, k) => o.indexOf(w.id) < 0 ? o.length + k : o.indexOf(w.id));   // unsaved ones after, in order
             ws.splice(0, ws.length, ...ws.map((w, k) => [w, at[k]]).sort((a, b) => a[1] - b[1]).map(a => a[0])); },
-        remove() { unlink(this); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
+        remove() { if (sh.stock) sh.mut = 1; unlink(this); this.panel.gone.push(this); this.cfg = {}; this.panel = null; } });
     class Panel {
         constructor() { cfg(this); this.id = nextId++; this.ws = []; this.gone = []; this.saved = []; this.lost = []; this.location = "bottom"; this.height = 44;
             this.lengthMode = "fill"; this.alignment = "left"; this.minimumLength = 0; this.maximumLength = 0; this.offset = 0;
@@ -54,7 +55,7 @@ function shell(screenW = 1920, screens = ["HDMI-A-2"], stock = false) {
         get length() { return this.lengthMode === "fill" ? 1920 : this.ws.length * 40 + 16; }
         widgets(type) { const all = this.ws.concat(this.lost, this.gone); return type ? all.filter(w => w.type === type && w.panel === this) : all; }
         get widgetIds() { return this.widgets().map(w => w.id); }
-        addWidget(x) { if (typeof x === "string") { const w = widget(x, this); this.ws.push(w); return w; }
+        addWidget(x) { if (sh.stock) sh.mut = 1; if (typeof x === "string") { const w = widget(x, this); this.ws.push(w); return w; }
             unlink(x); x.panel = this; if (!sh.stock) this.ws.push(x); else if (x.x > this.ws.length) this.lost.push(x); else this.ws.splice(x.x, 0, x);
             x.x = 0; return x; }
         remove() { panels.splice(panels.indexOf(this), 1); for (const w of this.ws.concat(this.lost)) w.panel = null; }
@@ -62,7 +63,7 @@ function shell(screenW = 1920, screens = ["HDMI-A-2"], stock = false) {
     // 10: screens like plasmashell's ScreenPool: id = index in the connected list, 0 = primary, -1 = not connected
     const sh = { Panel, panels: () => panels.slice(), screens, screenForConnector: n => screens.indexOf(n),
         screenGeometry: id => ({ x: screenW * id, y: 0, width: screenW, height: 1080 }), out: [], print: s => sh.out.push(String(s)), stock,
-        endPass: () => { if (sh.stock) for (const q of panels) { q.saved = q.ws.map(w => w.id); q.ws.forEach((w, i) => w.x = i); } } };
+        endPass: () => { sh.mut = 0; if (sh.stock) for (const q of panels) { q.saved = q.ws.map(w => w.id); q.ws.forEach((w, i) => w.x = i); } } };
     // the user's bar: Start, task manager with two pins, separator, tray, clock, show desktop
     const p = new Panel(); const me = p.addWidget("org.win12.menu"); const tm = p.addWidget("org.kde.plasma.icontasks");
     tm.writeConfig("launchers", ["a.desktop", "b.desktop"]);
@@ -164,8 +165,8 @@ assert.deepStrictEqual(types(sh.host), ["w12:menu", "icontasks", "marginsseparat
 // back to One bar at Start=Right: main.qml's centerLoop mirrors the restored bar from win12PanelOrder. A saved order
 // written while the host was an island lacked the moved widgets, so each pass flipped them (25 passes, wrong order).
 const qml = fs.readFileSync(path.join(__dirname, "../package/contents/ui/main.qml"), "utf8"), c0 = qml.indexOf("function centerLoop() {");
-const center = (sh, want) => { const js = new Function("Plasmoid", "islandWant", qml.slice(qml.indexOf("{", c0) + 1, qml.indexOf("const dbus", c0)) + "return js;")({ id: sh.me.id }, want);
-    for (let i = 1; i <= 10; i++) { sh.out = []; new Function("panels", "print", js)(sh.panels, sh.print); if (sh.out[0] === "done") return i; } return Infinity; };
+const center = (sh, want) => { const js = new Function("Plasmoid", "islandWant", "kdePatched", qml.slice(qml.indexOf("{", c0) + 1, qml.indexOf("const dbus", c0)) + "return js;")({ id: sh.me.id }, want, !sh.stock);
+    for (let i = 1; i <= 25; i++) { sh.out = []; new Function("panels", "print", js)(sh.panels, sh.print); sh.endPass(); if (sh.out[0] === "done") return i; } return Infinity; };
 sh = shell(); sh.me.currentConfigGroup = ["Style"]; sh.me.writeConfig("centerTaskbar", "true"); sh.me.writeConfig("menuPosition", 2);
 passes(sh, sub(sh, "islands", 2)); center(sh, "islands"); assert.ok(passes(sh, sub(sh, "single", 2)) <= 3);
 assert.ok(center(sh, "single") <= 3, "Start position sync converges after the restore");
@@ -259,4 +260,15 @@ assert.deepStrictEqual(sh.panels().map(q => cfgOf(q, "win12Island")).sort(), [""
 assert.strictEqual(sh.panels().flatMap(q => q.widgets("org.kde.plasma.icontasks")).length, 1, "one task manager left");
 assert.strictEqual(cfgOf(sh.tm, "launchers"), "a.desktop,b.desktop", "pins merged back");
 assert.deepStrictEqual(nr(isl(sh, "R")), ["systemtray", "digitalclock", "showdesktop"]); assert.deepStrictEqual(nr(isl(sh, "L")), ["weather"]);
+// the Start position on stock (centerLoop's STOCK): spacer adds end the pass, one index set per pass; mirror and undo
+const MIR = ["showdesktop", "digitalclock", "systemtray", "marginsseparator", "panelspacer", "icontasks", "w12:menu"];
+const startPos = (sh, pos) => { sh.me.currentConfigGroup = ["Style"]; sh.me.writeConfig("centerTaskbar", "true"); sh.me.writeConfig("menuPosition", pos); };
+sh = shell(1920, ["HDMI-A-2"], true); startPos(sh, 2); n = center(sh, "single");
+assert.ok(3 < n && n <= 25, "stock mirror converges: " + n); assert.deepStrictEqual(types(sh.host), MIR, "stock mirrored");
+startPos(sh, 0); n = center(sh, "single"); assert.ok(n <= 25, "stock undo converges: " + n);
+assert.deepStrictEqual(types(sh.host), BAR, "stock unmirrored"); assert.strictEqual(cfgOf(sh.host, "win12PanelOrder"), "");
+// the b34e0c4 scenario on stock: split, back to One bar at Start=Right, then the Start position sync
+sh = shell(1920, ["HDMI-A-2"], true); startPos(sh, 2); passes(sh, ssub(sh, "split-left", 2), 40); center(sh, "split-left");
+assert.ok(passes(sh, ssub(sh, "single", 2), 40) <= 40); n = center(sh, "single");
+assert.ok(n <= 25, "stock Start position sync converges after the restore: " + n); assert.deepStrictEqual(types(sh.host), MIR);
 console.log("test_islands OK");

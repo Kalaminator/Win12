@@ -548,6 +548,11 @@ function nearest(rects, cur, dx, dy) {
 // Backup/restore (T13): quote any text for /bin/sh, and the command that writes text to a file.
 // Shell snippet resolving the Qt6 qdbus binary (name differs per distro).
 var QDBUS = "$(command -v qdbus6 || command -v qdbus-qt6 || { [ -x /usr/lib/qt6/bin/qdbus ] && echo /usr/lib/qt6/bin/qdbus; } || echo qdbus)";
+// Spec 11.2: prints "ok" on Win12's patched KDE (kde/build.sh). One check, two users: main.qml picks the engine
+// (fast or one step per pass), the Taskbar page shows its note. No pacman (another distro) = stock. The marker file
+// forces stock on a patched PC (the dev PC's live test of the stock path; not a user setting).
+var PATCH_CHECK = "pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null 2>&1"
+    + " && [ ! -e \"${XDG_CONFIG_HOME:-$HOME/.config}/win12-force-stock\" ] && echo ok";
 
 function shQuote(s) {
     return "'" + String(s).replace(/'/g, "'\\''") + "'";
