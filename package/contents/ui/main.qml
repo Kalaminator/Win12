@@ -650,8 +650,9 @@ ContainmentItem {
     // it wanted on stock no panel is touched (the settings page says why). Checked once per start (Tiles.PATCH_CHECK).
     property bool kdePatched: false
     property bool kdeChecked: false   // no sync before the answer: the engine must know which path to take
-    // islandWant, not the raw key: another style (layout box hidden) still gets its one bar back on stock
-    readonly property bool islandsNeedPatch: !kdePatched && islandWant === "islands"
+    // islandWant, not the raw key: another style (layout box hidden) still gets its one bar back on stock.
+    // A function, not a binding: onIslandWantChanged (and islandPos etc.) ran before the binding updated and read false
+    function islandsNeedPatch() { return !kdePatched && islandWant === "islands"; }
     P5Support.DataSource {
         id: patchCheck
         engine: "executable"
@@ -718,7 +719,7 @@ ContainmentItem {
         }
     }
     function syncIslands() {
-        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch) return;
+        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch()) return;
         const file = decodeURIComponent(Qt.resolvedUrl("code/islands.js").toString().replace("file://", ""));
         const logic = decodeURIComponent(Qt.resolvedUrl("code/islandlogic.js").toString().replace("file://", ""));
         const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@WANT@/" + islandWant
@@ -745,7 +746,7 @@ ContainmentItem {
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
     }
     function syncCenterPanel() {
-        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch) return;   // never act on default settings before migrateConfig is done
+        if (!configReady || !kdeChecked || isMirror || islandsNeedPatch()) return;   // never act on default settings before migrateConfig is done
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote(centerLoop()));
     }
     function centerLoop() {
