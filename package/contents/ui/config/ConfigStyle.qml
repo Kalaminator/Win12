@@ -8,6 +8,7 @@ import org.kde.kcmutils as KCM
 import org.kde.kquickcontrols as KQuickControls
 import QtQuick.Dialogs as Dialogs
 import QtCore
+import org.kde.plasma.plasma5support as P5Support
 
 // Start11Config "Start Menu" page, here "Style": a card sets the menu, the taskbar and the windows (T43).
 KCM.SimpleKCM {
@@ -18,7 +19,17 @@ KCM.SimpleKCM {
     property string cfg_xpSubstyle
     property string cfg_xpColor
     property alias cfg_xpCustomColor: xpCustom.color
-    property string cfg_resetRequest
+    property bool cfg_xpIcons
+    property string cfg_xpIconTheme
+    property var iconThemes: []
+    // Default XP choice: the first theme with "xp" in its folder (main.qml also checks the Name= line).
+    readonly property var xpThemes: iconThemes.filter(n => n.toLowerCase().includes("xp"))
+    P5Support.DataSource {
+        id: themeScan
+        engine: "executable"
+        connectedSources: ["sh -c 'for d in /usr/share/icons/* \"$HOME\"/.local/share/icons/*; do grep -qs ^Directories= \"$d/index.theme\" && basename \"$d\"; done | sort -u'"]
+        onNewData: (src, data) => { page.iconThemes = (data.stdout || "").trim().split("\n").filter(n => n); disconnectSource(src); }
+    }
     // T43 mix and match ("" = same as the style). "Taskbar: none" = taskbarFollowsStyle + xpTaskbarTheme off,
     // "Windows: none" = windowTheme off (the old Taskbar page switches, so saved configs keep working).
     property string cfg_menuLook
@@ -196,57 +207,28 @@ KCM.SimpleKCM {
                 }
                 KQuickControls.ColorButton { id: xpCustom; visible: page.cfg_xpColor === "custom"; showAlphaChannel: false }
             }
-        }
-
-        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Reset") }
-        QQC2.Button {
-            text: i18n("Reset all Win12 settings…")
-            icon.name: "edit-reset"
-            onClicked: allDialog.open()
-        }
-
-        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Backup") }
-        RowLayout {
-            QQC2.Button {
-                text: i18n("Backup settings…")
-                icon.name: "document-save"
-                onClicked: backupFile.open()
+            QQC2.CheckBox {
+                id: xpIconsBox
+                visible: kinds.anyXp
+                text: i18n("Use an XP icon theme while XP is active")
+                checked: page.cfg_xpIcons
+                onToggled: page.cfg_xpIcons = checked
             }
-            QQC2.Button {
-                text: i18n("Restore settings…")
-                icon.name: "document-open"
-                onClicked: restoreFile.open()
+            QQC2.ComboBox {
+                visible: kinds.anyXp
+                Kirigami.FormData.label: i18n("XP icon theme:")
+                enabled: xpIconsBox.checked
+                model: page.iconThemes
+                currentIndex: model.indexOf(page.cfg_xpIconTheme || page.xpThemes[0] || "")
+                onActivated: page.cfg_xpIconTheme = currentText
+            }
+            QQC2.Label {
+                Layout.fillWidth: true
+                visible: kinds.anyXp && page.cfg_xpIconTheme === "" && page.xpThemes.length === 0
+                wrapMode: Text.Wrap
+                text: i18n("No XP icon theme is installed. Get one on the Advanced page (Download icon themes…, search for \"XP\").")
             }
         }
-        QQC2.Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: i18n("Settings, tiles and pinned icons go into one file. After picking the file, press OK/Apply to save or restore it.")
-        }
-    }
 
-    // T13: main.qml writes/reads the file (resetRequest "backup|<time>|<file>" / "restore|<time>|<file>").
-    Dialogs.FileDialog {
-        id: backupFile
-        title: i18n("Backup Win12 settings")
-        fileMode: Dialogs.FileDialog.SaveFile
-        defaultSuffix: "json"
-        selectedFile: StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/win12-backup.json"
-        nameFilters: [i18n("Win12 backup (*.json)")]
-        onAccepted: page.cfg_resetRequest = "backup|" + Date.now() + "|" + decodeURIComponent(selectedFile.toString().replace("file://", ""))
-    }
-    Dialogs.FileDialog {
-        id: restoreFile
-        title: i18n("Restore Win12 settings")
-        nameFilters: [i18n("Win12 backup (*.json)")]
-        onAccepted: page.cfg_resetRequest = "restore|" + Date.now() + "|" + decodeURIComponent(selectedFile.toString().replace("file://", ""))
-    }
-
-    Kirigami.PromptDialog {
-        id: allDialog
-        title: i18n("Reset all Win12 settings?")
-        subtitle: i18n("Every setting, tile and pinned icon goes back to the fresh-install default. If the XP taskbar theme is active, your previous Plasma Style is put back. Press OK in the settings window afterwards to finish; it then closes, so no old values are written back.")
-        standardButtons: Kirigami.Dialog.Ok | Kirigami.Dialog.Cancel
-        onAccepted: page.cfg_resetRequest = "all|" + Date.now()
     }
 }

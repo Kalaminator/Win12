@@ -44,8 +44,8 @@ ConfigModel {
         source: "config/ConfigWindows.qml"
     }
     ConfigCategory {
-        name: i18n("Icons")
-        icon: "preferences-desktop-icons"
-        source: "config/ConfigIcons.qml"
+        name: i18n("Advanced")
+        icon: "configure"
+        source: "config/ConfigAdvanced.qml"
     }
 }
