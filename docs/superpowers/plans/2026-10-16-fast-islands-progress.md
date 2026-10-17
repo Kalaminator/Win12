@@ -195,3 +195,12 @@ notes: USER DESKTOP as found: taskbarLayout=split-right, menuPosition=0, look em
  9. After EVERY Plasma update, run: `kde/build.sh` (in the Win12 folder; about 20-40 min), then log out and in.
 next: none
 next-model: none
+
+## 2026-10-17 06:40 Task 16: Task 15 gaps b, c, d (Win12 code only)
+status: partial
+done: 631ac61 islands.js: (b) layout to layout in one pass, panels re-keyed (R<->T, L<->A), weather kept; (c) setTM = island '' -> launchers -> island (registry never gets pins under the old island); (d) s.order from win12PanelOrder when the bar is mirrored. 3 harness cases, each failed first; `test_islands OK`, `tiles.js: all checks passed`. b34e0c4 main.qml: syncIslands chains centerLoop() after a restore to single; onIslandWantChanged skips syncCenterPanel when single.
+ Live timing (before the restart, new islands.js, pos 0): split-right->islands 854 | islands->split-left 453 | split-left->split-right 396 | split-right->split-left 728 | split-left->islands 487 | islands->split-right 459 ms (was 1.6-2.4 s). Registry after islands 1 -> single 1: 3x =pinned (fixed). (d) single 2 -> split-left 2 -> split-left 0 -> single 0: Start-left order (fixed).
+left: after `install.sh --restart` (plasmashell then loaded the KDE packages installed 06:13 by the kde/ agent): islands 1/2 host len=1913 (should fit, ~299) and islands 2 -> single 2 left digitalclock+showdesktop at index -1 (journal: panel main.qml:404 ListModel remove [-1] / insert index 7 out of range) and the chained centre loop then ran its 25 passes (27 s). Cause NOT found: new KDE build vs b34e0c4 vs a stale queued syncIslands (4th tray/clock/desk move at 06:33:31). islands 1 -> single 1 was right after the restart (spacers before Start and after the TM).
+next: reproduce from split-right 0: `setlayout.sh islands 2` then `single 2`; if -1 again, `git revert b34e0c4`, `install.sh --restart`, repeat -> tells whether b34e0c4 is the cause. Check the host TM `fill`/`win12Fill` in islands (len 1913). Restore after: copy ~/.config/*.bak-t16-20261017-0631 (appletsrc, plasmashellrc, win12islandsrc) back with plasmashell stopped.
+notes: USER DESKTOP RESTORED from the 0631 backup + restart: split-right, pos 0, look empty, host 29,4,5,6+reveal, R 343 = weather, tray, clock, desk; win12islandsrc = 3x =open (as found; next islands entry re-pins). Switch helper: <scratchpad>/sw.sh (layout pos ...; prints ms + panels). setlayout.sh's first "took" is ~1.8 s when nothing changes (it waits 2 s for a sync to start).
+next-model: opus
