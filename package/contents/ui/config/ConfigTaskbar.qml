@@ -39,11 +39,6 @@ KCM.SimpleKCM {
     property string cfg_taskbarLayout
     property string cfg_islandScreen
     property bool cfg_islandAllApps
-    property int cfg_win12Light
-    property int cfg_win12Dark
-    property int cfg_win12Transparency
-    property int cfg_win12Blur
-    property int cfg_win12Noise
     property int cfg_taskbarGap
     property int cfg_menuGap
     property bool cfg_taskbarMagnetic
@@ -109,29 +104,8 @@ KCM.SimpleKCM {
                 text: i18n("Colour and opacity follow \"Override the taskbar colour\" below.")
                 enabled: false
             }
-            // W11 colour sliders (-1 = default look; the slider shows where that look sits)
             GridLayout {
                 columns: 4
-                QQC2.Label { text: i18n("How light:") }
-                QQC2.Label { text: i18n("Soft tint") }
-                QQC2.Slider { from: 0; to: 100; value: page.cfg_win12Light < 0 ? 80 : page.cfg_win12Light; onMoved: page.cfg_win12Light = Math.round(value) }
-                QQC2.Label { text: i18n("Near white") }
-                QQC2.Label { text: i18n("How dark:") }
-                QQC2.Label { text: i18n("Soft dark") }
-                QQC2.Slider { from: 0; to: 100; value: page.cfg_win12Dark < 0 ? 50 : page.cfg_win12Dark; onMoved: page.cfg_win12Dark = Math.round(value) }
-                QQC2.Label { text: i18n("Near black") }
-                QQC2.Label { text: i18n("Transparency:") }
-                QQC2.Label { text: i18n("Solid") }
-                QQC2.Slider { from: 0; to: 90; value: page.cfg_win12Transparency < 0 ? 70 : page.cfg_win12Transparency; onMoved: page.cfg_win12Transparency = Math.round(value) }
-                QQC2.Label { text: i18n("Clear") }
-                QQC2.Label { text: i18n("Blur strength:") }
-                QQC2.Label { text: i18n("Soft") }
-                QQC2.Slider { from: 1; to: 15; stepSize: 1; value: page.cfg_win12Blur > 0 ? page.cfg_win12Blur : 3; onMoved: page.cfg_win12Blur = value }
-                QQC2.Label { text: i18n("Strong") }
-                QQC2.Label { text: i18n("Grain:") }
-                QQC2.Label { text: i18n("Smooth") }
-                QQC2.Slider { from: 0; to: 14; stepSize: 1; value: page.cfg_win12Noise; onMoved: page.cfg_win12Noise = value }
-                QQC2.Label { text: i18n("Grainy") }
                 // W12 gaps (px): floating bar/islands to the screen edge, Start menu to the taskbar
                 QQC2.Label { text: i18n("Bottom spacing:") }
                 QQC2.Label { text: i18n("None") }
@@ -156,12 +130,6 @@ KCM.SimpleKCM {
                 QQC2.Label { text: i18n("None") }
                 QQC2.Slider { from: 0; to: 24; stepSize: 1; value: page.cfg_menuGap; onMoved: page.cfg_menuGap = value }
                 QQC2.Label { text: i18n("%1 px", page.cfg_menuGap) }
-            }
-            QQC2.Label {
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 24
-                wrapMode: Text.WordWrap
-                enabled: false
-                text: i18n("Taskbar, Start menu and title bars; transparency changes only the background, icons and text stay solid. Blur strength sets KWin's blur for all windows while the Windows 12 look is on; your own value comes back when you leave it.")
             }
             QQC2.Label { text: i18n("Taskbar layout:") }
             TaskbarLayoutBox { cfgPage: page }

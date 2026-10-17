@@ -24,14 +24,9 @@ ConfigModel {
         source: "config/ConfigButton.qml"
     }
     ConfigCategory {
-        name: i18n("Look")
+        name: i18n("Appearance")
         icon: "preferences-desktop-color"
-        source: "config/ConfigLook.qml"
-    }
-    ConfigCategory {
-        name: i18n("Colours")
-        icon: "color-management"
-        source: "config/ConfigColours.qml"
+        source: "config/ConfigAppearance.qml"
     }
     ConfigCategory {
         name: i18n("Search")
