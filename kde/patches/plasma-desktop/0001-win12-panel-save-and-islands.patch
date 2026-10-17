@@ -33,10 +33,10 @@ index 0000000..d213940
 +    LINK_LIBRARIES Qt::Test Qt::Qml KF6::ConfigCore KF6::Service PW::LibTaskManager)
 diff --git a/applets/taskmanager/autotests/win12islandregistrytest.cpp b/applets/taskmanager/autotests/win12islandregistrytest.cpp
 new file mode 100644
-index 0000000..1786fe9
+index 0000000..5b7a184
 --- /dev/null
 +++ b/applets/taskmanager/autotests/win12islandregistrytest.cpp
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,44 @@
 +// Win12: island registry — assign/query/persist, missing file = empty.  SPDX-License-Identifier: GPL-2.0-or-later
 +#include <QSignalSpy>
 +#include <QTemporaryDir>
@@ -64,6 +64,8 @@ index 0000000..1786fe9
 +        QCOMPARE(r.appsNotFor(QStringLiteral("tray")), QStringList{QStringLiteral("b.desktop")});
 +        r.assignLaunchers({QStringLiteral("applications:c.desktop")}, QStringLiteral("pinned"));
 +        QVERIFY(r.appsFor(QStringLiteral("pinned")).size() >= 1); // c resolves to an app id when installed, else the URL is the id
++        // a plain executable: the id is the URL as TasksModel's appIdFilter compares it (no iconData, QUrl::toString())
++        QCOMPARE(r.appIdOf(QStringLiteral("file:///nonexistent-win12/my%20tool?iconData=AAAA")), QStringLiteral("file:///nonexistent-win12/my tool"));
 +        r.assign(QStringLiteral("a.desktop"), QString());
 +        QCOMPARE(r.islandOf(QStringLiteral("a.desktop")), QString());
 +        Win12IslandRegistry again(file);
@@ -95,7 +97,7 @@ index 8c3b687..724f39a 100644
        <label>What to do on middle-mouse click on a task button.</label>
        <choices>
 diff --git a/applets/taskmanager/qml/MouseHandler.qml b/applets/taskmanager/qml/MouseHandler.qml
-index 8f47537..810dec7 100644
+index 8f47537..8ee3b99 100644
 --- a/applets/taskmanager/qml/MouseHandler.qml
 +++ b/applets/taskmanager/qml/MouseHandler.qml
 @@ -37,6 +37,13 @@ DropArea {
@@ -112,7 +114,7 @@ index 8f47537..810dec7 100644
          // RtL horizontal TaskLists do not include the spacer (which are initial in this
          // configuration), if any, but the mouse event coordinates do. We need to subtract
          // them, or we end thinking we're dragging way right of where we actually are.
-@@ -105,6 +112,40 @@ DropArea {
+@@ -105,6 +112,43 @@ DropArea {
      }
  
      onDropped: event => {
@@ -128,6 +130,9 @@ index 8f47537..810dec7 100644
 +            const rtlSpacerAdjustment = target.LayoutMirroring.enabled ? tasks.width - target.width : 0;
 +            const above = isGroupDialog ? target.itemAt(event.x - rtlSpacerAdjustment, event.y)
 +                                        : target.childAt(event.x - rtlSpacerAdjustment, event.y);
++            // ponytail: read before assign()/requestAddLauncher() add the app's row, on purpose. move(i, n) leaves the
++            // row at index n, so the pre-drop index of `above` puts the app right before `above` whether its row was
++            // added before or after it; above.index read afterwards would put it after `above` in the first case.
 +            const insertAt = above && above.index !== undefined ? above.index : tasksModel.count;
 +            TaskManagerApplet.Win12Islands.assign(appId, tasks.win12Island);
 +            const url = event.getDataAsString("text/x-win12-launcher");
@@ -277,14 +282,15 @@ index 8d5a83c..72ab872 100644
      Component.onDestruction: {
 diff --git a/applets/taskmanager/win12islandregistry.cpp b/applets/taskmanager/win12islandregistry.cpp
 new file mode 100644
-index 0000000..10a06d7
+index 0000000..e40672e
 --- /dev/null
 +++ b/applets/taskmanager/win12islandregistry.cpp
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,98 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +#include "win12islandregistry.h"
 +
 +#include <QUrl>
++#include <QUrlQuery>
 +
 +#include <KConfigGroup>
 +
@@ -355,9 +361,19 @@ index 0000000..10a06d7
 +
 +QString Win12IslandRegistry::appIdOf(const QString &launcherUrl) const
 +{
-+    // no app id (a plain executable URL): the URL itself, which the TasksModel appIdFilter also matches
-+    const QString id = TaskManager::appDataFromUrl(QUrl(launcherUrl)).id;
-+    return id.isEmpty() ? launcherUrl : id;
++    // no app id (a plain executable URL): the URL the way TasksModel's appIdFilter compares it, i.e. its
++    // LauncherUrlWithoutIcon (resolved URL minus iconData) as QUrl::toString(), not the raw launcher string
++    const TaskManager::AppData data = TaskManager::appDataFromUrl(QUrl(launcherUrl));
++    if (!data.id.isEmpty()) {
++        return data.id;
++    }
++    QUrl url = data.url;
++    if (url.hasQuery()) {
++        QUrlQuery query(url);
++        query.removeQueryItem(QStringLiteral("iconData"));
++        url.setQuery(query);
++    }
++    return url.toString();
 +}
 +
 +void Win12IslandRegistry::assignLaunchers(const QStringList &launcherUrls, const QString &island)
@@ -370,7 +386,7 @@ index 0000000..10a06d7
 +#include "moc_win12islandregistry.cpp"
 diff --git a/applets/taskmanager/win12islandregistry.h b/applets/taskmanager/win12islandregistry.h
 new file mode 100644
-index 0000000..036c6c1
+index 0000000..0091847
 --- /dev/null
 +++ b/applets/taskmanager/win12islandregistry.h
 @@ -0,0 +1,34 @@
@@ -398,7 +414,7 @@ index 0000000..036c6c1
 +    Q_INVOKABLE void assign(const QString &appId, const QString &island); // empty island = forget the app
 +    Q_INVOKABLE QStringList appsFor(const QString &island) const;
 +    Q_INVOKABLE QStringList appsNotFor(const QString &island) const; // assigned to any other island
-+    Q_INVOKABLE QString appIdOf(const QString &launcherUrl) const; // appDataFromUrl(url).id, else the URL
++    Q_INVOKABLE QString appIdOf(const QString &launcherUrl) const; // appDataFromUrl(url).id, else the URL as the TasksModel filter sees it
 +    Q_INVOKABLE void assignLaunchers(const QStringList &launcherUrls, const QString &island);
 +
 +Q_SIGNALS:
