@@ -1,0 +1,15 @@
+# Win12: pacman hook that says "run kde/build.sh again" after a stock Plasma upgrade. Built and installed by kde/build.sh.
+pkgname=win12-kde-hook
+pkgver=1
+pkgrel=1
+pkgdesc='Win12: pacman hook that warns when a stock KDE package replaced a patched one'
+arch=(any)
+url='https://github.com/Kalaminator/Win12'
+license=(MIT)
+depends=(pacman)
+source=(win12-kde-rebuild.hook)
+sha256sums=('db40f297e3767139fdc6ec0b82b93bd2a4000cbef369baf8131d4b02a1758b22')
+
+package() {
+  install -Dm644 "$srcdir/win12-kde-rebuild.hook" "$pkgdir/usr/share/libalpm/hooks/win12-kde-rebuild.hook"
+}

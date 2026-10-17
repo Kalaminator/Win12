@@ -176,7 +176,7 @@ paths under `Documents/Start12` (folder not renamed yet). Store users get a new 
 
 ## Fast islands on a patched KDE + 3 Islands (2026-10-17)
 `kde/build.sh` rebuilds libplasma / plasma-workspace / plasma-desktop from Arch PKGBUILDs with `kde/patches/*`
-(`provides <pkg>-win12`; hook `win12-kde.hook` warns after an update). Patches: libplasma `Containment::addApplet`
+(`provides <pkg>-win12`; own package `kde/hook` = `win12-kde-hook`, installed by build.sh, hook `win12-kde-rebuild.hook` warns after an update). Patches: libplasma `Containment::addApplet`
 moves the whole `[Applets][id]` group (tray keeps its icons); plasma-workspace `Widget.index` get/set skip empty
 parts + clamp to length, `TasksModel.appIdFilter`/`appIdFilterExclude`; plasma-desktop panel saves `AppletOrder` at
 once, task manager key `win12Island` (pinned|open|tray), registry singleton `TaskManagerApplet.Win12Islands`

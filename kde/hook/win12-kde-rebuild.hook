@@ -1,5 +1,6 @@
 # Win12: after a Plasma update, say so when a stock package replaced a patched one (spec part 1).
-# Shipped by the patched plasma-workspace package as /usr/share/libalpm/hooks/win12-kde.hook.
+# Shipped by the tiny win12-kde-hook package (kde/hook/PKGBUILD) as /usr/share/libalpm/hooks/win12-kde-rebuild.hook,
+# not by plasma-workspace: a stock plasma-workspace upgrade would remove the file before pacman reads PostTransaction hooks.
 [Trigger]
 Operation = Install
 Operation = Upgrade
