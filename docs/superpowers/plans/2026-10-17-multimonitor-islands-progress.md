@@ -26,3 +26,11 @@ left: nothing
 notes: Checks: test_islands OK, tiles.js all checks passed, qmllint 0 errors. Ruling: theme guard put in syncDesktopTheme (the caller of themeReader), not in themeReader.onNewData (that handler must disconnectSource first; the caller also skips the copy's firefox/icon syncs, which the host does) — cost if wrong: none seen. Ruling: also guard syncIslandReveal (not in the plan): a copy's islandWant is forced to single, so islandReveal = false and its onReady run would delete win12islandrevealEnabled and unload the host's KWin reveal script — cost if wrong: a copy can't touch the reveal script (it shouldn't anyway). Not guarded (same settings as the host, idempotent): syncWindowDeco/Colors/Blur/PanelPop/Icons-via-theme. For Task 6 review: does plasmashell's scripting panels() still list a panel whose screen was unplugged? If not, byPid misses the old copy and a new one is made (the old one leaks until the screen returns). Not testable here (one monitor).
 next: Task 3 — Settings on the Taskbar page, Spanish, README
 next-model: sonnet
+
+## 2026-10-17 08:30 Task 3: Settings on the Taskbar page, Spanish, README
+status: done
+done: e87c4f6: ConfigTaskbar.qml cfg_islandScreen/cfg_islandAllApps + the two combo rows and hint label; template.pot + es.po (7 strings, 2 bad fuzzy guesses replaced), .mo rebuilt (573 translated, 0 fuzzy/untranslated); README paragraph.
+left: nothing
+notes: plan steps applied verbatim. Checks: qmllint 0 errors, msgfmt --check ok. Not seen live (settings dialog not opened).
+next: Task 4 — KWin reveal script: the pointer's monitor only
+next-model: opus
