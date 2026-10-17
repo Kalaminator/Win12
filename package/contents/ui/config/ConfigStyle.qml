@@ -39,11 +39,13 @@ KCM.SimpleKCM {
     property bool cfg_windowTheme
     property string cfg_taskbarLayout
     property bool cfg_taskbarMagnetic
-    readonly property string menuKind: cfg_menuLook || cfg_menuStyle
-    readonly property string taskbarKind: cfg_taskbarFollowsStyle ? cfg_taskbarLook || cfg_menuStyle : ""
-    readonly property string windowKind: cfg_windowTheme ? cfg_windowLook || cfg_menuStyle : ""
-    readonly property bool anyXp: menuKind === "xp" || taskbarKind === "xp" || windowKind === "xp"
     function setMenu(v) { if (cfg_menuLook) cfg_menuLook = v; else cfg_menuStyle = v; }
+
+    StyleKinds {
+        id: kinds
+        menuStyle: page.cfg_menuStyle; menuLook: page.cfg_menuLook; taskbarLook: page.cfg_taskbarLook
+        taskbarFollowsStyle: page.cfg_taskbarFollowsStyle; windowLook: page.cfg_windowLook; windowTheme: page.cfg_windowTheme
+    }
 
     // Vertical panel (Types.LeftEdge 5 / RightEdge 6): positions read Top/Middle/Bottom. `plasmoid` is the
     // applet in the config dialog; guarded in case it is missing.
@@ -168,35 +170,35 @@ KCM.SimpleKCM {
                 enabled: false
             }
             TaskbarLayoutBox {
-                visible: page.taskbarKind === "windows12"
+                visible: kinds.taskbarKind === "windows12"
                 Kirigami.FormData.label: i18n("Taskbar layout:")
                 cfgPage: page
             }
             Item { Kirigami.FormData.isSection: true }
 
             QQC2.ComboBox {
-                visible: page.menuKind === "windows7" || page.menuKind === "modern"
+                visible: kinds.menuKind === "windows7" || kinds.menuKind === "modern"
                 Kirigami.FormData.label: i18n("Look:")
                 model: [i18n("Classic"), i18n("Modern")]
-                currentIndex: page.menuKind === "modern" ? 1 : 0
+                currentIndex: kinds.menuKind === "modern" ? 1 : 0
                 onActivated: index => page.setMenu(index === 1 ? "modern" : "windows7")
             }
             QQC2.ComboBox {
                 id: subBox
-                visible: page.menuKind === "windows7"
+                visible: kinds.menuKind === "windows7"
                 Kirigami.FormData.label: i18n("Substyle:")
                 model: [i18n("Windows 7 style"), i18n("Windows 7 style with icons"), i18n("Compact Windows 7 style"),
                         i18n("Grid Windows 7 style"), i18n("Grid Windows 7 style with icons"), i18n("Compact Grid Windows 7 style")]
             }
             QQC2.ComboBox {
                 id: modernSubBox
-                visible: page.menuKind === "modern"
+                visible: kinds.menuKind === "modern"
                 Kirigami.FormData.label: i18n("Substyle:")
                 model: [i18n("Modern style"), i18n("Modern style with icons"), i18n("Compact Modern style"),
                         i18n("Grid Modern style"), i18n("Grid Modern style with icons"), i18n("Compact Grid Modern style")]
             }
             QQC2.ComboBox {
-                visible: page.anyXp
+                visible: kinds.anyXp
                 Kirigami.FormData.label: i18n("Substyle:")
                 // Ids stay "classic"/"modern" for saved configs; "luna" = the real XP look.
                 readonly property var ids: ["luna", "classic", "modern"]
@@ -205,7 +207,7 @@ KCM.SimpleKCM {
                 onActivated: index => page.cfg_xpSubstyle = ids[index]
             }
             RowLayout {
-                visible: page.anyXp
+                visible: kinds.anyXp
                 Kirigami.FormData.label: i18n("Colour scheme:")
                 QQC2.ComboBox {
                     readonly property var keys: ["blue", "olive", "silver", "custom"]
@@ -216,7 +218,7 @@ KCM.SimpleKCM {
                 KQuickControls.ColorButton { id: xpCustom; visible: page.cfg_xpColor === "custom"; showAlphaChannel: false }
             }
             RowLayout {
-                visible: page.menuKind === "xp"
+                visible: kinds.menuKind === "xp"
                 Kirigami.FormData.label: i18n("Start button colour:")
                 QQC2.ComboBox {
                     model: [i18n("XP green"), i18n("Colour scheme"), i18n("Custom")]
