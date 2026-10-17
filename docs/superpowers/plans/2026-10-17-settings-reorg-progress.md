@@ -43,3 +43,11 @@ left: nothing
 notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass; grep for old tags = 0. Screenshot row 2 (SY=421) OK for the user's style: Apps list, Hidden apps, Filtered folders; All Programs hidden. Every row except the Hide box has enabled: !hideList.checked (foldersBottom/allAppsAsMenu also need folders.checked).
 next: Task 5 — Start button & shortcuts (ConfigRail merged into ConfigButton; XP Start colour from Style)
 next-model: sonnet
+
+## 2026-10-17 09:15 Task 5: Start button & shortcuts (ConfigRail merged into ConfigButton; XP Start colour from Style)
+status: done
+done: ConfigRail.qml deleted (git rm); ConfigButton has 4 groups (Start button, Right-click menu, Menu shortcuts, Power) + 6 read-only keys + StyleKinds; xpStart* rows/decls moved from ConfigStyle; config.qml: "Shortcuts" category gone, "Start button & shortcuts" right after "Apps list" (commit 48e989e)
+left: nothing
+notes: key guard unchanged (5 duplicates, OK 141 keys); tiles, stylekinds, qmllint pass. Screenshot row 3 (SY=489) OK: Start button + Right-click menu groups seen (Menu shortcuts/Power are below the fold, not scrolled). XP colour row hidden for the user's menu. Sidebar rows now: 0 Style, 1 Start menu, 2 Apps list, 3 Start button & shortcuts, 4 Look, 5 Colours, 6 Search, 7 Taskbar, 8 Icons. Only grep hit for old names is a code comment ("Start11's list").
+next: Task 6 — Windows page (new ConfigWindows.qml) from the Taskbar page
+next-model: sonnet
