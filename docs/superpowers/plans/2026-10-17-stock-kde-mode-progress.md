@@ -26,3 +26,11 @@ left: nothing
 notes: Deviation: `islandsNeedPatch` uses `islandWant === "islands"`, not `cfg.taskbarLayout` (the layout box is hidden for other styles, so on stock a user who leaves the Windows 12 style still gets the one bar back; with W12 style on it is the same thing). Added to the stock fake (Task 1's): every add/move/remove/index set marks the pass (`sh.mut`, reset by endPass); an index read or set after one fails. Reason: the fake's setter saves at once, so the fast centerLoop on the stock fake still gave the right order in 2 passes; now it fails ("index read after a layout change"). islands.js passes the guard too. Stock pass counts: mirror 8, undo 7, after-restore 8. qmllint errors 0 (0 at base). PATCH_CHECK run here: "ok"; with the marker: nothing (stock). LIVE IS OK AGAIN: the sed now fills @STOCK@. TaskbarLayoutBox note text/visibility unchanged (still the old string, shown when !kdePatched): Task 3's job.
 next: Task 3 — Settings note, README, FEATURES, 10 translations
 next-model: sonnet
+
+## 2026-10-17 13:45 Task 3: Settings note, README, FEATURES, 10 translations
+status: done
+done: 0151e3e. TaskbarLayoutBox.qml note (new text; red only when 3 Islands is picked, else normal colour; old string gone); README "Without the patched packages" paragraph; FEATURES l.71; po/template.pot + 10 po files translated (0 fuzzy, 580 translated each); 10 .mo rebuilt with the install.sh msgfmt line.
+left: nothing
+notes: qmllint errors 0; test_settings_keys --strict OK (141 keys). Task 4 is live (two plasmashell restarts via ./install.sh --restart, marker ~/.config/win12-force-stock; back up the three config files first).
+next: Task 4 — Live forced-stock test on this (patched) PC
+next-model: opus
