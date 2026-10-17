@@ -6,6 +6,8 @@ import Qt.labs.folderlistmodel
 import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
 import org.kde.kquickcontrols as KQuickControls
+import org.kde.plasma.plasma5support as P5Support
+import "../code/tiles.js" as Tiles
 
 // Appearance: colours, Windows 12 shade, transparency and corners, texture, fonts, effects (proposal 3.7).
 KCM.SimpleKCM {
@@ -39,6 +41,14 @@ KCM.SimpleKCM {
     property int cfg_win12Transparency
     property int cfg_win12Blur
     property int cfg_win12Noise
+    property bool cfg_win12ReadableGlass
+    // W18 spec 12.3: Win12's kwin (layer B of readable glass) is installed; true until the check answers (no flash).
+    property bool kwinPatched: true
+    P5Support.DataSource {
+        engine: "executable"
+        connectedSources: [Tiles.KWIN_CHECK]
+        onNewData: (sourceName, data) => { disconnectSource(sourceName); page.kwinPatched = String(data.stdout).trim() === "ok"; }
+    }
     property alias cfg_menuOpacity: opacity.value
     property alias cfg_solidMenu: solid.checked
     property alias cfg_cornerRadius: radius.value
@@ -239,6 +249,18 @@ KCM.SimpleKCM {
             QQC2.Label { text: i18n("Smooth") }
             QQC2.Slider { from: 0; to: 14; stepSize: 1; value: page.cfg_win12Noise; onMoved: page.cfg_win12Noise = value }
             QQC2.Label { text: i18n("Grainy") }
+        }
+        QQC2.CheckBox {
+            visible: page.win12
+            text: i18n("Readable glass: edge, shadow and an even background")
+            checked: page.cfg_win12ReadableGlass
+            onToggled: page.cfg_win12ReadableGlass = checked
+        }
+        QQC2.Label {
+            visible: page.win12 && page.cfg_win12ReadableGlass && !page.kwinPatched
+            Layout.maximumWidth: Kirigami.Units.gridUnit * 24
+            wrapMode: Text.Wrap
+            text: i18n("The even background needs Win12's KWin patch: run kde/build.sh kwin from the Win12 source folder, then log out and in. Edge and shadow work without it.")
         }
         QQC2.Label {
             visible: page.win12

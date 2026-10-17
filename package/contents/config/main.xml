@@ -365,6 +365,10 @@
       <label>kwinrc [Effect-blur] NoiseStrength (grain, 0-14) while a Windows 12 part is on; 0 = smooth glass</label>
       <default>0</default>
     </entry>
+    <entry name="win12ReadableGlass" type="Bool">
+      <label>W18 Windows 12 readable glass: two-tone edge + shadow in the theme (edge=1) and the kwin-win12 squeeze keys</label>
+      <default>true</default>
+    </entry>
     <entry name="taskbarGap" type="Int">
       <label>W12 Windows 12 floating bar/islands: px between the bar and the screen edge (0 = touching)</label>
       <default>8</default>

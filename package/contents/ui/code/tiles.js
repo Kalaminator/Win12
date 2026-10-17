@@ -553,6 +553,9 @@ var QDBUS = "$(command -v qdbus6 || command -v qdbus-qt6 || { [ -x /usr/lib/qt6/
 // forces stock on a patched PC (the dev PC's live test of the stock path; not a user setting).
 var PATCH_CHECK = "pacman -T libplasma-win12 plasma-workspace-win12 plasma-desktop-win12 >/dev/null 2>&1"
     + " && [ ! -e \"${XDG_CONFIG_HOME:-$HOME/.config}/win12-force-stock\" ] && echo ok";
+// Spec 12.3: prints "ok" with Win12's kwin (kde/build.sh kwin; readable glass layer B). Kept apart from PATCH_CHECK:
+// layouts never depend on kwin. Only the Appearance page reads it (its note); main.qml writes the keys either way.
+var KWIN_CHECK = "pacman -T kwin-win12 >/dev/null 2>&1 && echo ok";
 
 function shQuote(s) {
     return "'" + String(s).replace(/'/g, "'\\''") + "'";

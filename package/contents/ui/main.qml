@@ -402,7 +402,9 @@ ContainmentItem {
         "windows12": "colour=" + win12Hex
                      + " alpha=" + (!cfg.win10Transparency ? 1 : cfg.win12Transparency >= 0 ? 1 - cfg.win12Transparency / 100
                                     : cfg.win10AccentStart ? 0.15 : winDark ? 0.3 : 0.25) + " radius=" + win12Radius + " line=0 buttons=win11 gap=" + cfg.taskbarGap
-                     + (win12GapMode && cfg.taskbarGap > 0 ? " ring=" + cfg.taskbarGap + " size=" + panelWidth + "x" + panelHeight : "") })
+                     + (win12GapMode && cfg.taskbarGap > 0 ? " ring=" + cfg.taskbarGap + " size=" + panelWidth + "x" + panelHeight : "")
+                     // W18 spec 12.1: two-tone edge + shadow, so clear glass stays visible over a white or black page.
+                     + (cfg.win12ReadableGlass ? " edge=1" : "") })
     // W11 Windows 12 colour sliders (-1 = the W8 look): light 0 soft tint .. 100 near white (80 = f7f7fb),
     // dark 0 soft dark .. 100 near black (~50 = 202028); taskbar and menu (Metrics.bg) background.
     // With the accent colour on, the sliders mix the accent towards white (light) or black (dark) instead.
@@ -417,15 +419,24 @@ ContainmentItem {
     // W11 blur strength + grain: kwinrc [Effect-blur] BlurStrength / NoiseStrength while any Windows 12 part is on
     // (KWin's blur is global; its default noise makes the glass look grainy). The user's values are kept next to
     // them in win12Saved / win12SavedNoise ("unset" = no key) and put back when Windows 12 goes off.
+    // W18 spec 12.3: Win12Contrast / Win12Target are Win12's own keys (read only by the kwin-win12 blur, which pulls
+    // the background behind panels and Plasma popups toward one brightness): written while on, deleted otherwise.
     readonly property bool win12Glass: cfg.win10Transparency && (menuKind === "windows12" || win12Taskbar
         || (cfg.windowLook || cfg.menuStyle) === "windows12")
     // Default 3: KWin's own default smears the background so much that the glass looks opaque.
     readonly property int win12Blur: win12Glass ? (cfg.win12Blur > 0 ? cfg.win12Blur : 3) : -1
     readonly property int win12Noise: win12Glass ? cfg.win12Noise : -1
+    // 30 % of the background's contrast kept, pulled toward 85 % under a light bar, 20 % under a dark or accent one
+    // (the theme's light/dark ink rule). ponytail: no slider; the two kwinrc keys are the knob.
+    readonly property int win12Contrast: win12Glass && cfg.win12ReadableGlass ? 30 : -1
+    readonly property int win12Target: win12Contrast < 0 ? -1
+        : Kirigami.ColorUtils.brightnessForColor("#" + win12Hex) === Kirigami.ColorUtils.Light ? 85 : 20
     // A style switch flips these through several values at once: wait for the final state, then one run under
     // the panel lock, so an older "restore" run cannot reload KWin after the newer one.
     onWin12BlurChanged: blurTimer.restart()
     onWin12NoiseChanged: blurTimer.restart()
+    onWin12ContrastChanged: blurTimer.restart()
+    onWin12TargetChanged: blurTimer.restart()
     Timer { id: blurTimer; interval: 600; onTriggered: root.syncBlurStrength() }
     function syncBlurStrength() {
         if (!configReady) return;
@@ -435,8 +446,11 @@ ContainmentItem {
               + key + " --default unset)\"; kwriteconfig6 " + g + key + " " + v + "; "
             : "s=$(kreadconfig6 " + g + saved + "); if [ -n \"$s\" ]; then if [ \"$s\" = unset ]; then kwriteconfig6 " + g
               + key + " --delete; else kwriteconfig6 " + g + key + " \"$s\"; fi; kwriteconfig6 " + g + saved + " --delete; fi; ";
+        // Win12's own keys: no saved copy to restore, just write or delete.
+        const own = (key, v) => "kwriteconfig6 " + g + key + (v >= 0 ? " " + v : " --delete") + "; ";
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-blur.lock\" sh -c " + Tiles.shQuote(one("BlurStrength", "win12Saved", win12Blur > 0 ? win12Blur : -1)
-            + one("NoiseStrength", "win12SavedNoise", win12Noise) + Tiles.QDBUS + " org.kde.KWin /KWin reconfigure; "
+            + one("NoiseStrength", "win12SavedNoise", win12Noise) + own("Win12Contrast", win12Contrast) + own("Win12Target", win12Target)
+            + Tiles.QDBUS + " org.kde.KWin /KWin reconfigure; "
             // /KWin reconfigure does not reload a running effect's settings: reload the blur itself too.
             + Tiles.QDBUS + " org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect blur"));
     }

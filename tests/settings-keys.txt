@@ -71,6 +71,7 @@ win12Dark
 win12Transparency
 win12Blur
 win12Noise
+win12ReadableGlass
 taskbarGap
 taskbarWindows
 menuGap
