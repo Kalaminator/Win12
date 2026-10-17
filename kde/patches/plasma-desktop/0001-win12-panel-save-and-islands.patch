@@ -154,21 +154,31 @@ index 8f47537..810dec7 100644
          if (event.formats.indexOf("application/x-orgkdeplasmataskmanager_taskbuttonitem") >= 0) {
              event.accepted = false;
 diff --git a/applets/taskmanager/qml/Task.qml b/applets/taskmanager/qml/Task.qml
-index 1902cdc..5157015 100644
+index 1902cdc..65441d7 100644
 --- a/applets/taskmanager/qml/Task.qml
 +++ b/applets/taskmanager/qml/Task.qml
-@@ -513,6 +513,11 @@ PlasmaCore.ToolTipArea {
+@@ -509,11 +509,20 @@ PlasmaCore.ToolTipArea {
+                         setRequestedInhibitDnd(true);
+                         tasksRoot.dragSource = task;
+                         dragHelper.Drag.imageSource = result.url;
+-                        dragHelper.Drag.mimeData = {
++                        const mime = {
                              "text/x-orgkdeplasmataskmanager_taskurl": backend.tryDecodeApplicationsUrl(model.LauncherUrlWithoutIcon).toString(),
                              [model.MimeType]: model.MimeData,
                              "application/x-orgkdeplasmataskmanager_taskbuttonitem": model.MimeData,
-+                            // Win12: islands move the app (and its launcher when pinned) on a drop. Same ids as
-+                            // the island registry: AppId, else the launcher URL.
-+                            "text/x-win12-appid": model.AppId || String(model.LauncherUrlWithoutIcon),
-+                            "text/x-win12-launcher": tasksModel.launcherPosition(model.LauncherUrlWithoutIcon) !== -1
-+                                ? String(model.LauncherUrlWithoutIcon) : "",
                          };
++                        // Win12: a drag from an island moves the app (and its launcher when pinned) on a drop. Same
++                        // ids as the island registry: AppId, else the launcher URL. Only islands add these, so a
++                        // stock task manager's drag still makes an icon widget when dropped on a panel.
++                        if (tasksRoot.win12Island) {
++                            mime["text/x-win12-appid"] = model.AppId || String(model.LauncherUrlWithoutIcon);
++                            mime["text/x-win12-launcher"] = tasksModel.launcherPosition(model.LauncherUrlWithoutIcon) !== -1
++                                ? String(model.LauncherUrlWithoutIcon) : "";
++                        }
++                        dragHelper.Drag.mimeData = mime;
                          dragHelper.Drag.active = dragHandler.active;
                      });
+                 } else {
 diff --git a/applets/taskmanager/qml/main.qml b/applets/taskmanager/qml/main.qml
 index 8d5a83c..e08b22d 100644
 --- a/applets/taskmanager/qml/main.qml
@@ -379,7 +389,7 @@ index 0000000..036c6c1
 +    KSharedConfig::Ptr m_config;
 +};
 diff --git a/containments/panel/main.qml b/containments/panel/main.qml
-index 15fc51a..2195f05 100644
+index 15fc51a..d401551 100644
 --- a/containments/panel/main.qml
 +++ b/containments/panel/main.qml
 @@ -97,8 +97,8 @@ ContainmentItem {
@@ -393,3 +403,15 @@ index 15fc51a..2195f05 100644
      }
  
      Containment.onAppletRemoved: (applet) => {
+@@ -198,7 +198,10 @@ ContainmentItem {
+         }
+ 
+         onDragEnter: event => {
+-            if (Plasmoid.immutable || root.appletRequestsInhibitDnD) {
++            // Win12: never grab a drag from an island task manager: its dndSpacer would push the task manager away
++            // from the pointer and the drop would make an icon widget instead of moving the app.
++            if (Plasmoid.immutable || root.appletRequestsInhibitDnD
++                || event.mimeData.formats.indexOf("text/x-win12-appid") >= 0) {
+                 event.ignore();
+                 return;
+             }
