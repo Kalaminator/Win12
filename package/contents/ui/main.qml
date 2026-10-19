@@ -247,6 +247,9 @@ ContainmentItem {
     property var userAccent: ""   // read with userDark (readBrightness)
     readonly property string accentHex: (cfg.accentMode === 1 ? cfg.accentColor
                                          : userAccent !== "" ? userAccent : Kirigami.Theme.highlightColor).toString().slice(-6)
+    // Start menu and taskbar background with "Show accent colour on Start and taskbar": the accent darkened as on
+    // Windows 10/11 (Metrics.bg and the taskbar presets read this one value, so the two always match).
+    readonly property string accentStartHex: Qt.darker("#" + accentHex, 1.6).toString().slice(-6)
     readonly property bool winDark: cfg.colorMode === 1 || (cfg.colorMode === 0 && userDark)
         || (cfg.colorMode === 3 && Kirigami.ColorUtils.brightnessForColor(cfg.menuColor) === Kirigami.ColorUtils.Dark)
     // xptheme.py args for a deco/scheme made at apply time (XP custom colour, Win10 accent title bar); "" = shipped one.
@@ -393,11 +396,11 @@ ContainmentItem {
     // item less transparent; added to presets and custom alike.
     // T38/T39 the presets follow the Colours page (light/dark, accent taskbar, transparency); windows7 = accent-tinted glass.
     readonly property var taskbarPresets: ({
-        "windows10": "colour=" + (cfg.win10AccentStart ? accentHex : winDark ? "101010" : "eeeeee")
+        "windows10": "colour=" + (cfg.win10AccentStart ? accentStartHex : winDark ? "101010" : "eeeeee")
                      + " alpha=" + (cfg.win10Transparency ? 0.85 : 1) + " radius=2 line=0 buttons=win10",
-        "windows11": "colour=" + (cfg.win10AccentStart ? accentHex : winDark ? "202020" : "f3f3f3")
+        "windows11": "colour=" + (cfg.win10AccentStart ? accentStartHex : winDark ? "202020" : "f3f3f3")
                      + " alpha=" + (cfg.win10Transparency ? 0.8 : 1) + " radius=8 line=0 buttons=win11",
-        "windows7": "colour=" + (cfg.win10AccentStart ? accentHex : "2a5a96")
+        "windows7": "colour=" + (cfg.win10AccentStart ? accentStartHex : "2a5a96")
                     + " alpha=" + (cfg.win10Transparency ? 0.6 : 1) + " radius=6 line=1 buttons=win7",
         "windows12": "colour=" + win12Hex
                      + " alpha=" + (!cfg.win10Transparency ? 1 : cfg.win12Transparency >= 0 ? 1 - cfg.win12Transparency / 100
@@ -411,7 +414,7 @@ ContainmentItem {
     readonly property string win12Hex: {
         const v = winDark ? cfg.win12Dark : cfg.win12Light;
         if (cfg.win10AccentStart)
-            return v < 0 ? accentHex : Kirigami.ColorUtils.linearInterpolation("#" + accentHex,
+            return v < 0 ? accentStartHex : Kirigami.ColorUtils.linearInterpolation("#" + accentHex,
                 winDark ? "#050507" : "#fdfdff", v / 100 * 0.9).toString().slice(-6);
         return v < 0 ? (winDark ? "202028" : "f7f7fb") : Kirigami.ColorUtils.linearInterpolation(winDark ? "#3a3a46" : "#dde1ec",
             winDark ? "#050507" : "#fdfdff", v / 100).toString().slice(-6);

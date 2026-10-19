@@ -39,8 +39,8 @@ QtObject {
     // (a part with a forced mode, like the Win7 white pane, sets accentStart: false).
     readonly property bool win10: root.menuKind !== "xp"
     property bool accentStart: win10 && cfg.win10AccentStart
-    readonly property color bg: root.menuKind === "windows12" && accentStart ? ((root.winDark ? cfg.win12Dark : cfg.win12Light) >= 0 ? "#" + root.win12Hex : Qt.darker(accent, 1.6))
-                              : accentStart ? Qt.darker(accent, 1.6)
+    readonly property color bg: root.menuKind === "windows12" && accentStart ? "#" + root.win12Hex
+                              : accentStart ? "#" + root.accentStartHex
                               : root.menuKind === "windows12" && mode !== 3 && (root.winDark ? cfg.win12Dark : cfg.win12Light) >= 0 ? "#" + root.win12Hex   // W11
                               : mode === 0 ? Kirigami.Theme.backgroundColor
                               : mode === 1 ? "#1c1b22" : mode === 2 ? "#f3f3f3" : cfg.menuColor
