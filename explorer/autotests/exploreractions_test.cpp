@@ -10,6 +10,10 @@
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QTimer>
+#include <QApplication>
+#include <QClipboard>
+#include <KIO/FileUndoManager>
 
 namespace {
 void writeFile(const QString &path, const QByteArray &data)
@@ -143,7 +147,8 @@ private Q_SLOTS:
         ExplorerActions actions(nullptr);
 
         std::unique_ptr<QMenu> plain(actions.contextMenu(items, folder));
-        QVERIFY(win12Entries(plain.get()).isEmpty());
+        QCOMPARE(win12Entries(plain.get()).size(), 1); // always has "Select by rule…"
+        QCOMPARE(win12Entries(plain.get()).first()->menu()->actions().size(), 1);
 
         connect(&actions, &ExplorerActions::fillWin12Menu, this, [](QMenu *m, const KFileItemList &) {
             m->addAction(QStringLiteral("Tag"));
@@ -152,7 +157,101 @@ private Q_SLOTS:
         const QList<QAction *> win12 = win12Entries(filled.get());
         QCOMPARE(win12.size(), 1);
         QVERIFY(win12.first()->menu());
-        QCOMPARE(win12.first()->menu()->actions().size(), 1);
+        QCOMPARE(win12.first()->menu()->actions().size(), 2);
+    }
+
+    void win12MenuHasSelectByRule()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions actions(nullptr);
+        for (const KFileItemList &list : {items, KFileItemList()}) {
+            std::unique_ptr<QMenu> menu(actions.contextMenu(list, folder));
+            const QList<QAction *> win12 = win12Entries(menu.get());
+            QCOMPARE(win12.size(), 1);
+            QStringList texts;
+            for (QAction *a : win12.first()->menu()->actions())
+                texts << a->text();
+            QVERIFY2(texts.contains(QStringLiteral("Select by rule…")), qPrintable(texts.join(QLatin1Char('|'))));
+        }
+    }
+
+    void copyPathsJoinsWithNewline()
+    {
+        QTemporaryDir dir;
+        const QString p1 = dir.filePath(QStringLiteral("a.txt")), p2 = dir.filePath(QStringLiteral("b.txt"));
+        writeFile(p1, "a");
+        writeFile(p2, "b");
+        ExplorerActions actions(nullptr);
+        actions.copyPaths({itemFor(p1), itemFor(p2)});
+        QCOMPARE(QApplication::clipboard()->text(), p1 + QLatin1Char('\n') + p2);
+    }
+
+    void transferKeepStructureCreatesSubfolders()
+    {
+        QTemporaryDir src, dest;
+        QDir(src.path()).mkdir(QStringLiteral("sub"));
+        writeFile(src.filePath(QStringLiteral("sub/b.txt")), "b");
+        writeFile(src.filePath(QStringLiteral("a.txt")), "a");
+        ExplorerActions actions(nullptr);
+        const QUrl destUrl = QUrl::fromLocalFile(dest.path());
+        actions.setPickFolder([destUrl](const QUrl &) { return destUrl; });
+        QSignalSpy undo(KIO::FileUndoManager::self(), &KIO::FileUndoManager::undoAvailable);
+        actions.transferTo({itemFor(src.filePath(QStringLiteral("sub/b.txt"))), itemFor(src.filePath(QStringLiteral("a.txt")))}, false,
+                           QUrl::fromLocalFile(src.path()));
+        QTRY_VERIFY(QFile::exists(dest.filePath(QStringLiteral("sub/b.txt"))));
+        QTRY_VERIFY(QFile::exists(dest.filePath(QStringLiteral("a.txt"))));
+        QTRY_VERIFY(KIO::FileUndoManager::self()->isUndoAvailable());
+    }
+
+    void transferFlatByDefault()
+    {
+        QTemporaryDir src, dest;
+        QDir(src.path()).mkdir(QStringLiteral("sub"));
+        writeFile(src.filePath(QStringLiteral("sub/b.txt")), "b");
+        writeFile(src.filePath(QStringLiteral("a.txt")), "a");
+        ExplorerActions actions(nullptr);
+        const QUrl destUrl = QUrl::fromLocalFile(dest.path());
+        actions.setPickFolder([destUrl](const QUrl &) { return destUrl; });
+        actions.transferTo({itemFor(src.filePath(QStringLiteral("sub/b.txt"))), itemFor(src.filePath(QStringLiteral("a.txt")))}, false);
+        QTRY_VERIFY(QFile::exists(dest.filePath(QStringLiteral("b.txt"))));
+        QTRY_VERIFY(QFile::exists(dest.filePath(QStringLiteral("a.txt"))));
+    }
+
+    // The dialog is never answered by the test except by cancelling it: nothing may be deleted before then.
+    void deleteForeverGoesThroughForceConfirmation()
+    {
+        QTemporaryDir dir;
+        const QString p = dir.filePath(QStringLiteral("a.txt"));
+        writeFile(p, "a");
+        ExplorerActions actions(nullptr);
+        QTimer::singleShot(50, [] {
+            if (QWidget *w = QApplication::activeModalWidget())
+                w->close();
+        });
+        actions.deletePermanently({itemFor(p)});
+        QTest::qWait(150);
+        QVERIFY(QFile::exists(p));
+    }
+
+    void advancedActionsEnabledWithFolder()
+    {
+        QTemporaryDir dir, configDir;
+        ViewSettingsStore store(KSharedConfig::openConfig(configDir.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
+        ExplorerActions actions(nullptr);
+        QAction *trash = actions.action(QStringLiteral("adv_trash_matches"));
+        QVERIFY(!trash->isEnabled());
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        actions.setActiveView(&view);
+        QVERIFY(trash->isEnabled());
+        QVERIFY(actions.action(QStringLiteral("adv_select_rule"))->isEnabled());
+        actions.setActiveView(nullptr);
+        QVERIFY(!trash->isEnabled());
     }
 
     void enabledFollowsSelection()

@@ -1,6 +1,7 @@
 #include "exploreractions.h"
 #include "folderview.h"
 #include "ribbonspec.h"
+#include "selectbyruledialog.h"
 #include <KFileItemActions>
 #include <KFileItemListProperties>
 #include <KFilePlacesModel>
@@ -8,6 +9,8 @@
 #include <KIO/CopyJob>
 #include <KIO/DeleteOrTrashJob>
 #include <KIO/FileUndoManager>
+#include <KIO/MkpathJob>
+#include <KIO/Global>
 #include <KIO/JobUiDelegate>
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
@@ -201,6 +204,8 @@ void ExplorerActions::updateEnabled()
         action(id)->setEnabled(hasView && !sel.isEmpty());
     for (const QString &id : folderIds)
         action(id)->setEnabled(hasView);
+    for (const char *id : {"adv_select_rule", "adv_select_matches", "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches"})
+        action(QString::fromLatin1(id))->setEnabled(hasView);
     const bool canPaste = hasView && clipboardHasUrls();
     action(QStringLiteral("home_paste"))->setEnabled(canPaste);
     action(QStringLiteral("home_paste_shortcut"))->setEnabled(canPaste);
@@ -350,12 +355,7 @@ void ExplorerActions::connectActions()
     on("home_cut", [this] { copyToClipboard(selection(), true); });
     on("home_paste", [this] { paste(folder()); });
     on("home_paste_shortcut", [this] { pasteShortcut(folder()); });
-    on("home_copy_path", [this] {
-        QStringList paths;
-        for (const KFileItem &item : selection())
-            paths << (item.localPath().isEmpty() ? item.url().toDisplayString() : item.localPath());
-        QApplication::clipboard()->setText(paths.join(QLatin1Char('\n')));
-    });
+    on("home_copy_path", [this] { copyPaths(selection()); });
     on("home_undo", [this] {
         KIO::FileUndoManager::self()->uiInterface()->setParentWidget(m_window);
         KIO::FileUndoManager::self()->undo();
@@ -364,6 +364,13 @@ void ExplorerActions::connectActions()
         KIO::FileUndoManager::self()->uiInterface()->setParentWidget(m_window);
         KIO::FileUndoManager::self()->redo();
     });
+    using A = SelectByRuleDialog::Action;
+    on("adv_select_rule", [this] { selectByRule(A::Trash); });
+    on("adv_select_matches", [this] { selectByRule(A::Select); });
+    on("adv_copy_matches", [this] { selectByRule(A::CopyTo); });
+    on("adv_move_matches", [this] { selectByRule(A::MoveTo); });
+    on("adv_rename_matches", [this] { selectByRule(A::Rename); });
+    on("adv_trash_matches", [this] { selectByRule(A::Trash); });
     on("home_move_to", [this] { transferTo(selection(), true); });
     on("home_copy_to", [this] { transferTo(selection(), false); });
     on("home_delete", [this] { trash(selection()); }); // the big button is the safe default
@@ -422,10 +429,7 @@ void ExplorerActions::connectActions()
             args << QStringLiteral("--attach") << path;
         launch(QStringLiteral("xdg-email"), args);
     });
-    on("share_zip", [this] {
-        launch(QStringLiteral("ark"),
-               QStringList{QStringLiteral("--add"), QStringLiteral("--dialog"), QStringLiteral("--changetofirstpath")} + localPaths(selection()));
-    });
+    on("share_zip", [this] { zip(selection()); });
     on("share_print", [this] { launch(QStringLiteral("lp"), localPaths(selection())); });
     on("share_security", [this] {
         const KFileItemList sel = selection();
@@ -486,16 +490,83 @@ void ExplorerActions::pasteShortcut(const QUrl &folder)
     KIO::FileUndoManager::self()->recordCopyJob(job);
 }
 
-void ExplorerActions::transferTo(const KFileItemList &items, bool move)
+void ExplorerActions::transferTo(const KFileItemList &items, bool move, const QUrl &keepStructureFrom)
 {
     if (items.isEmpty())
         return;
-    const QUrl dest = QFileDialog::getExistingDirectoryUrl(m_window, move ? i18n("Move to") : i18n("Copy to"), folder());
+    const QString title = move ? i18n("Move to") : i18n("Copy to");
+    const QUrl dest = m_pickFolder ? m_pickFolder(folder()) : QFileDialog::getExistingDirectoryUrl(m_window, title, folder());
     if (!dest.isValid())
         return;
-    KIO::CopyJob *job = move ? KIO::move(items.urlList(), dest) : KIO::copy(items.urlList(), dest);
-    KJobWidgets::setWindow(job, m_window);
-    KIO::FileUndoManager::self()->recordCopyJob(job);
+    const auto run = [this, move](const QList<QUrl> &urls, const QUrl &to) {
+        KIO::CopyJob *job = move ? KIO::move(urls, to) : KIO::copy(urls, to);
+        KJobWidgets::setWindow(job, m_window);
+        KIO::FileUndoManager::self()->recordCopyJob(job);
+    };
+    if (!keepStructureFrom.isValid()) {
+        run(items.urlList(), dest);
+        return;
+    }
+    // One mkpath + copy/move per distinct relative subfolder (ruling 3), each recorded for Undo.
+    QMap<QString, QList<QUrl>> groups;
+    for (const KFileItem &item : items) {
+        QString rel = QDir(QDir::cleanPath(keepStructureFrom.path())).relativeFilePath(KIO::upUrl(item.url()).path());
+        if (rel == QLatin1String(".") || rel.startsWith(QLatin1String("..")))
+            rel.clear();
+        groups[rel] << item.url();
+    }
+    for (auto it = groups.cbegin(); it != groups.cend(); ++it) {
+        if (it.key().isEmpty()) {
+            run(it.value(), dest);
+            continue;
+        }
+        QUrl sub = dest;
+        sub.setPath(QDir::cleanPath(dest.path() + QLatin1Char('/') + it.key()));
+        KIO::Job *mk = KIO::mkpath(sub, dest);
+        KJobWidgets::setWindow(mk, m_window);
+        const QList<QUrl> urls = it.value();
+        connect(mk, &KJob::result, this, [run, urls, sub](KJob *j) {
+            if (!j->error())
+                run(urls, sub);
+        });
+    }
+}
+
+void ExplorerActions::zip(const KFileItemList &items)
+{
+    launch(QStringLiteral("ark"),
+           QStringList{QStringLiteral("--add"), QStringLiteral("--dialog"), QStringLiteral("--changetofirstpath")} + localPaths(items));
+}
+
+void ExplorerActions::copyPaths(const KFileItemList &items)
+{
+    QStringList paths;
+    for (const KFileItem &item : items)
+        paths << (item.localPath().isEmpty() ? item.url().toDisplayString() : item.localPath());
+    QApplication::clipboard()->setText(paths.join(QLatin1Char('\n')));
+}
+
+void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
+{
+    if (!folder().isValid())
+        return;
+    SelectByRuleDialog dialog(folder(), defaultAction, m_window);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const KFileItemList items = dialog.ticked();
+    if (items.isEmpty())
+        return;
+    using A = SelectByRuleDialog::Action;
+    switch (dialog.chosenAction()) {
+    case A::Select: Q_EMIT selectUrlsRequested(items.urlList()); break;
+    case A::CopyTo: transferTo(items, false, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
+    case A::MoveTo: transferTo(items, true, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
+    case A::Rename: break; // Task 8: renameMany(items)
+    case A::Trash: trash(items); break;
+    case A::DeleteForever: deletePermanently(items); break;
+    case A::Zip: zip(items); break;
+    case A::CopyPaths: copyPaths(items); break;
+    }
 }
 
 void ExplorerActions::trash(const KFileItemList &items)
@@ -591,6 +662,7 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
     const bool canPaste = folder.isValid() && clipboardHasUrls();
     const auto addWin12 = [&] {
         auto *win12 = new QMenu(i18n("Win12"), menu);
+        win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
         Q_EMIT fillWin12Menu(win12, items);
         if (win12->isEmpty())
             delete win12;

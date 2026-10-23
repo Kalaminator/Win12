@@ -434,6 +434,10 @@ void ExplorerWindow::connectActions()
             s.sortOrder = order;
         });
     });
+    connect(m_actions, &ExplorerActions::selectUrlsRequested, this, [this](const QList<QUrl> &urls) {
+        if (FolderView *v = activeView())
+            v->selectUrls(urls);
+    });
     connect(m_actions, &ExplorerActions::groupRequested, this, [this](GroupRole role) { editSettings([role](ViewSettings &s) { s.groupRole = role; }); });
     connect(m_actions, &ExplorerActions::columnsToggled, this, [this](const QString &id, bool on) {
         editSettings([id, on](ViewSettings &s) {
