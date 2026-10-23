@@ -18,7 +18,7 @@ step deps; command -v makepkg >/dev/null || sudo pacman -S --needed --noconfirm 
 step source; mkdir -p "$CACHE"; rm -f "$CACHE"/win12-explorer-*.pkg.tar.zst
 tar -C "$HERE" --exclude=./build --transform "s,^\.,win12-explorer-$VER," -czf "$CACHE/win12-explorer-$VER.tar.gz" .
 sed "s/@VER@/$VER/" "$HERE/PKGBUILD" > "$CACHE/PKGBUILD"
-step makepkg; (cd "$CACHE" && makepkg -sf --noconfirm)
+step makepkg; (cd "$CACHE" && makepkg -sfC --noconfirm)
 if sudo -n /usr/bin/pacman -V >/dev/null 2>&1 || [ -t 0 ]; then
   step install; sudo pacman -U --noconfirm "$CACHE"/win12-explorer-"$VER"-1-*.pkg.tar.zst
 else
