@@ -98,6 +98,16 @@ QVariant FolderModel::data(const QModelIndex &index, int role) const
         const QPixmap pix = previewOf(index);
         return pix.isNull() ? QVariant() : QVariant(pix);
     }
+    case Qt::DisplayRole: // Windows details text
+        if (index.column() == KDirModel::Size && itemFor(index).isDir())
+            return QString(); // folders show no size
+        if (index.column() == KDirModel::ModifiedTime)
+            return QLocale().toString(itemFor(index).time(KFileItem::ModificationTime), QLocale::ShortFormat);
+        break;
+    case Qt::TextAlignmentRole:
+        if (index.column() == KDirModel::Size)
+            return QVariant::fromValue(Qt::AlignRight | Qt::AlignVCenter);
+        break;
     case Qt::DecorationRole:
         if (index.column() == 0) {
             const QPixmap pix = previewOf(index);

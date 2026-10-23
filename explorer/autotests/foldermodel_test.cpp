@@ -1,5 +1,6 @@
 #include "foldermodel.h"
 #include <KDirLister>
+#include <KDirModel>
 #include <KIO/PreviewJob>
 #include <QElapsedTimer>
 #include <QFile>
@@ -36,6 +37,22 @@ class FolderModelTest : public QObject
     }
 
 private Q_SLOTS:
+    // Windows details text: folders show no size, file sizes are right-aligned, dates use the short locale format.
+    void detailsTextIsWindowsLike()
+    {
+        QTemporaryDir dir;
+        touch(dir.filePath(QStringLiteral("a.txt")), 2048);
+        QVERIFY(QDir(dir.path()).mkdir(QStringLiteral("zdir")));
+        FolderModel model;
+        QVERIFY(list(model, dir));
+        QCOMPARE(names(model), (QStringList{QStringLiteral("zdir"), QStringLiteral("a.txt")}));
+        QVERIFY(model.index(0, KDirModel::Size).data().toString().isEmpty());
+        QVERIFY(!model.index(1, KDirModel::Size).data().toString().isEmpty());
+        QCOMPARE(model.index(1, KDirModel::Size).data(Qt::TextAlignmentRole).value<Qt::Alignment>() & Qt::AlignHorizontal_Mask, Qt::AlignRight);
+        const QDateTime mtime = model.itemFor(model.index(1, 0)).time(KFileItem::ModificationTime);
+        QCOMPARE(model.index(1, KDirModel::ModifiedTime).data().toString(), QLocale().toString(mtime, QLocale::ShortFormat));
+    }
+
     void listsAndSortsFoldersFirst()
     {
         QTemporaryDir dir;

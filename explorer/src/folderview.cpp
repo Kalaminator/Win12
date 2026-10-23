@@ -333,6 +333,12 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
 
     QHeaderView *header = m_tree->header();
     header->setSectionsMovable(true);
+    // Windows widths: Name gets the room, the last column does not stretch, the date fits. User widths stay per view.
+    header->setStretchLastSection(false);
+    header->resizeSection(KDirModel::Name, 300);
+    header->resizeSection(KDirModel::Size, 90);
+    header->resizeSection(KDirModel::ModifiedTime,
+                          fontMetrics().horizontalAdvance(QLocale().toString(QDateTime(QDate(2024, 12, 28), QTime(23, 58)), QLocale::ShortFormat)) + 24);
     header->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(header, &QWidget::customContextMenuRequested, this, &FolderView::showHeaderMenu);
     connect(header, &QHeaderView::sortIndicatorChanged, this, [this](int column, Qt::SortOrder order) {

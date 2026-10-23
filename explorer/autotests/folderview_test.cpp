@@ -123,6 +123,27 @@ private Q_SLOTS:
         QCOMPARE(m_view->model()->headerData(7, Qt::Horizontal).toString(), QStringLiteral("Tags"));
     }
 
+    // Name gets the room, the last section does not stretch, user widths survive navigation.
+    void detailsColumnWidths()
+    {
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        ViewSettings s = m_view->settings();
+        s.mode = ViewMode::Details;
+        s.columns = {QStringLiteral("name"), QStringLiteral("modified"), QStringLiteral("size")};
+        m_view->applySettings(s);
+        auto *tree = qobject_cast<QTreeView *>(m_view->currentView());
+        QVERIFY(tree);
+        QHeaderView *h = tree->header();
+        QVERIFY(!h->stretchLastSection());
+        QVERIFY(h->sectionSize(0) >= 250);
+        QVERIFY(h->sectionSize(1) < h->sectionSize(0));
+        const QString date = QLocale().toString(QDateTime(QDate(2024, 12, 28), QTime(23, 58)), QLocale::ShortFormat);
+        QVERIFY(h->sectionSize(2) > tree->fontMetrics().horizontalAdvance(date));
+        h->resizeSection(0, 400);
+        QVERIFY(waitListed([&] { m_view->openUrl(fileUrl(QStringLiteral("sub"))); }));
+        QCOMPARE(h->sectionSize(0), 400);
+    }
+
     void navHistory()
     {
         QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
