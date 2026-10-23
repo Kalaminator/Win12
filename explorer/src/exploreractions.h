@@ -5,7 +5,10 @@
 #include <QObject>
 #include "selectbyruledialog.h"
 #include <QPointer>
+#include "renamemanydialog.h"
+#include "renameplan.h"
 #include <functional>
+
 
 class FolderView;
 class KNewFileMenu;
@@ -39,6 +42,10 @@ public:
     void copyPaths(const KFileItemList &); // one path per line, local path or display url
     void selectByRule(SelectByRuleDialog::Action defaultAction);
     void setPickFolder(std::function<QUrl(const QUrl &start)> pick) { m_pickFolder = std::move(pick); } // test seam
+    // Opens the Rename many dialog for items (view order) and runs the Status::Rename rows of its plan.
+    void renameMany(const KFileItemList &items);
+    void undoRenameBatch(); // reverses the last batch, only what really renamed
+    void setExecRenameDialog(std::function<bool(RenameManyDialog &)> exec) { m_execRenameDialog = std::move(exec); } // test seam
     static QString rename(const KFileItem &item, const QString &newName, QWidget *parent);
 
 Q_SIGNALS:
@@ -64,6 +71,7 @@ private:
     void syncViewState(); // check marks of layout/sort/group/columns/show from the view's settings
     KFileItemList selection() const;
     QUrl folder() const;
+    QString runRenames(const QList<PlannedRename> &, QList<PlannedRename> *executed); // sequential; stops at the first error
 
     // The work, on explicit items/folders so context menus act on what they were opened for.
     void copyToClipboard(const KFileItemList &, bool cut);
@@ -80,4 +88,6 @@ private:
     KNewFileMenu *m_newFileMenu;
     Purpose::Menu *m_shareMenu;
     std::function<QUrl(const QUrl &)> m_pickFolder;
+    std::function<bool(RenameManyDialog &)> m_execRenameDialog = [](RenameManyDialog &d) { return d.exec() == QDialog::Accepted; };
+    QList<PlannedRename> m_lastBatch; // the rows that actually renamed
 };

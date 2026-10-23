@@ -14,6 +14,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <KIO/FileUndoManager>
+#include "renamemanydialog.h"
 
 namespace {
 void writeFile(const QString &path, const QByteArray &data)
@@ -148,7 +149,7 @@ private Q_SLOTS:
 
         std::unique_ptr<QMenu> plain(actions.contextMenu(items, folder));
         QCOMPARE(win12Entries(plain.get()).size(), 1); // always has "Select by rule…"
-        QCOMPARE(win12Entries(plain.get()).first()->menu()->actions().size(), 1);
+        QCOMPARE(win12Entries(plain.get()).first()->menu()->actions().size(), 2); // Select by rule + Rename many
 
         connect(&actions, &ExplorerActions::fillWin12Menu, this, [](QMenu *m, const KFileItemList &) {
             m->addAction(QStringLiteral("Tag"));
@@ -157,7 +158,7 @@ private Q_SLOTS:
         const QList<QAction *> win12 = win12Entries(filled.get());
         QCOMPARE(win12.size(), 1);
         QVERIFY(win12.first()->menu());
-        QCOMPARE(win12.first()->menu()->actions().size(), 2);
+        QCOMPARE(win12.first()->menu()->actions().size(), 3);
     }
 
     void win12MenuHasSelectByRule()
@@ -176,6 +177,76 @@ private Q_SLOTS:
                 texts << a->text();
             QVERIFY2(texts.contains(QStringLiteral("Select by rule…")), qPrintable(texts.join(QLatin1Char('|'))));
         }
+    }
+
+    void win12MenuHasRenameMany()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions actions(nullptr);
+        const auto has = [&](const KFileItemList &list) {
+            std::unique_ptr<QMenu> menu(actions.contextMenu(list, folder));
+            const QList<QAction *> acts = win12Entries(menu.get()).first()->menu()->actions();
+            for (QAction *a : acts)
+                if (a->text() == QStringLiteral("Rename many…"))
+                    return true;
+            return false;
+        };
+        QVERIFY(has(items));
+        QVERIFY(!has(KFileItemList()));
+    }
+
+    void renameManyRunsPlanAndUndoRestores()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral("b.txt")), "b");
+        ExplorerActions actions(nullptr);
+        actions.setExecRenameDialog([](RenameManyDialog &d) {
+            RenameBlock n, t, c;
+            n.kind = RenameBlock::Number;
+            t.kind = RenameBlock::Text;
+            t.text = QStringLiteral(" - ");
+            c.kind = RenameBlock::CurrentName;
+            d.setBlocks({n, t, c});
+            return true;
+        });
+        QVERIFY(!actions.action(QStringLiteral("adv_rename_undo"))->isEnabled());
+        actions.renameMany({itemFor(dir.filePath(QStringLiteral("a.txt"))), itemFor(dir.filePath(QStringLiteral("b.txt")))});
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("01 - a.txt"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("02 - b.txt"))));
+        QVERIFY(actions.action(QStringLiteral("adv_rename_undo"))->isEnabled());
+        actions.undoRenameBatch();
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("a.txt"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("b.txt"))));
+        QVERIFY(!actions.action(QStringLiteral("adv_rename_undo"))->isEnabled());
+    }
+
+    void undoRenameBatchRestoresNames()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral("b.txt")), "b");
+        writeFile(dir.filePath(QStringLiteral("02 - b.txt")), "other");
+        ExplorerActions actions(nullptr);
+        actions.setExecRenameDialog([](RenameManyDialog &d) {
+            RenameBlock n, t, c;
+            n.kind = RenameBlock::Number;
+            t.kind = RenameBlock::Text;
+            t.text = QStringLiteral(" - ");
+            c.kind = RenameBlock::CurrentName;
+            d.setBlocks({n, t, c});
+            return true;
+        });
+        actions.renameMany({itemFor(dir.filePath(QStringLiteral("a.txt"))), itemFor(dir.filePath(QStringLiteral("b.txt")))});
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("01 - a.txt"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("b.txt"))));
+        actions.undoRenameBatch();
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("a.txt"))));
+        QVERIFY(!QFile::exists(dir.filePath(QStringLiteral("01 - a.txt"))));
+        QCOMPARE(QFile(dir.filePath(QStringLiteral("02 - b.txt"))).size(), 5);
     }
 
     void copyPathsJoinsWithNewline()

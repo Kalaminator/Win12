@@ -117,6 +117,14 @@ private Q_SLOTS:
         QCOMPARE(p[0].status, PlannedRename::Unchanged);
         QCOMPARE(p[1].newName, S("02.txt"));
     }
+    void slashInNameIsNotARename()
+    {
+        QDateTime m(QDate(2026, 3, 9), QTime(1, 2));
+        auto p = RenamePlan::plan({B(RenameBlock::Date, S("dd/MM"))}, {I("a.txt", m)}, {});
+        QCOMPARE(p[0].status, PlannedRename::Unchanged);
+        p = RenamePlan::plan({B(RenameBlock::Text, S(".."))}, {I("a", m)}, {});
+        QCOMPARE(p[0].status, PlannedRename::Unchanged);
+    }
     void undoPlanReversesOnlyExecuted()
     {
         auto p = RenamePlan::plan({B(RenameBlock::Text, S("n"))}, {I("a.txt"), I("b.txt"), I("c.txt")}, N({"a.txt", "b.txt", "c.txt"}));

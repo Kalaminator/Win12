@@ -18,6 +18,7 @@
 #include <KIO/PasteJob>
 #include <KJobWidgets>
 #include <KLocalizedString>
+#include <KMessageBox>
 #include <KNewFileMenu>
 #include <KPageWidget>
 #include <KPageWidgetModel>
@@ -30,6 +31,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QClipboard>
+#include <QDir>
 #include <QFileDialog>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -204,6 +206,8 @@ void ExplorerActions::updateEnabled()
         action(id)->setEnabled(hasView && !sel.isEmpty());
     for (const QString &id : folderIds)
         action(id)->setEnabled(hasView);
+    action(QStringLiteral("adv_rename_undo"))->setEnabled(!m_lastBatch.isEmpty());
+    action(QStringLiteral("adv_rename_many"))->setEnabled(hasView);
     for (const char *id : {"adv_select_rule", "adv_select_matches", "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches"})
         action(QString::fromLatin1(id))->setEnabled(hasView);
     const bool canPaste = hasView && clipboardHasUrls();
@@ -369,6 +373,11 @@ void ExplorerActions::connectActions()
     on("adv_select_matches", [this] { selectByRule(A::Select); });
     on("adv_copy_matches", [this] { selectByRule(A::CopyTo); });
     on("adv_move_matches", [this] { selectByRule(A::MoveTo); });
+    on("adv_rename_many", [this] {
+        if (m_view)
+            renameMany(m_view->itemsInViewOrder(m_view->selectedCount() > 0));
+    });
+    on("adv_rename_undo", [this] { undoRenameBatch(); });
     on("adv_rename_matches", [this] { selectByRule(A::Rename); });
     on("adv_trash_matches", [this] { selectByRule(A::Trash); });
     on("home_move_to", [this] { transferTo(selection(), true); });
@@ -561,7 +570,7 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
     case A::Select: Q_EMIT selectUrlsRequested(items.urlList()); break;
     case A::CopyTo: transferTo(items, false, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
     case A::MoveTo: transferTo(items, true, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
-    case A::Rename: break; // Task 8: renameMany(items)
+    case A::Rename: renameMany(items); break;
     case A::Trash: trash(items); break;
     case A::DeleteForever: deletePermanently(items); break;
     case A::Zip: zip(items); break;
@@ -627,6 +636,63 @@ void ExplorerActions::openTerminal(const QUrl &folder)
     job->start();
 }
 
+QString ExplorerActions::runRenames(const QList<PlannedRename> &rows, QList<PlannedRename> *executed)
+{
+    // ponytail: sequential sync moveAs jobs; a progress dialog if 1000-file batches turn out slow on /mnt/hdd
+    for (const PlannedRename &r : rows) {
+        if (r.status != PlannedRename::Rename)
+            continue;
+        // rename() also records a FileUndoManager entry per file; acceptable, the batch undo is the ribbon button
+        const QString error = rename(KFileItem(r.url), r.newName, m_window);
+        if (!error.isEmpty())
+            return error;
+        if (executed)
+            *executed << r;
+    }
+    return QString();
+}
+
+void ExplorerActions::renameMany(const KFileItemList &items)
+{
+    if (items.isEmpty())
+        return;
+    QList<RenameItem> ritems;
+    QSet<QString> existing;
+    QSet<QString> dirs;
+    for (const KFileItem &i : items) {
+        ritems << RenameItem{i.url(), i.name(), i.time(KFileItem::ModificationTime)};
+        const QString dir = i.url().adjusted(QUrl::RemoveFilename).toLocalFile();
+        if (!dir.isEmpty() && !dirs.contains(dir)) {
+            dirs << dir;
+            const QStringList names = QDir(dir).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
+            existing.unite(QSet<QString>(names.begin(), names.end()));
+        }
+    }
+    RenameManyDialog dialog(ritems, existing, m_window);
+    if (!m_execRenameDialog(dialog))
+        return;
+    QList<PlannedRename> executed;
+    const QString error = runRenames(dialog.plan(), &executed);
+    m_lastBatch = executed; // what ran stays undoable even after an error
+    updateEnabled();
+    if (!error.isEmpty())
+        KMessageBox::error(m_window, error);
+}
+
+void ExplorerActions::undoRenameBatch()
+{
+    QString error;
+    for (const auto &[newUrl, oldName] : RenamePlan::undoPlan(m_lastBatch)) {
+        error = rename(KFileItem(newUrl), oldName, m_window);
+        if (!error.isEmpty())
+            break;
+    }
+    m_lastBatch.clear();
+    updateEnabled();
+    if (!error.isEmpty())
+        KMessageBox::error(m_window, error);
+}
+
 QString ExplorerActions::rename(const KFileItem &item, const QString &newName, QWidget *parent)
 {
     if (item.isNull() || newName.isEmpty() || newName.contains(QLatin1Char('/')) || newName == QLatin1String(".")
@@ -663,6 +729,8 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
     const auto addWin12 = [&] {
         auto *win12 = new QMenu(i18n("Win12"), menu);
         win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
+        if (!items.isEmpty())
+            win12->addAction(i18n("Rename many…"), this, [this, items] { renameMany(items); });
         Q_EMIT fillWin12Menu(win12, items);
         if (win12->isEmpty())
             delete win12;

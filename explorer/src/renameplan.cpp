@@ -68,8 +68,10 @@ QList<PlannedRename> RenamePlan::plan(const QList<RenameBlock> &blocks, const QL
         const RenameItem &it = items[i];
         PlannedRename p{it.url, it.name, it.name, PlannedRename::Unchanged};
         const QString base = buildName(blocks, it, i);
-        if (!base.isEmpty()) {
-            p.newName = base + extOf(it.name);
+        const QString built = base + extOf(it.name);
+        // never moves a file into another folder
+        if (!base.isEmpty() && !built.contains(QLatin1Char('/')) && built != QLatin1String(".") && built != QLatin1String("..")) {
+            p.newName = built;
             if (p.newName == it.name)
                 p.status = PlannedRename::Unchanged;
             else if (existing.contains(p.newName))

@@ -30,6 +30,7 @@ public:
     void setViewMode(ViewMode);
     void zoom(int steps); // applySettings with zoomStep
     KFileItemList selectedItems() const;
+    KFileItemList itemsInViewOrder(bool selectedOnly) const; // rows top to bottom
     KFileItem currentItem() const;
     int itemCount() const;
     int selectedCount() const;

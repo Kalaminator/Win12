@@ -544,6 +544,16 @@ KFileItemList FolderView::selectedItems() const
     return items;
 }
 
+KFileItemList FolderView::itemsInViewOrder(bool selectedOnly) const
+{
+    KFileItemList items;
+    const QAbstractItemModel *model = currentView()->model();
+    for (int r = 0; r < model->rowCount(); ++r)
+        if (!selectedOnly || m_selection->isRowSelected(r))
+            items << m_model->itemFor(model->index(r, 0));
+    return items;
+}
+
 KFileItem FolderView::currentItem() const
 {
     const QModelIndex index = m_selection->currentIndex();

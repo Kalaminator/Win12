@@ -67,6 +67,26 @@ private Q_SLOTS:
         QVERIFY(seen);
     }
 
+    void itemsInViewOrderFollowsSort()
+    {
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        ViewSettings s = m_view->settings();
+        s.sortRole = SortRole::Name;
+        s.sortOrder = Qt::DescendingOrder;
+        m_view->applySettings(s);
+        const auto names = [](const KFileItemList &l) {
+            QStringList r;
+            for (const KFileItem &i : l)
+                r << i.name();
+            return r;
+        };
+        const QStringList all = names(m_view->itemsInViewOrder(false));
+        QCOMPARE(all.size(), 3);
+        QVERIFY(all.indexOf(QStringLiteral("b.txt")) < all.indexOf(QStringLiteral("a.txt")));
+        m_view->selectUrls({fileUrl(QStringLiteral("a.txt")), fileUrl(QStringLiteral("b.txt"))});
+        QCOMPARE(names(m_view->itemsInViewOrder(true)), QStringList({QStringLiteral("b.txt"), QStringLiteral("a.txt")}));
+    }
+
     void selectionHelpers()
     {
         QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
