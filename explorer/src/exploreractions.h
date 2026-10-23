@@ -40,6 +40,7 @@ public:
     void deletePermanently(const KFileItemList &);
     void zip(const KFileItemList &); // ark --add --dialog --changetofirstpath <local paths>
     void copyPaths(const KFileItemList &); // one path per line, local path or display url
+    static KFileItemList withoutNested(const KFileItemList &); // drops items inside another listed folder
     void selectByRule(SelectByRuleDialog::Action defaultAction);
     void setPickFolder(std::function<QUrl(const QUrl &start)> pick) { m_pickFolder = std::move(pick); } // test seam
     // Opens the Rename many dialog for items (view order) and runs the Status::Rename rows of its plan.

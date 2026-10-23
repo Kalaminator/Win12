@@ -1,4 +1,5 @@
 #include "exploreractions.h"
+#include <algorithm>
 #include "folderview.h"
 #include "ribbonspec.h"
 #include "selectbyruledialog.h"
@@ -555,6 +556,22 @@ void ExplorerActions::copyPaths(const KFileItemList &items)
     QApplication::clipboard()->setText(paths.join(QLatin1Char('\n')));
 }
 
+KFileItemList ExplorerActions::withoutNested(const KFileItemList &items)
+{
+    QStringList dirs;
+    for (const KFileItem &i : items)
+        if (i.isDir())
+            dirs << QDir::cleanPath(i.url().path()) + QLatin1Char('/');
+    KFileItemList out;
+    for (const KFileItem &i : items) {
+        const QString p = QDir::cleanPath(i.url().path());
+        const bool nested = std::any_of(dirs.cbegin(), dirs.cend(), [&](const QString &d) { return p.startsWith(d); });
+        if (!nested)
+            out << i;
+    }
+    return out;
+}
+
 void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
 {
     if (!folder().isValid())
@@ -562,11 +579,14 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
     SelectByRuleDialog dialog(folder(), defaultAction, m_window);
     if (dialog.exec() != QDialog::Accepted)
         return;
-    const KFileItemList items = dialog.ticked();
+    KFileItemList items = dialog.ticked();
     if (items.isEmpty())
         return;
     using A = SelectByRuleDialog::Action;
-    switch (dialog.chosenAction()) {
+    const A chosen = dialog.chosenAction();
+    if (chosen != A::Select && chosen != A::Rename && chosen != A::CopyPaths)
+        items = withoutNested(items); // a ticked folder already carries what is inside it
+    switch (chosen) {
     case A::Select: Q_EMIT selectUrlsRequested(items.urlList()); break;
     case A::CopyTo: transferTo(items, false, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
     case A::MoveTo: transferTo(items, true, dialog.keepStructure() ? dialog.lookIn() : QUrl()); break;
@@ -664,6 +684,13 @@ void ExplorerActions::renameMany(const KFileItemList &items)
         const QString dir = i.url().adjusted(QUrl::RemoveFilename).toLocalFile();
         if (!dir.isEmpty() && !dirs.contains(dir)) {
             dirs << dir;
+            if (m_view && folder().isLocalFile() && QDir::cleanPath(dir) == QDir::cleanPath(folder().toLocalFile())) {
+                // the active view's folder: names come from its model, no disk access
+                for (const KFileItem &v : m_view->itemsInViewOrder(false))
+                    existing << v.name();
+                continue;
+            }
+            // ponytail: other folders (rule matches in subfolders) are read once each, KIO just listed them (warm cache)
             const QStringList names = QDir(dir).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
             existing.unite(QSet<QString>(names.begin(), names.end()));
         }
@@ -682,12 +709,15 @@ void ExplorerActions::renameMany(const KFileItemList &items)
 void ExplorerActions::undoRenameBatch()
 {
     QString error;
+    int done = 0;
     for (const auto &[newUrl, oldName] : RenamePlan::undoPlan(m_lastBatch)) {
         error = rename(KFileItem(newUrl), oldName, m_window);
         if (!error.isEmpty())
             break;
+        ++done;
     }
-    m_lastBatch.clear();
+    // undoPlan walks from the back: the reversed rows are the tail; the rest stay undoable
+    m_lastBatch = m_lastBatch.mid(0, m_lastBatch.size() - done);
     updateEnabled();
     if (!error.isEmpty())
         KMessageBox::error(m_window, error);

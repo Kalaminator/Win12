@@ -249,6 +249,57 @@ private Q_SLOTS:
         QCOMPARE(QFile(dir.filePath(QStringLiteral("02 - b.txt"))).size(), 5);
     }
 
+    void undoRenameBatchKeepsRowsNotReversed()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral("b.txt")), "b");
+        ExplorerActions actions(nullptr);
+        actions.setExecRenameDialog([](RenameManyDialog &d) {
+            RenameBlock t, c;
+            t.kind = RenameBlock::Text;
+            t.text = QStringLiteral("x-");
+            c.kind = RenameBlock::CurrentName;
+            d.setBlocks({t, c});
+            return true;
+        });
+        actions.renameMany({itemFor(dir.filePath(QStringLiteral("a.txt"))), itemFor(dir.filePath(QStringLiteral("b.txt")))});
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("x-a.txt"))) && QFile::exists(dir.filePath(QStringLiteral("x-b.txt"))));
+        // undo walks from the back: b first. Make a.txt taken so the second reversal fails.
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "blocker");
+        QTimer closer; // the error box is modal: close it as soon as it shows
+        closer.setInterval(20);
+        connect(&closer, &QTimer::timeout, &closer, [] {
+            for (QWidget *w : QApplication::topLevelWidgets())
+                if (w->isVisible() && w->inherits("QDialog"))
+                    w->close();
+        });
+        closer.start();
+        actions.undoRenameBatch();
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("b.txt")))); // reversed
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("x-a.txt")))); // not
+        QVERIFY(actions.action(QStringLiteral("adv_rename_undo"))->isEnabled());
+        QFile::remove(dir.filePath(QStringLiteral("a.txt")));
+        actions.undoRenameBatch();
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("a.txt"))));
+        QVERIFY(!actions.action(QStringLiteral("adv_rename_undo"))->isEnabled());
+    }
+
+    void withoutNestedDropsItemsInsideListedFolders()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkpath(QStringLiteral("a/x"));
+        QDir(dir.path()).mkpath(QStringLiteral("ab"));
+        writeFile(dir.filePath(QStringLiteral("a/x/f.txt")), "f");
+        writeFile(dir.filePath(QStringLiteral("ab/g.txt")), "g");
+        const KFileItemList in{itemFor(dir.filePath(QStringLiteral("a"))), itemFor(dir.filePath(QStringLiteral("a/x/f.txt"))),
+                               itemFor(dir.filePath(QStringLiteral("a/x"))), itemFor(dir.filePath(QStringLiteral("ab/g.txt")))};
+        const KFileItemList out = ExplorerActions::withoutNested(in);
+        QCOMPARE(out.size(), 2);
+        QCOMPARE(out.at(0).url(), in.at(0).url());
+        QCOMPARE(out.at(1).url(), in.at(3).url()); // "ab" is not inside "a"
+    }
+
     void copyPathsJoinsWithNewline()
     {
         QTemporaryDir dir;
