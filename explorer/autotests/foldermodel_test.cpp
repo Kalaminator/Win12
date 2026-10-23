@@ -67,6 +67,26 @@ private Q_SLOTS:
         QCOMPARE(names(model), (QStringList{QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}));
     }
 
+    void typeSortUsesCheapLabel()
+    {
+        // "noext" holds PNG bytes: mimeComment() would sniff it ("PNG image", sorted first); the cheap
+        // extension-only label is application/octet-stream ("unknown"), sorted after "shell script".
+        QTemporaryDir dir;
+        {
+            QFile f(dir.filePath(QStringLiteral("noext")));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+            f.write(QByteArray::fromHex("89504e470d0a1a0a0000000d49484452"));
+        }
+        touch(dir.filePath(QStringLiteral("m.sh")));
+        QVERIFY(QDir(dir.path()).mkdir(QStringLiteral("zdir")));
+        FolderModel model;
+        QVERIFY(list(model, dir));
+        model.setSorting(SortRole::Type, Qt::AscendingOrder);
+        QCOMPARE(names(model), (QStringList{QStringLiteral("zdir"), QStringLiteral("m.sh"), QStringLiteral("noext")}));
+        model.setSorting(SortRole::Type, Qt::DescendingOrder);
+        QCOMPARE(names(model), (QStringList{QStringLiteral("zdir"), QStringLiteral("noext"), QStringLiteral("m.sh")}));
+    }
+
     void tagsColumnIsLastAndEmpty()
     {
         QTemporaryDir dir;

@@ -120,6 +120,20 @@ bool FolderModel::lessThan(const QModelIndex &left, const QModelIndex &right) co
         if (SortGroup::groupLess(b, a))
             return !asc;
     }
+    if (sortColumn() == KDirModel::Type) {
+        // The base compares mimeComment(), which sniffs content and reads .desktop files per item;
+        // use the same cheap label as the Type groups, then the base's name order (folders first).
+        const KFileItem a = m_dirModel->itemForIndex(left), b = m_dirModel->itemForIndex(right);
+        if (a.isDir() == b.isDir()) {
+            const SortGroup::GroupInfo ta = SortGroup::groupInfo(a, GroupRole::Type, m_now);
+            const SortGroup::GroupInfo tb = SortGroup::groupInfo(b, GroupRole::Type, m_now);
+            if (SortGroup::groupLess(ta, tb))
+                return true;
+            if (SortGroup::groupLess(tb, ta))
+                return false;
+        }
+        return KDirSortFilterProxyModel::lessThan(left.siblingAtColumn(KDirModel::Name), right.siblingAtColumn(KDirModel::Name));
+    }
     return KDirSortFilterProxyModel::lessThan(left, right); // folders first inside a group
 }
 
