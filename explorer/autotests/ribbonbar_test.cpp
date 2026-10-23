@@ -1,0 +1,93 @@
+#include "exploreractions.h"
+#include "ribbonbar.h"
+#include "ribbonspec.h"
+#include <QAction>
+#include <QLabel>
+#include <QMenu>
+#include <QSignalSpy>
+#include <QStackedWidget>
+#include <QTest>
+#include <QToolButton>
+
+using namespace Qt::StringLiterals;
+
+class RibbonBarTest : public QObject
+{
+    Q_OBJECT
+private Q_SLOTS:
+    void tabsAndFileMenu()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        QStringList t;
+        for (QAction *x : r.fileMenu()->actions())
+            t << x->text();
+        QCOMPARE(t, (QStringList{u"New window"_s, u"Open terminal here"_s, u"Options"_s, u"Help"_s, u"Close"_s}));
+        QCOMPARE(r.currentTab(), 0);
+    }
+    void homeGroupsVisible()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        QCOMPARE(r.visibleGroupTitles(0), (QStringList{u"Clipboard"_s, u"Organize"_s, u"New"_s, u"Open"_s, u"Select"_s}));
+    }
+    void tagsGroupHiddenInPhase1()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        QCOMPARE(r.visibleGroupTitles(2),
+                 (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Show/hide"_s, u"Split view"_s}));
+    }
+    void advancedIsPlaceholder()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        QVERIFY(r.visibleGroupTitles(3).isEmpty());
+        r.setCurrentTab(3);
+        auto *body = r.findChild<QStackedWidget *>();
+        auto *l = body->currentWidget()->findChild<QLabel *>();
+        QVERIFY(l);
+        QVERIFY(l->text().startsWith(u"Advanced tools"_s));
+    }
+    void everyVisibleButtonHasItsAction()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        for (const Ribbon::Tab &t : Ribbon::spec())
+            for (const Ribbon::Group &g : t.groups) {
+                if (g.phase > 1 || t.phase > 1 || t.isFileMenu)
+                    continue;
+                for (const Ribbon::Button &b : g.buttons) {
+                    QCOMPARE(r.buttonsFor(b.action).size(), 1);
+                    QCOMPARE(r.buttonsFor(b.action).first()->defaultAction(), a.action(b.action));
+                }
+            }
+        QCOMPARE(r.buttonsFor(u"home_delete"_s).first()->popupMode(), QToolButton::MenuButtonPopup);
+    }
+    void collapseHidesBody()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        r.show();
+        QVERIFY(r.height() > 100);
+        QSignalSpy spy(&r, &RibbonBar::collapsedChanged);
+        r.collapseAction()->trigger();
+        QVERIFY(r.isCollapsed());
+        QVERIFY(!r.findChild<QStackedWidget *>()->isVisible());
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.first().first().toBool(), true);
+        QCOMPARE(r.collapseAction()->shortcut(), QKeySequence(Qt::CTRL | Qt::Key_F1));
+    }
+    void fileTabUsesAccent()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        r.show();
+        const QImage img = r.grab().toImage();
+        // a few px inside the File tab, clear of the label glyphs
+        QCOMPARE(img.pixelColor(4, 14), r.palette().highlight().color());
+    }
+};
+
+QTEST_MAIN(RibbonBarTest)
+#include "ribbonbar_test.moc"
