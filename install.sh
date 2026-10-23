@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 # Developer checks run only when node is installed.
 if command -v node >/dev/null 2>&1; then node tests/test_tiles.js && node tests/test_islands.js && node tests/test_settings_keys.js --strict; fi
 if command -v makepkg >/dev/null 2>&1; then sh tests/test_explorer_pkgbuild.sh; fi
+sh tests/test_explorer_default.sh
 # Translations: po/<lang>.po -> contents/locale/<lang>/LC_MESSAGES/plasma_applet_<id>.mo (Plasma looks there);
 # the compiled .mo files are shipped, so gettext is only needed to rebuild them.
 if command -v msgfmt >/dev/null 2>&1; then

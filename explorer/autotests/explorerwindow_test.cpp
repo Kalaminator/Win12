@@ -1,4 +1,5 @@
 #include "explorerwindow.h"
+#include "folderview.h"
 #include <QAbstractItemView>
 #include <QAction>
 #include <QFile>
@@ -96,6 +97,31 @@ private Q_SLOTS:
         QCOMPARE(w->currentPage()->url(), QUrl::fromLocalFile(m_dir.path()));
         QTest::keyClick(w, Qt::Key_W, Qt::ControlModifier);
         QCOMPARE(tabs->count(), 1);
+        delete w;
+    }
+
+    static QUrl sel(ExplorerWindow *w)
+    {
+        const KFileItemList l = w->activeView()->selectedItems();
+        return l.isEmpty() ? QUrl() : l.first().url();
+    }
+
+    void selectItemsWorksOnAnAlreadyListedFolder()
+    {
+        QDir d(m_dir.path());
+        d.mkdir(QStringLiteral("sub"));
+        for (const char *f : {"sub/a.txt", "sub/b.txt", "top.txt"})
+            QVERIFY(QFile(d.filePath(QLatin1String(f))).open(QIODevice::WriteOnly));
+        ExplorerWindow *w = shownWindow();
+        const QUrl a = QUrl::fromLocalFile(d.filePath(QStringLiteral("sub/a.txt")));
+        const QUrl b = QUrl::fromLocalFile(d.filePath(QStringLiteral("sub/b.txt")));
+        w->selectItems({a});
+        QTRY_COMPARE(w->activeView()->selectedItems().count(), 1);
+        QCOMPARE(sel(w), a);
+        w->selectItems({b}); // same folder, already listed
+        QTRY_COMPARE(sel(w), b);
+        w->selectItems({QUrl::fromLocalFile(d.filePath(QStringLiteral("top.txt")))}); // back to a listed folder
+        QTRY_COMPARE(sel(w).fileName(), QStringLiteral("top.txt"));
         delete w;
     }
 };

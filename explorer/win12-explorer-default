@@ -1,2 +1,35 @@
 #!/bin/sh
-exit 0
+# win12-explorer-default on|off|status: make Win12 Explorer the default folder handler (and FileManager1 owner), restorably.
+set -eu
+C="${XDG_CONFIG_HOME:-$HOME/.config}/win12-explorer"
+S="$C/saved-default"
+SVC="${XDG_DATA_HOME:-$HOME/.local/share}/dbus-1/services/org.win12.explorer.FileManager1.service"
+reload() { busctl --user call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus ReloadConfig >/dev/null 2>&1 || true; }
+case "${1:-}" in
+on)
+    [ -e "$S" ] && exit 0
+    old=$(xdg-mime query default inode/directory || true)
+    mkdir -p "$C" "$(dirname "$SVC")"
+    printf '%s\n' "${old:-unset}" > "$S"
+    xdg-mime default org.win12.explorer.desktop inode/directory
+    printf '[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/bin/win12-explorer --daemon\n' > "$SVC"
+    reload
+    echo on ;;
+off)
+    [ -e "$S" ] || exit 0
+    old=$(cat "$S")
+    rm -f "$S" "$SVC"
+    if [ "$old" = unset ]; then
+        kwriteconfig6 --file mimeapps.list --group 'Default Applications' --key inode/directory --delete
+    else
+        xdg-mime default "$old" inode/directory
+    fi
+    busctl --user call org.win12.explorer /org/win12/explorer org.win12.explorer ReleaseFileManager1 >/dev/null 2>&1 || true
+    reload
+    echo off ;;
+status)
+    if [ -e "$S" ]; then echo on; else echo off; fi ;;
+*)
+    echo "usage: win12-explorer-default on|off|status" >&2
+    exit 2 ;;
+esac
