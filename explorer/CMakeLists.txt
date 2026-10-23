@@ -37,3 +37,4 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/po)
 endif()
 
 explorer_add_test(ribbonspec_test)
+explorer_add_test(viewsettings_test)
