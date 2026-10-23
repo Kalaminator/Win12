@@ -1,0 +1,24 @@
+pkgname=win12-explorer
+pkgver=@VER@
+pkgrel=1
+pkgdesc='Win12 Explorer: ribbon file manager for KDE (Win12)'
+arch=(x86_64)
+url='https://github.com/Kalaminator/Win12'
+license=(MIT)
+depends=(qt6-base kio kitemmodels kxmlgui ki18n kconfig kconfigwidgets kcolorscheme kdbusaddons purpose kfilemetadata xdg-utils)
+makedepends=(cmake extra-cmake-modules)
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cmake -B build -S "$pkgname-$pkgver" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+  cmake --build build
+}
+
+check() {
+  QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}

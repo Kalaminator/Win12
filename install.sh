@@ -4,6 +4,7 @@ set -e
 cd "$(dirname "$0")"
 # Developer checks run only when node is installed.
 if command -v node >/dev/null 2>&1; then node tests/test_tiles.js && node tests/test_islands.js && node tests/test_settings_keys.js --strict; fi
+if command -v makepkg >/dev/null 2>&1; then sh tests/test_explorer_pkgbuild.sh; fi
 # Translations: po/<lang>.po -> contents/locale/<lang>/LC_MESSAGES/plasma_applet_<id>.mo (Plasma looks there);
 # the compiled .mo files are shipped, so gettext is only needed to rebuild them.
 if command -v msgfmt >/dev/null 2>&1; then
@@ -18,6 +19,8 @@ if kpackagetool6 -t Plasma/Applet -l | grep -qx org.win12.menu; then
 else
     kpackagetool6 -t Plasma/Applet -i package
 fi
+# Win12 Explorer (ribbon file manager): an Arch package built with makepkg.
+if command -v pacman >/dev/null 2>&1; then sh explorer/build.sh || echo "Win12 Explorer: build failed (see above); the rest of Win12 is installed"; else echo "Win12 Explorer: skipped (needs Arch makepkg; the Windows settings page says so)"; fi
 # Generated themes + "Win12 Settings" command; the widget runs the same script on start (store installs).
 sh package/contents/ui/code/setup.sh --force
 

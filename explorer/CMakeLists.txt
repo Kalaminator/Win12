@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.20)
+project(win12-explorer VERSION 0.1)
+find_package(ECM 6.0 REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings NO_POLICY_SCOPE)
+include(ECMAddTests)
+include(FeatureSummary)
+find_package(Qt6 6.6 REQUIRED Widgets DBus Test)
+find_package(KF6 6.0 REQUIRED KIO ItemModels XmlGui I18n Config ConfigWidgets ColorScheme DBusAddons Purpose)
+set(CMAKE_CXX_STANDARD 20) # KDECompilerSettings' default; defaulted comparisons need it
+enable_testing()
+
+file(GLOB SRCS CONFIGURE_DEPENDS src/*.cpp)
+list(FILTER SRCS EXCLUDE REGEX "/main\\.cpp$")
+add_library(win12explorer STATIC ${SRCS})
+target_include_directories(win12explorer PUBLIC src)
+target_link_libraries(win12explorer PUBLIC Qt6::Widgets Qt6::DBus KF6::KIOCore KF6::KIOGui KF6::KIOWidgets
+    KF6::KIOFileWidgets KF6::ItemModels KF6::XmlGui KF6::I18n KF6::ConfigCore KF6::ConfigWidgets
+    KF6::ColorScheme KF6::DBusAddons KF6::PurposeWidgets)
+target_compile_definitions(win12explorer PUBLIC TRANSLATION_DOMAIN="win12-explorer")
+
+add_executable(win12-explorer src/main.cpp)
+target_link_libraries(win12-explorer win12explorer)
+
+function(explorer_add_test name)
+    ecm_add_test(autotests/${name}.cpp TEST_NAME ${name} LINK_LIBRARIES win12explorer Qt6::Test)
+    set_tests_properties(${name} PROPERTIES ENVIRONMENT QT_QPA_PLATFORM=offscreen)
+endfunction()
+
+install(TARGETS win12-explorer ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+install(PROGRAMS win12-explorer-default DESTINATION ${KDE_INSTALL_BINDIR})
+install(FILES org.win12.explorer.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/po)
+    ki18n_install(po)
+endif()

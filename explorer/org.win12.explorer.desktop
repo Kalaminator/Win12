@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Win12 Explorer
+Exec=win12-explorer %U
+Icon=system-file-manager
+Categories=Qt;KDE;System;FileManager;
+MimeType=inode/directory;
+DBusActivatable=false
+StartupNotify=true
