@@ -35,3 +35,5 @@ install(FILES org.win12.explorer.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/po)
     ki18n_install(po)
 endif()
+
+explorer_add_test(ribbonspec_test)
