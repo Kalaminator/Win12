@@ -1,4 +1,5 @@
 #include "rulesearch.h"
+#include <QDir>
 
 RuleSearch::RuleSearch(QObject *parent)
     : QObject(parent)
@@ -32,7 +33,12 @@ void RuleSearch::start(const QUrl &folder, bool recursive, const RuleMatcher &ma
             const QString n = e.stringValue(KIO::UDSEntry::UDS_NAME);
             if (n == QLatin1String(".") || n == QLatin1String(".."))
                 continue;
-            KFileItem item(e, m_folder, true, true);
+            // listRecursive prefixes UDS_NAME with the relative folder ("sub/b.txt"): keep the full URL, give name() the bare name
+            QUrl url = m_folder;
+            url.setPath(QDir::cleanPath(m_folder.path() + QLatin1Char('/') + n));
+            KIO::UDSEntry bare = e;
+            bare.replace(KIO::UDSEntry::UDS_NAME, n.section(QLatin1Char('/'), -1));
+            KFileItem item(bare, url, true, false);
             if (m_matcher.matches(item))
                 hits << item;
         }

@@ -48,6 +48,21 @@ private Q_SLOTS:
     }
     void nonRecursiveListsTopLevelOnly() { QCOMPARE(run(false), QStringList{QStringLiteral("a.txt")}); }
     void recursiveFindsNested() { QCOMPARE(run(true), (QStringList{QStringLiteral("a.txt"), QStringLiteral("sub/b.txt")})); }
+    void recursiveHitsHaveBareNames()
+    {
+        RuleSearch s;
+        QString err;
+        const RuleMatcher m = *RuleMatcher::compile({{Field::Name, Test::StartsWith, QStringLiteral("b")}}, &err);
+        QList<KFileItem> got;
+        connect(&s, &RuleSearch::found, this, [&](const KFileItemList &l) { got << l; });
+        QSignalSpy fin(&s, &RuleSearch::finished);
+        s.start(QUrl::fromLocalFile(dir.path()), true, m);
+        [&] { QVERIFY(fin.wait(5000) || fin.count()); }();
+        QCOMPARE(got.size(), 1);
+        QCOMPARE(got.first().name(), QStringLiteral("b.txt"));
+        QVERIFY(got.first().url().toLocalFile().endsWith(QStringLiteral("sub/b.txt")));
+        QVERIFY(!got.first().isDir());
+    }
     void closingStopsTheJob()
     {
         RuleSearch s;
