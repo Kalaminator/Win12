@@ -581,11 +581,22 @@ ContainmentItem {
         }
     }
     // Win12 Explorer as the file manager: the script saves/restores the mime default + FileManager1 override;
-    // the taskbar pin is swapped here (Dolphin <-> Win12 Explorer launcher in this panel's Task Managers).
+    // the taskbar pin is swapped here (Dolphin <-> Win12 Explorer launcher in this panel's Task Managers), only
+    // when the script reports a real change ("on"/"off"; silent when already in that state), so a hand-pinned
+    // launcher survives every start.
+    P5Support.DataSource {
+        id: explorerDefaultRunner
+        engine: "executable"
+        connectedSources: []
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            const out = (data.stdout || "").trim();
+            if (out === "on" || out === "off") root.syncExplorerLauncher(out === "on");
+        }
+    }
     function syncExplorerDefault() {
         if (!configReady || isMirror) return;
-        run("win12-explorer-default " + (cfg.explorerDefault ? "on" : "off"));
-        syncExplorerLauncher(cfg.explorerDefault);
+        explorerDefaultRunner.connectSource("win12-explorer-default " + (cfg.explorerDefault ? "on" : "off"));
     }
     function syncExplorerLauncher(on) {
         const from = on ? "applications:org.kde.dolphin.desktop" : "applications:org.win12.explorer.desktop";

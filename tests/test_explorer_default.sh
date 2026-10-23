@@ -26,7 +26,7 @@ grep -q 'Name=org.freedesktop.FileManager1' "$SVC"
 grep -q 'Exec=/usr/bin/win12-explorer --daemon' "$SVC"
 [ "$(sh "$SCRIPT" status)" = on ]
 
-sh "$SCRIPT" on >/dev/null
+[ -z "$(sh "$SCRIPT" on)" ] || { echo "FAIL: on printed without a change"; exit 1; } # main.qml swaps the pin only on output
 eq "$S" org.kde.dolphin.desktop
 eq "$T/mime" org.win12.explorer.desktop
 
@@ -35,7 +35,7 @@ eq "$T/mime" org.kde.dolphin.desktop
 [ ! -e "$S" ] && [ ! -e "$SVC" ]
 grep -q ReleaseFileManager1 "$T/bus.log"
 [ "$(sh "$SCRIPT" status)" = off ]
-sh "$SCRIPT" off >/dev/null
+[ -z "$(sh "$SCRIPT" off)" ] || { echo "FAIL: off printed without a change"; exit 1; }
 [ ! -s "$T/kw.log" ]
 
 : > "$T/mime"

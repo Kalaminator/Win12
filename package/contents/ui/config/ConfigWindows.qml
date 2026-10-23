@@ -140,7 +140,7 @@ KCM.SimpleKCM {
         }
         QQC2.CheckBox {
             id: explorerBox
-            enabled: page.explorerBuilt
+            enabled: page.explorerBuilt || checked // a checked switch can still be turned off once the package is gone
             text: i18n("Use Win12 Explorer as the file manager")
             QQC2.ToolTip.visible: hovered
             QQC2.ToolTip.text: i18n("Folders, \"Show in folder\" from other apps, the Start menu File Explorer item and the taskbar pin open Win12 Explorer. Off puts your previous file manager back.")
