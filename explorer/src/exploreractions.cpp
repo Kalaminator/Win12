@@ -519,8 +519,16 @@ void ExplorerActions::deletePermanently(const KFileItemList &items)
 
 void ExplorerActions::open(const KFileItemList &items)
 {
-    for (const KFileItem &item : items)
-        startOpen(item.url(), m_window);
+    bool navigated = false;
+    for (const KFileItem &item : items) {
+        if (item.isDir() && m_view) {
+            if (!navigated) // ponytail: the first folder navigates; more selected folders are not opened
+                m_view->openUrl(item.url());
+            navigated = true;
+        } else {
+            startOpen(item.url(), m_window);
+        }
+    }
 }
 
 void ExplorerActions::properties(const KFileItemList &items, const QUrl &folder)
@@ -548,11 +556,13 @@ void ExplorerActions::openTerminal(const QUrl &folder)
     job->start();
 }
 
-bool ExplorerActions::rename(const KFileItem &item, const QString &newName, QWidget *parent)
+QString ExplorerActions::rename(const KFileItem &item, const QString &newName, QWidget *parent)
 {
     if (item.isNull() || newName.isEmpty() || newName.contains(QLatin1Char('/')) || newName == QLatin1String(".")
-        || newName == QLatin1String("..") || newName == item.name())
-        return false;
+        || newName == QLatin1String(".."))
+        return i18n("\"%1\" is not a valid name.", newName);
+    if (newName == item.name())
+        return QString();
     const QUrl src = item.url();
     QUrl target = src.adjusted(QUrl::RemoveFilename);
     target.setPath(target.path() + newName); // setPath, not resolved(): names may hold '#' or '?'
@@ -561,7 +571,11 @@ bool ExplorerActions::rename(const KFileItem &item, const QString &newName, QWid
     job->setUiDelegate(nullptr);
     KJobWidgets::setWindow(job, parent);
     KIO::FileUndoManager::self()->recordJob(KIO::FileUndoManager::Rename, {src}, target, job);
-    return job->exec();
+    if (job->exec())
+        return QString();
+    if (job->error() == KIO::ERR_FILE_ALREADY_EXIST || job->error() == KIO::ERR_DIR_ALREADY_EXIST)
+        return i18n("A file named %1 already exists.", newName);
+    return job->errorString();
 }
 
 QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &folder)

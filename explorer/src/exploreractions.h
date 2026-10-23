@@ -26,8 +26,9 @@ public:
     QMenu *contextMenu(const KFileItemList &items, const QUrl &folder); // caller owns
     QMenu *newItemMenu() const; // KNewFileMenu's menu; its folder follows setActiveView
     QMenu *historyMenu() const; // filled by ExplorerWindow
-    // Synchronous KIO::moveAs; false and no change when the target exists or newName is empty/contains '/'.
-    static bool rename(const KFileItem &item, const QString &newName, QWidget *parent);
+    // Synchronous KIO::moveAs. Empty on success (or same name), else why nothing changed: invalid name
+    // (empty, '/', "." or ".."), target exists, or the job's own error.
+    static QString rename(const KFileItem &item, const QString &newName, QWidget *parent);
 
 Q_SIGNALS:
     void newWindowRequested();

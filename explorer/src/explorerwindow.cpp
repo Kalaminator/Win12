@@ -293,8 +293,10 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
         openTab(url, false);
     m_tabs->setCurrentIndex(active);
     syncToActiveView();
-    if (FolderView *v = activeView())
+    if (FolderView *v = activeView()) {
+        addRecentFolder(m_config, v->url()); // urlChanged ran before wireView for the start folder
         v->currentView()->setFocus();
+    }
 
     resize(1100, 700);
     setAutoSaveSettings(u"MainWindow"_s);
@@ -493,8 +495,8 @@ void ExplorerWindow::wireView(FolderView *v)
         menu->popup(pos);
     });
     connect(v, &FolderView::renameRequested, this, [this](const KFileItem &item, const QString &name) {
-        if (!ExplorerActions::rename(item, name, this))
-            KMessageBox::error(this, i18n("A file named %1 already exists.", name));
+        if (const QString error = ExplorerActions::rename(item, name, this); !error.isEmpty())
+            KMessageBox::error(this, error);
     });
 }
 

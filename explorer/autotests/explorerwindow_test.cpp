@@ -67,6 +67,13 @@ private Q_SLOTS:
         QCOMPARE(w.statusBar()->findChild<QLabel *>()->text(), QStringLiteral("3 items"));
     }
 
+    void theStartFolderIsRecent()
+    {
+        QTemporaryDir dir;
+        ExplorerWindow w({QUrl::fromLocalFile(dir.path())});
+        QCOMPARE(ExplorerWindow::recentFolders(KSharedConfig::openConfig()).value(0), QUrl::fromLocalFile(dir.path()).toString());
+    }
+
     void splitMarksTheActivePane()
     {
         ExplorerWindow *w = shownWindow();

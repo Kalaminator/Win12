@@ -3,6 +3,7 @@
 #include "ribbonspec.h"
 #include <KDirLister>
 #include <QAction>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QMenu>
@@ -75,19 +76,62 @@ private Q_SLOTS:
         writeFile(dir.filePath(QStringLiteral("b.txt")), "bbbbbb");
         const KFileItem a = itemFor(dir.filePath(QStringLiteral("a.txt")));
 
-        QVERIFY(!ExplorerActions::rename(a, QStringLiteral("b.txt"), nullptr));
+        QCOMPARE(ExplorerActions::rename(a, QStringLiteral("b.txt"), nullptr), QStringLiteral("A file named b.txt already exists."));
         QCOMPARE(QFileInfo(dir.filePath(QStringLiteral("a.txt"))).size(), 3);
         QCOMPARE(QFileInfo(dir.filePath(QStringLiteral("b.txt"))).size(), 6);
 
-        QVERIFY(ExplorerActions::rename(a, QStringLiteral("c.txt"), nullptr));
+        QCOMPARE(ExplorerActions::rename(a, QStringLiteral("c.txt"), nullptr), QString());
         QVERIFY(QFile::exists(dir.filePath(QStringLiteral("c.txt"))));
         QVERIFY(!QFile::exists(dir.filePath(QStringLiteral("a.txt"))));
 
         const KFileItem c = itemFor(dir.filePath(QStringLiteral("c.txt")));
-        QVERIFY(!ExplorerActions::rename(c, QStringLiteral("x/y"), nullptr));
-        QVERIFY(!ExplorerActions::rename(c, QString(), nullptr));
-        QVERIFY(!ExplorerActions::rename(c, QStringLiteral(".."), nullptr));
+        QVERIFY(!ExplorerActions::rename(c, QStringLiteral("x/y"), nullptr).isEmpty());
+        QVERIFY(!ExplorerActions::rename(c, QString(), nullptr).isEmpty());
+        QVERIFY(!ExplorerActions::rename(c, QStringLiteral(".."), nullptr).isEmpty());
         QVERIFY(QFile::exists(dir.filePath(QStringLiteral("c.txt"))));
+    }
+
+    void renameRefusesExistingFolder()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("dirA"));
+        QDir(dir.path()).mkdir(QStringLiteral("dirB"));
+        writeFile(dir.filePath(QStringLiteral("dirA/a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral("dirB/b.txt")), "b");
+        QVERIFY(!ExplorerActions::rename(itemFor(dir.filePath(QStringLiteral("dirA"))), QStringLiteral("dirB"), nullptr).isEmpty());
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("dirA/a.txt"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("dirB/b.txt"))));
+        QVERIFY(!QFile::exists(dir.filePath(QStringLiteral("dirB/a.txt"))));
+    }
+
+    void renameReportsTheRealError()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("gone.txt")), "x");
+        const KFileItem gone = itemFor(dir.filePath(QStringLiteral("gone.txt")));
+        QFile::remove(dir.filePath(QStringLiteral("gone.txt")));
+        const QString err = ExplorerActions::rename(gone, QStringLiteral("new.txt"), nullptr);
+        QVERIFY(!err.isEmpty());
+        QVERIFY2(!err.contains(QLatin1String("already exists")), qPrintable(err));
+    }
+
+    // Open on a selected folder navigates the active view (no OpenUrlJob, no second file manager).
+    void openNavigatesIntoAFolder()
+    {
+        QTemporaryDir dir, configDir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        ViewSettingsStore store(KSharedConfig::openConfig(configDir.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
+        ExplorerActions actions(nullptr);
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        actions.setActiveView(&view);
+        const QUrl sub = QUrl::fromLocalFile(dir.filePath(QStringLiteral("sub")));
+        view.selectUrls({sub});
+        QCOMPARE(view.selectedItems().size(), 1);
+        actions.action(QStringLiteral("home_open"))->trigger();
+        QCOMPARE(view.url(), sub);
     }
 
     void contextMenuHasWin12OnlyWhenFilled()
