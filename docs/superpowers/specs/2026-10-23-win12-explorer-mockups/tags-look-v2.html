@@ -1,0 +1,67 @@
+<style>
+  .rb{display:inline-block;color:#fff;font:600 11px/18px Segoe UI,sans-serif;padding:0 14px 0 8px;
+      clip-path:polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%);vertical-align:middle}
+  .slot{display:inline-block;width:70px;margin-right:6px}  /* width = longest tag ("Xiaomi") */
+  .win{border:1px solid #c8c8c8;border-radius:8px;background:#f9f9f9;color:#1a1a1a;font:13px Segoe UI,sans-serif;overflow:hidden}
+  .bar{background:#eef0f4;padding:6px 10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ddd;font-size:12px}
+  .pill{background:#fff;border:1px solid #ccc;border-radius:4px;padding:2px 8px}
+  .pill.on{background:#0078d7;color:#fff;border-color:#0078d7}
+  .side{width:150px;background:#f3f3f3;border-right:1px solid #ddd;padding:8px;font-size:12px}
+  .side div{padding:2px 4px;border-radius:4px}
+  .side div.sel{background:#cce4f7;outline:1px solid #0078d7}
+  .grp{font-weight:600;color:#0063b1;padding:8px 10px 2px;font-size:12px}
+  .row{display:flex;align-items:center;padding:4px 10px;font-size:12px}
+  .row .n{width:170px}
+  .dk{background:#1e1e1e;color:#ddd;border-radius:6px;padding:8px;font:12px Segoe UI,sans-serif}
+  .dk table{border-collapse:collapse;width:100%}
+  .dk td,.dk th{padding:5px 8px;text-align:left;border-bottom:1px solid #333}
+  .ic{position:relative;display:inline-block;font-size:24px;line-height:26px;width:30px;vertical-align:middle}
+  .em{position:absolute;right:-4px;bottom:0;display:flex;flex-direction:column;gap:1px}
+  .mf{display:block;width:12px;height:5px;clip-path:polygon(0 0,70% 0,100% 50%,70% 100%,0 100%)}
+</style>
+
+<h2>Tags — version 2</h2>
+<p class="subtitle">Changes: tags line up in columns · Ctrl+click picks more than one tag · option B with every tag shown small</p>
+
+<div class="mockup">
+  <div class="mockup-header">Win12 "Tags &amp; Tools" — Ctrl+click picked two tags</div>
+  <div class="mockup-body">
+    <div class="win">
+      <div class="bar">Group by: <span class="pill">Tag name</span><span class="pill on">Tag colour</span><span class="pill">None</span>
+        <span style="margin-left:16px">Show files with:</span><span class="pill on">all picked tags</span><span class="pill">any picked tag</span>
+        <span style="margin-left:auto" class="pill">+ New tag</span></div>
+      <div style="display:flex">
+        <div class="side">
+          <b>Tags</b> <span style="color:#777">(Ctrl+click = more)</span>
+          <div class="sel"><span class="rb" style="background:#d13438">Xiaomi</span></div>
+          <div><span class="rb" style="background:#0078d7">Xiaomi</span></div>
+          <div><span class="rb" style="background:#10893e">Work</span></div>
+          <div><span class="rb" style="background:#8764b8">Photos</span></div>
+          <div class="sel"><span class="rb" style="background:#ff8c00">Urgent</span></div>
+        </div>
+        <div style="flex:1">
+          <div class="grp"><span class="rb" style="background:#d13438">&nbsp;</span> Red (1)</div>
+          <div class="row"><span class="n">📄 invoice_mi13.pdf</span><span class="slot"><span class="rb" style="background:#d13438">Xiaomi</span></span><span class="slot"><span class="rb" style="background:#ff8c00">Urgent</span></span></div>
+          <div class="grp"><span class="rb" style="background:#ff8c00">&nbsp;</span> Orange (1)</div>
+          <div class="row"><span class="n">📄 invoice_mi13.pdf</span><span class="slot"><span class="rb" style="background:#d13438">Xiaomi</span></span><span class="slot"><span class="rb" style="background:#ff8c00">Urgent</span></span></div>
+          <div class="grp" style="color:#777;font-weight:400">Without the filter, the Orange group lines up like this:</div>
+          <div class="row"><span class="n">📄 invoice_mi13.pdf</span><span class="slot"><span class="rb" style="background:#d13438">Xiaomi</span></span><span class="slot"><span class="rb" style="background:#ff8c00">Urgent</span></span></div>
+          <div class="row"><span class="n">📄 CED_report_01.docx</span><span class="slot"><span class="rb" style="background:#10893e">Work</span></span><span class="slot"><span class="rb" style="background:#ff8c00">Urgent</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Option B inside Dolphin — every tag as a small flag</div>
+  <div class="mockup-body">
+    <div class="dk"><table>
+      <tr><th>Name</th><th>Tags</th></tr>
+      <tr><td><span class="ic">📄<span class="em"><i class="mf" style="background:#d13438"></i><i class="mf" style="background:#ff8c00"></i></span></span> invoice_mi13.pdf</td><td>Orange/Urgent, Red/Xiaomi</td></tr>
+      <tr><td><span class="ic">🖼️<span class="em"><i class="mf" style="background:#d13438"></i><i class="mf" style="background:#8764b8"></i></span></span> mi13_box.jpg</td><td>Purple/Photos, Red/Xiaomi</td></tr>
+      <tr><td><span class="ic">📁<span class="em"><i class="mf" style="background:#0078d7"></i></span></span> Mi Band manuals</td><td>Blue/Xiaomi</td></tr>
+    </table></div>
+    <p style="font-size:12px"><b>Honest limit:</b> Dolphin lets an add-on draw only <i>on top of the icon's corner</i>, not beside it. So the flags sit on the bottom-right of the icon, stacked. With more than 3 tags, it shows 3 flags and a "+".</p>
+  </div>
+</div>

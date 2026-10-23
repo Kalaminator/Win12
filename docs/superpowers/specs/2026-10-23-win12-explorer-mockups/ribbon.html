@@ -1,0 +1,66 @@
+<style>
+  .ex{background:#191919;color:#e6e6e6;font:12px Segoe UI,sans-serif;border:1px solid #333;border-radius:6px;overflow:hidden;margin-bottom:14px}
+  .tabs{display:flex;background:#202020;border-bottom:1px solid #333}
+  .tabs span{padding:5px 14px}
+  .tabs .file{background:#0078d7;color:#fff}
+  .tabs .on{background:#2b2b2b;border:1px solid #3a3a3a;border-bottom:none}
+  .rib{display:flex;background:#2b2b2b;padding:6px 4px 0;border-bottom:1px solid #333;min-height:86px}
+  .grp{display:flex;flex-direction:column;border-right:1px solid #3a3a3a;padding:0 8px}
+  .grp .items{display:flex;gap:6px;align-items:flex-start;flex:1}
+  .grp .lbl{text-align:center;color:#9a9a9a;font-size:11px;padding:3px 0}
+  .big{display:flex;flex-direction:column;align-items:center;width:52px;text-align:center;font-size:11px}
+  .big b{font-size:22px;line-height:28px}
+  .col{display:flex;flex-direction:column;gap:2px;font-size:11px}
+  .col div::before{content:"▪ ";color:#6aa7e8}
+  .rb{display:inline-block;color:#fff;font:600 10px/16px Segoe UI,sans-serif;padding:0 12px 0 6px;
+      clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%)}
+  .addr{display:flex;gap:10px;padding:6px 10px;align-items:center;border-bottom:1px solid #333}
+  .addr .a{flex:1;background:#202020;border:1px solid #3a3a3a;padding:3px 8px}
+  .addr .s{width:180px;background:#202020;border:1px solid #3a3a3a;padding:3px 8px;color:#888}
+  .doltabs{display:flex;gap:2px;padding:4px 10px 0;background:#1f1f1f}
+  .doltabs span{background:#2b2b2b;padding:3px 12px;border-radius:4px 4px 0 0}
+  .doltabs span.on{background:#191919;border:1px solid #3a3a3a;border-bottom:none}
+  .body{display:flex}
+  .nav{width:140px;border-right:1px solid #333;padding:6px 8px;line-height:22px;color:#cfcfcf}
+  .pane{flex:1;padding:4px 10px}
+  .pane + .pane{border-left:2px solid #0078d7}
+  table.l{border-collapse:collapse;width:100%}
+  table.l td,table.l th{padding:3px 6px;text-align:left}
+  table.l th{color:#aaa;font-weight:400;border-bottom:1px solid #333}
+</style>
+
+<h2>Option B: "Win12 Explorer" with a real ribbon (dark theme)</h2>
+<p class="subtitle">Our own window with the ribbon tabs File · Home · Share · View · Advanced. The file list inside is Dolphin's own view, so Dolphin's engine stays (network folders, phones, Undo, previews, drag and drop on Wayland). Below: the View tab, then the Advanced tab.</p>
+
+<div class="ex">
+  <div class="tabs"><span class="file">File</span><span>Home</span><span>Share</span><span class="on">View</span><span>Advanced</span></div>
+  <div class="rib">
+    <div class="grp"><div class="items"><div class="big"><b>▤</b>Navigation pane</div><div class="col"><div>Preview pane</div><div>Details pane</div></div></div><div class="lbl">Panes</div></div>
+    <div class="grp"><div class="items"><div class="col"><div>Extra large icons</div><div>Large icons</div><div>Details</div></div><div class="col"><div>Small icons</div><div>List</div><div>Tiles</div></div></div><div class="lbl">Layout</div></div>
+    <div class="grp"><div class="items"><div class="big"><b>⇅</b>Sort by</div><div class="col"><div>Group by ▾</div><div>Add columns ▾</div></div></div><div class="lbl">Current view</div></div>
+    <div class="grp"><div class="items">
+      <div class="col" style="gap:3px"><span class="rb" style="background:#d13438">Xiaomi</span><span class="rb" style="background:#0078d7">Xiaomi</span><span class="rb" style="background:#10893e">Work</span></div>
+      <div class="col"><div>Add tag ▾</div><div>Remove tag</div><div>Manage tags…</div></div>
+      <div class="col"><div>Group: tag name</div><div>Group: tag colour</div><div>Show tag flags</div></div></div><div class="lbl">Tags</div></div>
+    <div class="grp" style="border:none"><div class="items"><div class="col"><div>Item check boxes</div><div>File name extensions</div><div>Hidden items</div></div><div class="big"><b>◫</b>Split view</div></div><div class="lbl">Show/hide</div></div>
+  </div>
+  <div class="addr">← → ↑ <span class="a">›  Documents</span>⟳<span class="s">Search Documents</span></div>
+  <div class="doltabs"><span class="on">Documents ✕</span><span>Downloads ✕</span><span>+</span></div>
+  <div class="body">
+    <div class="nav">★ Quick access<br>🖥 Desktop<br>⬇ Downloads<br>📄 Documents<br>💻 This PC<br>🏷 Tags</div>
+    <div class="pane"><table class="l"><tr><th>Name</th><th>Date modified</th><th>Type</th><th>Size</th></tr>
+      <tr><td>📁 meshmixer</td><td>24-Feb-24</td><td>File folder</td><td></td></tr>
+      <tr><td>📄 invoice_mi13.pdf</td><td>11-Dec-23</td><td>PDF</td><td>65,394 KB</td></tr></table></div>
+    <div class="pane"><table class="l"><tr><th>Name</th><th>Date modified</th></tr><tr><td>📁 Pictures</td><td>01-Feb-24</td></tr></table></div>
+  </div>
+</div>
+
+<div class="ex">
+  <div class="tabs"><span class="file">File</span><span>Home</span><span>Share</span><span>View</span><span class="on">Advanced</span></div>
+  <div class="rib">
+    <div class="grp"><div class="items"><div class="big"><b>⚲</b>Select by rule</div><div class="big"><b>fx</b>Formula</div></div><div class="lbl">Select</div></div>
+    <div class="grp"><div class="items"><div class="big"><b>✎</b>Rename many</div><div class="col"><div>Number files</div><div>Find &amp; replace</div><div>Undo last rename</div></div></div><div class="lbl">Rename</div></div>
+    <div class="grp"><div class="items"><div class="big"><b>🗑</b>Trash matches</div><div class="col"><div>Move matches to…</div><div>Tag matches</div></div></div><div class="lbl">Bulk actions</div></div>
+    <div class="grp" style="border:none"><div class="items"><div class="big"><b>{ }</b>Script editor</div><div class="col"><div>My rules ▾</div><div>My scripts ▾</div><div>Run last plan</div></div></div><div class="lbl">Automate</div></div>
+  </div>
+</div>

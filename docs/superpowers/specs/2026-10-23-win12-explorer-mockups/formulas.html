@@ -1,0 +1,86 @@
+<style>
+  .win{border:1px solid #c8c8c8;border-radius:8px;background:#f9f9f9;color:#1a1a1a;font:13px Segoe UI,sans-serif;overflow:hidden}
+  .bar{background:#eef0f4;padding:6px 10px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #ddd;font-size:12px;flex-wrap:wrap}
+  .pill{background:#fff;border:1px solid #ccc;border-radius:4px;padding:2px 8px;font-size:12px}
+  .pill.on{background:#0078d7;color:#fff;border-color:#0078d7}
+  .fx{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-bottom:1px solid #ddd;font:12px Consolas,monospace}
+  .fx i{font-style:italic;font-weight:700;color:#107c10;font-family:serif;font-size:14px}
+  .fx .f{flex:1;border:1px solid #0078d7;border-radius:3px;padding:3px 6px}
+  .k{color:#0063b1;font-weight:600} .s{color:#a31515} .c{color:#6a9955}
+  table.g{border-collapse:collapse;width:100%;font-size:12px}
+  table.g td,table.g th{padding:3px 8px;border:1px solid #e3e3e3;text-align:left}
+  table.g th{background:#f0f0f0;font-weight:600;color:#555}
+  table.g th.calc{background:#dff6dd;color:#107c10}
+  .y{color:#107c10;font-weight:600} .n{color:#999}
+  pre.code{margin:0;padding:8px 10px;background:#fff;font:12px/1.5 Consolas,monospace;border-bottom:1px solid #ddd}
+  .foot{display:flex;gap:8px;justify-content:flex-end;padding:8px 10px;border-top:1px solid #ddd;background:#f3f3f3;align-items:center;font-size:12px}
+</style>
+
+<h2>Formulas — files are rows, properties are columns</h2>
+<p class="subtitle">Like Excel: every file or folder is one row. A formula runs once for every row, so the loop is automatic. For real loops there is a Script mode, like VBA. Both only make a <b>plan</b>; nothing changes until you press the button.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Level 1 — formula (Select by rule ▸ fx)</div>
+  <div class="mockup-body">
+    <div class="win">
+      <div class="bar">Rule mode: <span class="pill">Simple rules</span><span class="pill on">fx Formula</span><span style="margin-left:auto" class="pill">Save as "Old CED files"</span></div>
+      <div class="fx"><i>fx</i><span class="f">=<span class="k">AND</span>(<span class="k">LEFT</span>(NAME,3)=<span class="s">"CED"</span>, <span class="k">DAYS</span>(MODIFIED)&gt;30, <span class="k">NOT</span>(<span class="k">HASTAG</span>(<span class="s">"Xiaomi"</span>,<span class="s">"Red"</span>)))</span></div>
+      <table class="g">
+        <tr><th>NAME</th><th>EXT</th><th>SIZE</th><th>MODIFIED</th><th>TAGS</th><th class="calc">fx result</th></tr>
+        <tr><td>CED_report_01</td><td>docx</td><td>1.2 MB</td><td>2026-08-02</td><td>Green/Work</td><td class="y">TRUE</td></tr>
+        <tr><td>CED_report_02</td><td>docx</td><td>0.9 MB</td><td>2026-08-09</td><td></td><td class="y">TRUE</td></tr>
+        <tr><td>CED_mi13</td><td>pdf</td><td>3.1 MB</td><td>2026-07-01</td><td>Red/Xiaomi</td><td class="n">FALSE</td></tr>
+        <tr><td>CED_new</td><td>xlsx</td><td>0.2 MB</td><td>2026-10-20</td><td></td><td class="n">FALSE</td></tr>
+      </table>
+      <div class="foot">2 rows are TRUE → <span class="pill">Add tag</span><span class="pill">Move to…</span><span class="pill on">Move to Trash</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Level 1 — formula for Rename many</div>
+    <div class="mockup-body">
+      <div class="win">
+        <div class="fx"><i>fx</i><span class="f">=<span class="k">TEXT</span>(<span class="k">ROWINFOLDER</span>(),<span class="s">"00"</span>) &amp; <span class="s">" - "</span> &amp; <span class="k">PROPER</span>(NAME)</span></div>
+        <table class="g">
+          <tr><th>FOLDER</th><th>NAME</th><th class="calc">new name</th></tr>
+          <tr><td>Trip</td><td>holiday.jpg</td><td class="y">01 - Holiday.jpg</td></tr>
+          <tr><td>Trip</td><td>beach.jpg</td><td class="y">02 - Beach.jpg</td></tr>
+          <tr><td>Work</td><td>notes.txt</td><td class="y">01 - Notes.txt</td></tr>
+        </table>
+      </div>
+      <p style="font-size:12px">ROWINFOLDER() restarts the count in each folder. ROW() counts the whole list.</p>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Level 2 — Script (VBA-like loops)</div>
+    <div class="mockup-body">
+      <div class="win">
+<pre class="code"><span class="k">For Each</span> f <span class="k">In</span> Files(<span class="s">"~/Downloads"</span>, Subfolders:=<span class="k">True</span>)
+  <span class="k">If</span> f.Ext = <span class="s">"pdf"</span> <span class="k">And</span> f.Contains(<span class="s">"invoice"</span>) <span class="k">Then</span>
+    f.MoveTo <span class="s">"~/Documents/Invoices/"</span> &amp; <span class="k">YEAR</span>(f.Modified)
+    f.Tag <span class="s">"Invoice"</span>, <span class="s">"Orange"</span>
+  <span class="k">ElseIf</span> f.Size = 0 <span class="k">Then</span>
+    f.Trash
+  <span class="k">End If</span>
+<span class="k">Next</span></pre>
+        <table class="g">
+          <tr><th>Plan (dry run)</th><th>File</th></tr>
+          <tr><td>Move → Invoices/2026</td><td>invoice_mi13.pdf</td></tr>
+          <tr><td>Tag Orange/Invoice</td><td>invoice_mi13.pdf</td></tr>
+          <tr><td>Trash</td><td>empty.txt</td></tr>
+        </table>
+        <div class="foot"><span class="pill">Save script</span><span class="pill on">Run plan (3 steps)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>Built-in names and functions (Excel names where Excel has one)</h3>
+<p class="subtitle">
+<b>Columns:</b> NAME · EXT · FULLNAME · FOLDER · PATH · SIZE · MODIFIED · CREATED · ISFOLDER · DEPTH · TAGS · photo WIDTH/HEIGHT/TAKEN<br>
+<b>Text:</b> LEFT RIGHT MID LEN FIND SUBSTITUTE UPPER LOWER PROPER TRIM TEXT CONTAINS STARTSWITH ENDSWITH REGEX<br>
+<b>Logic:</b> IF IFS AND OR NOT · <b>Date:</b> TODAY DAYS YEAR MONTH DAY · <b>Files:</b> HASTAG COUNTTAGS ROW ROWINFOLDER COUNTIN(folder) · sizes like 10MB<br>
+Saved formulas and scripts show up in Dolphin's right-click menu under Win12 ▸ My rules.</p>

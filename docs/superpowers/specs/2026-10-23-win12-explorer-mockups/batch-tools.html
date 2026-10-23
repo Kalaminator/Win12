@@ -1,0 +1,69 @@
+<style>
+  .win{border:1px solid #c8c8c8;border-radius:8px;background:#f9f9f9;color:#1a1a1a;font:13px Segoe UI,sans-serif;overflow:hidden}
+  .bar{background:#eef0f4;padding:6px 10px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #ddd;font-size:12px;flex-wrap:wrap}
+  .pill{background:#fff;border:1px solid #ccc;border-radius:4px;padding:2px 8px;font-size:12px}
+  .pill.on{background:#0078d7;color:#fff;border-color:#0078d7}
+  .pill.red{background:#d13438;color:#fff;border-color:#d13438}
+  .dd::after{content:" ▾";color:#777}
+  .rule{display:flex;gap:6px;align-items:center;padding:6px 10px;font-size:12px}
+  .blk{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #0078d7;border-radius:14px;padding:3px 10px;font-size:12px}
+  .blk b{color:#0063b1}
+  table.t{border-collapse:collapse;width:100%;font-size:12px}
+  table.t td,table.t th{padding:4px 10px;text-align:left;border-bottom:1px solid #eee}
+  .new{color:#10893e;font-weight:600}
+  .bad{color:#d13438;font-weight:600}
+  .foot{display:flex;gap:8px;justify-content:flex-end;padding:8px 10px;border-top:1px solid #ddd;background:#f3f3f3;align-items:center;font-size:12px}
+</style>
+
+<h2>Batch tools</h2>
+<p class="subtitle">Both open from Dolphin's right-click menu (Win12 ▸ …) or from the Tags &amp; Tools window. Nothing happens until you press the button at the bottom; the list shows exactly what will change.</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">1. Select by rule — then act on the result</div>
+    <div class="mockup-body">
+      <div class="win">
+        <div class="bar">Look in: <span class="pill dd">Documents</span><label><input type="checkbox" checked> include subfolders</label></div>
+        <div class="rule"><span class="pill dd">Name</span><span class="pill dd">starts with</span><span class="pill" style="min-width:60px">CED</span><span class="pill">✕</span></div>
+        <div class="rule"><span style="color:#777">and</span><span class="pill dd">Modified</span><span class="pill dd">older than</span><span class="pill">30 days</span><span class="pill">✕</span></div>
+        <div class="rule"><span class="pill">+ Add rule</span><span style="color:#777">(name · extension · size · date · tag · folder or file)</span></div>
+        <table class="t">
+          <tr><th></th><th>Found: 4 items · 12.3 MB</th><th>Modified</th></tr>
+          <tr><td><input type="checkbox" checked></td><td>📄 CED_report_01.docx</td><td>2026-08-02</td></tr>
+          <tr><td><input type="checkbox" checked></td><td>📄 CED_report_02.docx</td><td>2026-08-09</td></tr>
+          <tr><td><input type="checkbox" checked></td><td>📁 CED_old</td><td>2026-06-30</td></tr>
+          <tr><td><input type="checkbox"></td><td style="color:#999">📄 CED_contract.pdf (unticked = kept)</td><td>2026-07-11</td></tr>
+        </table>
+        <div class="foot">With the 3 ticked:
+          <span class="pill">Add tag</span><span class="pill">Move to…</span><span class="pill">Rename…</span><span class="pill on">Move to Trash</span></div>
+      </div>
+      <p style="font-size:12px">Trash = you can get them back. "Delete forever" sits in the ⋯ menu and asks first.</p>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">2. Rename many — build the name from blocks</div>
+    <div class="mockup-body">
+      <div class="win">
+        <div class="bar">New name =
+          <span class="blk"><b>Number</b> 2 digits · from 1 · step 1</span>
+          <span class="blk"><b>Text</b> " - "</span>
+          <span class="blk"><b>Current name</b></span>
+          <span class="pill">+ block</span></div>
+        <div class="bar" style="background:#f6f7f9">Blocks: Number · Text · Current name · Date · Tag · Find &amp; replace · UPPER/lower/Title case. Drag to reorder. Extension is always kept.</div>
+        <table class="t">
+          <tr><th>Now</th><th>After</th></tr>
+          <tr><td>holiday.jpg</td><td class="new">01 - holiday.jpg</td></tr>
+          <tr><td>beach.jpg</td><td class="new">02 - beach.jpg</td></tr>
+          <tr><td>sunset.jpg</td><td class="new">03 - sunset.jpg</td></tr>
+          <tr><td>notes.txt</td><td class="bad">04 - notes.txt ⚠ a file with this name is already in the folder → skipped</td></tr>
+        </table>
+        <div class="foot">Order: <span class="pill dd">as shown in Dolphin</span><span class="pill on">Rename 3</span></div>
+      </div>
+      <p style="font-size:12px">After renaming: an "Undo rename" button stays for that batch.</p>
+    </div>
+  </div>
+</div>
+
+<h3>Tag rule</h3>
+<p class="subtitle">Up to 3 tags per file or folder. When a file already has 3, the 4th tag is greyed out with "max 3 tags".</p>
