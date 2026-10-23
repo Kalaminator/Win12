@@ -1,0 +1,22 @@
+# Win12 Explorer Phase 1 — deferred follow-ups (from the build ledger)
+
+- Task 1: minor (deferred): install.sh runs test_explorer_pkgbuild.sh under set -e -> a failing test aborts the whole install (plan-mandated placement)
+- Task 1: minor (deferred): build.sh calls pacman -Q without a command -v guard
+- Task 2: minor (deferred): view_extensions reuses document-properties icon (same as home_properties); layout buttons share view-list-icons
+- Task 2: minor (deferred): Big/Small sizes not asserted in ribbonspec_test
+- Task 3: minor (deferred): ViewSettingsStore::load casts enums from config ints without range check; Columns not filtered to knownColumnIds (empty/unknown -> -1)
+- Task 4: minor (deferred): future-dated mtimes fall into "Earlier this year"/"A long time ago" instead of Today; mimeComment() may determine mime (check UI path in Task 5+)
+- Task 5: ⚠️ carried to Task 6: KDirModel Type column data = mimeComment() per item (statfs/.desktop reads) -> sorting by Type through KDirSortFilterProxyModel may be slow; Task 6 must make Type sort use the cheap display type
+- Task 5: ⚠️ carried to Task 6: nothing calls PreviewLoader::requestVisible() after listingDirCompleted/rowsInserted/scroll — Task 6 wires it
+- Task 5: minor (deferred): group cache m_now goes stale after midnight; DecorationRole builds cacheKey even when loader disabled; PreviewLoader assumes view rows == FolderModel rows; no dtor stop(); mtime cache keys never evicted; test gaps (descending+group, GroupRole::Type, cache invalidation, grouped 5000-row cost)
+- Task 6: carried to Task 7: drop handler must reject a destination that is one of the dragged items (folder dropped onto itself)
+- Task 6: minor (deferred): hi-res trackpad wheel steps zoom per event, zoom at limit still saves; List mode non-uniform sizes (watch 20k-file scroll); emitCounts selectedRows per rowsInserted; test gaps (grouped paint, tiles/content paint, header sort/menu, dropRequested)
+- Task 7: implementer notes carried to Task 9: add every ExplorerActions action (incl. home_delete_trash, home_delete_permanent) to the window so menu-only shortcuts fire; file_options/file_help already act in ExplorerActions — Task 9 must not act again on their signals
+- Task 7: carried to Task 9: context-menu "View" layout actions act on the window's active view — right-click in the inactive split pane must first make that pane active; Delete shortcut should not fire while focus is in the nav pane (shortcut context)
+- Task 7: minor (deferred): renameRefusesExistingName has no directory case (rename dirA -> existing dirB); home_edit == home_open (no setRunExecutables(false) distinction)
+- Task 8: minor (deferred): collapse arrow icon dim on dark scheme; File tab no pressed state; tab-click test hard-codes strip offsets; reference image's Filter group / ribbon layout differences come from the spec table
+- Task 9: minor (deferred): queryClose last-closed window wins [Session]; selectItems may miss when cached listing reports finished early (live-check with --select in Task 10); test gaps (split, closeTab, session write-back)
+- Task 10: minor (deferred, anti-goal related — final wave should fix): win12-explorer-default `off` deletes saved file before restore (restore failure loses old default); `on` writes saved file before xdg-mime/service (partial setup then skipped); saved value equal to org.win12.explorer.desktop should count as unset; daemon never quits after ReleaseFileManager1 with no windows
+- Task 10: minor (deferred): FileManager1-opened windows not tracked as last window for --select; openFolders vs openWindow duplication; xdg-mime query may capture a system fallback (plan ceiling)
+- Task 11: minor (deferred): off-swap of the taskbar pin runs at every start even if never enabled (hand-pinned Win12 Explorer lost); package removed while switch on still runs `on`; empty launchers skipped; plasmoid po not re-extracted (only explorer/po/template.pot)
+- Final: parked — a forwarded --daemon request still runs openWindow (may open one extra Home window the first time "Show in folder" D-Bus-activates while an instance runs) — Ruling: pre-existing, minor, not data-affecting; fix in Phase 2 — cost if wrong: one stray window once per session.
