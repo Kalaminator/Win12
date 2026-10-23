@@ -31,7 +31,6 @@ private Q_SLOTS:
         QCOMPARE(ids, (QStringList{u"file"_s, u"home"_s, u"share"_s, u"view"_s, u"advanced"_s}));
         QVERIFY(Ribbon::spec()[0].isFileMenu);
         QCOMPARE(Ribbon::spec()[4].phase, 3);
-        QVERIFY(Ribbon::spec()[4].groups.isEmpty());
     }
     void homeGroups()
     {
@@ -43,11 +42,21 @@ private Q_SLOTS:
     void actionIdsUniqueAndNamed()
     {
         const QStringList ids = Ribbon::actionIds();
-        QCOMPARE(ids.size(), 50);
-        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 50);
-        const QRegularExpression re(u"^(file|home|share|view)_[a-z_]+$"_s);
+        QCOMPARE(ids.size(), 58);
+        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 58);
+        const QRegularExpression re(u"^(file|home|share|view|adv)_[a-z_]+$"_s);
         for (const auto &id : ids)
             QVERIFY2(re.match(id).hasMatch(), qPrintable(id));
+    }
+    void advancedTabHasPhase3Groups()
+    {
+        QCOMPARE(groupTexts(u"advanced"_s), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s}));
+        QCOMPARE(tab(u"advanced"_s)->groups[3].phase, 4);
+        const QStringList ids = Ribbon::actionIds();
+        for (const char *id : {"adv_select_rule", "adv_rename_many", "adv_rename_undo", "adv_select_matches",
+                               "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches"})
+            QVERIFY2(ids.contains(QString::fromLatin1(id)), id);
+        QCOMPARE(Ribbon::button(u"adv_trash_matches"_s)->size, Ribbon::Size::Big);
     }
     void menuButtons()
     {

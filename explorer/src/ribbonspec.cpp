@@ -96,7 +96,23 @@ const QList<Tab> &spec()
                 B("view_split", ki18n("Split view"), "view-split-left-right", S::Big),
             }},
         }},
-        {QStringLiteral("advanced"), i18n("Advanced"), {}, false, 3},
+        {QStringLiteral("advanced"), i18n("Advanced"), {
+            {i18n("Select"), {
+                B("adv_select_rule", ki18n("Select by rule"), "edit-find", S::Big),
+            }, 3},
+            {i18n("Rename"), {
+                B("adv_rename_many", ki18n("Rename many"), "edit-rename", S::Big),
+                B("adv_rename_undo", ki18n("Undo last rename"), "edit-undo"),
+            }, 3},
+            {i18n("Bulk actions"), {
+                B("adv_select_matches", ki18n("Select matches"), "edit-select-all"),
+                B("adv_copy_matches", ki18n("Copy matches to…"), "edit-copy"),
+                B("adv_move_matches", ki18n("Move matches to…"), "edit-cut"),
+                B("adv_rename_matches", ki18n("Rename matches…"), "edit-rename"),
+                B("adv_trash_matches", ki18n("Trash matches"), "user-trash", S::Big),
+            }, 3},
+            {i18n("Automate"), {}, 4},
+        }, false, 3},
     };
     return t;
 }

@@ -4,7 +4,7 @@
 #include <QStringList>
 
 namespace Ribbon {
-constexpr int currentPhase = 1;
+constexpr bool phaseBuilt(int phase) { return phase == 1 || phase == 3; } // phase 2 (Tags) not built
 enum class Size { Big, Small };
 struct Button {
     QString action;

@@ -38,16 +38,11 @@ private Q_SLOTS:
         QCOMPARE(r.visibleGroupTitles(2),
                  (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Show/hide"_s, u"Split view"_s}));
     }
-    void advancedIsPlaceholder()
+    void advancedShowsBuiltGroups()
     {
         ExplorerActions a(nullptr);
         RibbonBar r(&a);
-        QVERIFY(r.visibleGroupTitles(3).isEmpty());
-        r.setCurrentTab(3);
-        auto *body = r.findChild<QStackedWidget *>();
-        auto *l = body->currentWidget()->findChild<QLabel *>();
-        QVERIFY(l);
-        QVERIFY(l->text().startsWith(u"Advanced tools"_s));
+        QCOMPARE(r.visibleGroupTitles(3), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s}));
     }
     void everyVisibleButtonHasItsAction()
     {
@@ -55,7 +50,7 @@ private Q_SLOTS:
         RibbonBar r(&a);
         for (const Ribbon::Tab &t : Ribbon::spec())
             for (const Ribbon::Group &g : t.groups) {
-                if (g.phase > 1 || t.phase > 1 || t.isFileMenu)
+                if (!Ribbon::phaseBuilt(g.phase) || !Ribbon::phaseBuilt(t.phase) || t.isFileMenu)
                     continue;
                 for (const Ribbon::Button &b : g.buttons) {
                     QCOMPARE(r.buttonsFor(b.action).size(), 1);

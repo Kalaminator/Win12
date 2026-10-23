@@ -173,13 +173,13 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
         lay->setContentsMargins(2, 2, 2, 2);
         lay->setSpacing(0);
         QStringList titles;
-        if (tab.phase > Ribbon::currentPhase) {
+        if (!Ribbon::phaseBuilt(tab.phase)) {
             auto *l = new QLabel(i18n("Advanced tools arrive in a later Win12 version."));
             l->setEnabled(false);
             lay->addWidget(l);
         } else {
             for (const Ribbon::Group &g : tab.groups) {
-                if (g.phase > Ribbon::currentPhase)
+                if (!Ribbon::phaseBuilt(g.phase))
                     continue;
                 titles << g.text;
                 auto *frame = new RibbonGroup;
