@@ -124,21 +124,22 @@ index 72ebc1c..eac598f 100644
          });
      }
 diff --git a/applets/systemtray/qml/main.qml b/applets/systemtray/qml/main.qml
-index 8e56f1f..3c731ec 100644
+index 8e56f1f..ea0aa51 100644
 --- a/applets/systemtray/qml/main.qml
 +++ b/applets/systemtray/qml/main.qml
-@@ -23,7 +23,9 @@ ContainmentItem {
+@@ -23,7 +23,10 @@ ContainmentItem {
      readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
      readonly property bool reverseLayout: Plasmoid.configuration.reverseIconOrder
  
 -    Layout.minimumWidth: vertical ? Kirigami.Units.iconSizes.small : mainLayout.implicitWidth + Kirigami.Units.smallSpacing
-+    Layout.minimumWidth: vertical ? Kirigami.Units.iconSizes.small : (win12Inline ? win12Width : mainLayout.implicitWidth) + Kirigami.Units.smallSpacing
-+    Layout.preferredWidth: win12Inline ? win12Width + Kirigami.Units.smallSpacing : -1
-+    Layout.maximumWidth: win12Inline ? win12Width + Kirigami.Units.smallSpacing : -1
++    // Win12: exactly the row's width (no spare spacing: it would sit left of the icons open, right of them closed)
++    Layout.minimumWidth: vertical ? Kirigami.Units.iconSizes.small : win12Inline ? win12Width : mainLayout.implicitWidth + Kirigami.Units.smallSpacing
++    Layout.preferredWidth: win12Inline ? win12Width : -1
++    Layout.maximumWidth: win12Inline ? win12Width : -1
      Layout.minimumHeight: vertical ? mainLayout.implicitHeight + Kirigami.Units.smallSpacing : Kirigami.Units.iconSizes.small
  
      LayoutMirroring.enabled: !vertical && ((Application.layoutDirection === Qt.RightToLeft) !== reverseLayout)
-@@ -37,6 +39,35 @@ ContainmentItem {
+@@ -37,6 +40,35 @@ ContainmentItem {
  
      readonly property alias hiddenModel: hiddenModel
  
@@ -174,7 +175,7 @@ index 8e56f1f..3c731ec 100644
      Component.onCompleted: {
          // We need all the plasmoiditems to be there for correct working of shortcuts.
          // Instantiators create the plasmoiditems: ensure this is done after
-@@ -59,8 +90,11 @@ ContainmentItem {
+@@ -59,8 +91,11 @@ ContainmentItem {
          dynamicSortFilter: !systemTrayState.expanded
          filterRowCallback: (sourceRow, sourceParent) => {
              let value = sourceModel.data(sourceModel.index(sourceRow, 0, sourceParent), filterRole);
@@ -187,7 +188,7 @@ index 8e56f1f..3c731ec 100644
          Component.onCompleted: sourceModel = Plasmoid.systemTrayModel // avoid unnecessary binding, it causes loops
      }
  
-@@ -70,7 +104,7 @@ ContainmentItem {
+@@ -70,7 +105,7 @@ ContainmentItem {
          dynamicSortFilter: !systemTrayState.expanded
          filterRowCallback: (sourceRow, sourceParent) => {
              let value = sourceModel.data(sourceModel.index(sourceRow, 0, sourceParent), filterRole);
@@ -196,7 +197,7 @@ index 8e56f1f..3c731ec 100644
          }
          Component.onCompleted: sourceModel = Plasmoid.systemTrayModel // avoid unnecessary binding, it causes loops
      }
-@@ -193,11 +227,24 @@ ContainmentItem {
+@@ -193,11 +228,24 @@ ContainmentItem {
                  id: tasksGrid
  
                  Layout.row: root.vertical && root.reverseLayout ? 1 : 0 // Explicitly define grid coordinates
@@ -214,7 +215,7 @@ index 8e56f1f..3c731ec 100644
 +                // icons on the right stay put and the hidden ones slide in from the arrow
 +                clip: root.win12Inline
 +                function win12Scroll() {
-+                    contentX = root.win12Inline ? originX + Math.max(0, contentWidth - width) : originX;
++                    contentX = root.win12Inline ? originX + contentWidth - width : originX;
 +                }
 +                onWidthChanged: win12Scroll()
 +                onContentWidthChanged: win12Scroll()
@@ -222,7 +223,7 @@ index 8e56f1f..3c731ec 100644
                  flow: root.vertical ? GridView.LeftToRight : GridView.TopToBottom
  
                  // Tell the grid to populate bottom-to-top when flipped on a vertical panel
-@@ -250,6 +297,7 @@ ContainmentItem {
+@@ -250,6 +298,7 @@ ContainmentItem {
  
                      width: tasksGrid.cellWidth
                      height: tasksGrid.cellHeight
@@ -230,7 +231,7 @@ index 8e56f1f..3c731ec 100644
  
                      // We need to recalculate the stacking order of the z values due to how keyboard navigation works
                      // the tab order depends exclusively from this, so we redo it as the position in the list
-@@ -272,13 +320,17 @@ ContainmentItem {
+@@ -272,13 +321,17 @@ ContainmentItem {
                  id: expander
  
                  Layout.row: root.vertical && !root.reverseLayout ? 1 : 0 // Explicitly define grid coordinates
