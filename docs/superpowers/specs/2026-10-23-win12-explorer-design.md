@@ -120,8 +120,20 @@ Research (two clones in `~/Documents/Start12-stardock-assets/`):
 - **Select by rule**: look-in folder + "include subfolders"; rule rows joined by AND: field (name,
   extension, size, date modified/created, tag, folder or file) · test (starts with, contains, ends
   with, equals, regex, older/newer than, bigger/smaller than, has tag) · value. Result list with
-  count and total size; untick to keep an item. Actions on the ticked items: Add tag, Move to…,
-  Rename…, Move to Trash. "Delete forever" is in a ⋯ menu and asks first.
+  count and total size; untick to keep an item. Actions on the ticked items (user, 2026-10-23:
+  "select, copy, move, rename or delete"; the rest are our call):
+  - **Select** — close the dialog and select the ticked items in the view (only items in the
+    current folder; with subfolders, opens a results tab listing them, like a search).
+  - **Copy to…** and **Move to…** — folder picker, then one KIO job (progress, conflicts, Undo).
+    Option "keep subfolder structure" when matches come from subfolders (default off = all land
+    flat in the target; same-name clashes go to KIO's conflict dialog).
+  - **Rename…** — opens Rename many with the ticked items.
+  - **Move to Trash** (default button). **Delete forever** in a ⋯ menu, asks first with the count.
+  - **Compress to zip…**, **Copy paths** (one path per line to the clipboard).
+  - **Add tag** — shown once phase 2 exists; until then hidden (also the "tag" rule field).
+  Advanced ribbon buttons for these: Select by rule (big), then Select matches / Copy matches to /
+  Move matches to / Rename matches / Trash matches each open Select by rule with that action as the
+  default button.
 - **Rename many**: the new name is built from blocks (Number with digits/start/step, Text, Current
   name, Date, Tag, Find & replace, case). Drag blocks to reorder. Extension always kept. Live
   preview "Now → After"; a name that already exists in the folder is shown red and skipped. Order =
