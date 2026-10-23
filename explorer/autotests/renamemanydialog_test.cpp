@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QTest>
+#include <QToolButton>
 #include <QTreeWidget>
 
 class RenameManyDialogTest : public QObject
@@ -75,6 +76,17 @@ private Q_SLOTS:
         QVERIFY(e);
         e->setFocus();
         QTest::keyClick(e, Qt::Key_Return);
+        QVERIFY(d.isVisible());
+    }
+    void enterOnToolButtonDoesNotAccept()
+    {
+        RenameManyDialog d(items(), existing(), nullptr);
+        d.show();
+        auto *tb = d.findChildren<QToolButton *>().value(0);
+        QVERIFY(tb);
+        tb->setFocus();
+        QTest::keyClick(tb, Qt::Key_Return);
+        QCOMPARE(d.result(), int(QDialog::Rejected));
         QVERIFY(d.isVisible());
     }
 };

@@ -151,7 +151,7 @@ SelectByRuleDialog::~SelectByRuleDialog()
 void SelectByRuleDialog::keyPressEvent(QKeyEvent *e)
 {
     // Enter in the look-in or rule fields means "Find", never an action (nothing changes before the list is shown)
-    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QAbstractButton *>(focusWidget())
+    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QPushButton *>(focusWidget())
         && !(focusWidget() && m_tree->isAncestorOf(focusWidget()))) {
         find();
         e->accept();
@@ -224,7 +224,6 @@ void SelectByRuleDialog::addRow(const Rule &rule)
     connect(r.test, &QComboBox::currentIndexChanged, this, &SelectByRuleDialog::recompile);
     connect(r.kind, &QComboBox::currentIndexChanged, this, &SelectByRuleDialog::recompile);
     connect(r.value, &QLineEdit::textChanged, this, &SelectByRuleDialog::recompile);
-    connect(r.value, &QLineEdit::returnPressed, this, &SelectByRuleDialog::find);
     connect(r.remove, &QToolButton::clicked, this, [this, w] {
         for (int i = 0; i < m_rows.size(); ++i)
             if (m_rows[i].widget == w)

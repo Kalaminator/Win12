@@ -115,6 +115,28 @@ private Q_SLOTS:
         QVERIFY(d->isVisible());
         QVERIFY(d->ticked().isEmpty()); // stale ticks gone
     }
+    void enterOnToolButtonDoesNotReachActionButton()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Trash));
+        d->show();
+        runFind(*d);
+        auto *tb = d->findChildren<QToolButton *>().value(0);
+        QVERIFY(tb);
+        tb->setFocus();
+        QTest::keyClick(tb, Qt::Key_Return);
+        QCOMPARE(d->result(), int(QDialog::Rejected));
+        QVERIFY(d->isVisible());
+    }
+    void enterInValueFieldSearchesOnce()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->show();
+        QSignalSpy sp(d.get(), &SelectByRuleDialog::searchFinished);
+        QTest::keyClick(d->findChildren<QLineEdit *>().last(), Qt::Key_Return);
+        QVERIFY(sp.wait(5000));
+        QTest::qWait(300);
+        QCOMPARE(sp.count(), 1);
+    }
     void addAndRemoveRuleRows()
     {
         std::unique_ptr<SelectByRuleDialog> d(make());

@@ -255,7 +255,7 @@ void RenameManyDialog::refresh()
 void RenameManyDialog::keyPressEvent(QKeyEvent *e)
 {
     // Enter while typing in a block editor must never start the rename
-    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QAbstractButton *>(focusWidget())) {
+    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QPushButton *>(focusWidget())) {
         e->accept();
         return;
     }
