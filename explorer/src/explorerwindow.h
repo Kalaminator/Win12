@@ -43,7 +43,8 @@ Q_SIGNALS:
     void titleChanged(const QString &);
 
 private:
-    FolderView *addView(const QUrl &);
+    FolderView *addView(const QUrl &); // inside a container with its 2 px "paneMark" above it
+    void updateMarks(); // the mark shows on the active pane while split
     ViewSettingsStore *m_store;
     QSplitter *m_splitter;
     FolderView *m_primary;

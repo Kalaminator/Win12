@@ -1,7 +1,10 @@
 #include "explorerwindow.h"
 #include <QAbstractItemView>
 #include <QAction>
+#include <QFile>
+#include <QLabel>
 #include <QLineEdit>
+#include <QStatusBar>
 #include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTabBar>
@@ -46,6 +49,40 @@ private Q_SLOTS:
         w->activeView()->currentView()->setFocus();
         QTest::keyClick(w->activeView()->currentView(), Qt::Key_F2);
         QCOMPARE(spy.count(), 1);
+        delete w;
+    }
+
+    // The window built the real way lists its folder all the way to the status bar.
+    void listsTheFolderIntoTheStatusBar()
+    {
+        QTemporaryDir dir;
+        for (const char *name : {"a.txt", "b.txt", "c.txt"}) {
+            QFile f(dir.filePath(QString::fromLatin1(name)));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+        }
+        ExplorerWindow w({QUrl::fromLocalFile(dir.path())});
+        w.show();
+        QTRY_COMPARE(w.activeView()->itemCount(), 3);
+        QCOMPARE(w.statusBar()->findChild<QLabel *>()->text(), QStringLiteral("3 items"));
+    }
+
+    void splitMarksTheActivePane()
+    {
+        ExplorerWindow *w = shownWindow();
+        TabPage *page = w->currentPage();
+        const auto marked = [](FolderView *v) {
+            auto *mark = v->parentWidget()->findChild<QWidget *>(QStringLiteral("paneMark"), Qt::FindDirectChildrenOnly);
+            return mark && mark->isVisible();
+        };
+        QVERIFY(!marked(page->primary())); // a single pane needs no mark
+        page->setSplit(true);
+        QVERIFY(marked(page->primary()));
+        QVERIFY(!marked(page->secondary()));
+        page->activate(page->secondary());
+        QVERIFY(!marked(page->primary()));
+        QVERIFY(marked(page->secondary()));
+        page->setSplit(false);
+        QVERIFY(!marked(page->primary()));
         delete w;
     }
 

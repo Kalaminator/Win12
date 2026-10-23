@@ -60,6 +60,7 @@ public:
     FolderModel *folderModel() const;
     KFileItem itemFor(const QModelIndex &) const; // maps through both proxies
     QVariant extraColumnData(const QModelIndex &parent, int row, int extraColumn, int role) const override;
+    QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override; // columnTitle()
 };
 
 class PreviewLoader : public QObject

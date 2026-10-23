@@ -28,6 +28,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QStatusBar>
@@ -62,10 +63,27 @@ TabPage::TabPage(ViewSettingsStore *store, const QUrl &url, QWidget *parent)
     });
 }
 
+namespace {
+struct PaneMark : QWidget {
+    using QWidget::QWidget;
+    void paintEvent(QPaintEvent *) override { QPainter(this).fillRect(rect(), palette().highlight()); }
+};
+}
+
 FolderView *TabPage::addView(const QUrl &url)
 {
-    auto *view = new FolderView(m_store, m_splitter);
-    m_splitter->addWidget(view);
+    auto *box = new QWidget(m_splitter);
+    auto *layout = new QVBoxLayout(box);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    auto *mark = new PaneMark(box);
+    mark->setObjectName(QStringLiteral("paneMark"));
+    mark->setFixedHeight(2);
+    mark->hide();
+    layout->addWidget(mark);
+    auto *view = new FolderView(m_store, box);
+    layout->addWidget(view);
+    m_splitter->addWidget(box);
     connect(view, &FolderView::urlChanged, this, [this, view] {
         if (view == m_active)
             Q_EMIT titleChanged(title());
@@ -82,13 +100,22 @@ void TabPage::setSplit(bool on)
         m_secondary = addView(m_primary->url());
         const int half = m_splitter->width() / 2;
         m_splitter->setSizes({half, half});
+        updateMarks();
         return;
     }
     FolderView *gone = m_secondary;
     m_secondary = nullptr;
     if (m_active == gone)
         activate(m_primary);
-    delete gone;
+    delete gone->parentWidget();
+    updateMarks();
+}
+
+void TabPage::updateMarks()
+{
+    for (FolderView *view : {m_primary, m_secondary.data()})
+        if (view)
+            view->parentWidget()->findChild<QWidget *>(QStringLiteral("paneMark"), Qt::FindDirectChildrenOnly)->setVisible(isSplit() && view == m_active);
 }
 
 void TabPage::activate(FolderView *view)
@@ -96,6 +123,7 @@ void TabPage::activate(FolderView *view)
     if (view == m_active || (view != m_primary && view != m_secondary))
         return;
     m_active = view;
+    updateMarks();
     Q_EMIT activeChanged(view);
     Q_EMIT titleChanged(title());
 }
@@ -523,7 +551,7 @@ void ExplorerWindow::selectItems(const QList<QUrl> &urls)
     const QUrl parent = urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
     if (v->url().adjusted(QUrl::StripTrailingSlash) != parent)
         v->openUrl(parent);
-    KDirLister *lister = static_cast<FolderModel *>(v->model()->sourceModel())->lister();
+    KDirLister *lister = v->model()->folderModel()->lister();
     if (lister->isFinished())
         v->selectUrls(urls);
     else

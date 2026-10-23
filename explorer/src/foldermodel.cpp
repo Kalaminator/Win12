@@ -176,6 +176,15 @@ KFileItem TagsColumns::itemFor(const QModelIndex &idx) const
     return folderModel()->itemFor(mapToSource(index(idx.row(), 0, idx.parent())));
 }
 
+QVariant TagsColumns::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        for (const QString &id : knownColumnIds())
+            if (modelColumnFor(id) == section)
+                return columnTitle(id);
+    return KExtraColumnsProxyModel::headerData(section, orientation, role);
+}
+
 QVariant TagsColumns::extraColumnData(const QModelIndex &, int, int, int role) const
 {
     // ponytail: phase 1 has no tag storage; the column exists so layouts and headers are final.

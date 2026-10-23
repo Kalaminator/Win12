@@ -1,4 +1,5 @@
 #include "explorerwindow.h"
+#include <KConfig>
 #include <KDBusService>
 #include <KLocalizedString>
 #include <QApplication>
@@ -30,6 +31,10 @@ int main(int argc, char **argv)
     KLocalizedString::setApplicationDomain("win12-explorer");
     QCoreApplication::setOrganizationDomain(QStringLiteral("win12.org"));
     QCoreApplication::setApplicationName(QStringLiteral("explorer"));
+    // The D-Bus name stays org.win12.explorer (organization domain + "explorer"); every KSharedConfig::openConfig(),
+    // KMainWindow's autosave included, reads win12-explorerrc.
+    KConfig::setMainConfigName(QStringLiteral("win12-explorerrc"));
+    QGuiApplication::setApplicationDisplayName(i18n("Win12 Explorer")); // else titles end in "— explorer"
     QGuiApplication::setDesktopFileName(QStringLiteral("org.win12.explorer"));
     KDBusService service(KDBusService::Unique);
     QObject::connect(&service, &KDBusService::activateRequested, &app, openWindow);

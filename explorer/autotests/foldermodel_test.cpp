@@ -96,6 +96,9 @@ private Q_SLOTS:
         TagsColumns t(&model);
         QCOMPARE(t.columnCount(), 8);
         QCOMPARE(t.headerData(7, Qt::Horizontal).toString(), QStringLiteral("Tags"));
+        for (const QString &id : knownColumnIds()) // the Windows titles, not KDirModel's ("Date" for modified)
+            QCOMPARE(t.headerData(modelColumnFor(id), Qt::Horizontal).toString(), columnTitle(id));
+        QCOMPARE(t.headerData(modelColumnFor(QStringLiteral("modified")), Qt::Horizontal).toString(), QStringLiteral("Date modified"));
         QVERIFY(t.index(0, 7).data(TagsColumns::TagsRole).toStringList().isEmpty());
         QCOMPARE(t.itemFor(t.index(0, 7)).name(), model.itemFor(model.index(0, 0)).name());
     }
