@@ -84,8 +84,13 @@ bool groupLess(const GroupInfo &a, const GroupInfo &b)
 {
     if (a.order != b.order)
         return a.order < b.order;
-    QCollator c;
-    c.setCaseSensitivity(Qt::CaseInsensitive);
+    if (a.label == b.label)
+        return false;
+    static const QCollator c = [] {
+        QCollator x;
+        x.setCaseSensitivity(Qt::CaseInsensitive);
+        return x;
+    }();
     return c.compare(a.label, b.label) < 0;
 }
 
