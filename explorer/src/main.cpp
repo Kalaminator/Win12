@@ -52,13 +52,19 @@ int main(int argc, char **argv)
     auto *obj = new QObject(&app);
     new FileManager1(obj);
     QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/freedesktop/FileManager1"), obj, QDBusConnection::ExportAdaptors);
-    auto *obj2 = new QObject(&app);
-    new ExplorerDBus(obj2);
-    QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/win12/explorer"), obj2, QDBusConnection::ExportAdaptors);
+    // KDBusService already owns /org/win12/explorer (org.freedesktop.Application); a second registerObject there
+    // fails, so the script's ReleaseFileManager1 adaptor rides on the service object instead.
+    new ExplorerDBus(&service);
     const bool holdsName = (opts.daemon || FileManager1::wantsRegistration()) && FileManager1::registerName();
     app.setQuitOnLastWindowClosed(!(opts.daemon || holdsName));
     QObject::connect(&service, &KDBusService::activateRequested, &app,
-                     [](const QStringList &args, const QString &cwd) { openWindow(args.mid(1), cwd); });
+                     [&app](const QStringList &args, const QString &cwd) {
+                         // An instance started before the switch went on takes FileManager1 over when asked
+                         // (D-Bus activation of the service file forwards its --daemon request here).
+                         if ((parseCli(args.mid(1), cwd).daemon || FileManager1::wantsRegistration()) && FileManager1::registerName())
+                             app.setQuitOnLastWindowClosed(false);
+                         openWindow(args.mid(1), cwd);
+                     });
     openWindow(app.arguments().mid(1), QDir::currentPath());
     return app.exec();
 }

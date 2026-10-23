@@ -72,4 +72,8 @@ void FileManager1::ShowItemProperties(const QStringList &uris, const QString &)
 void ExplorerDBus::ReleaseFileManager1()
 {
     FileManager1::releaseName();
+    qApp->setQuitOnLastWindowClosed(true);
+    const auto widgets = QApplication::topLevelWidgets();
+    if (std::none_of(widgets.begin(), widgets.end(), [](QWidget *w) { return w->isVisible(); }))
+        QMetaObject::invokeMethod(qApp, &QCoreApplication::quit, Qt::QueuedConnection); // `off` leaves no hidden daemon
 }
