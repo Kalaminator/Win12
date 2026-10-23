@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Category": "Windows and Tasks",
+        "Description": "Win12: thin click strip at the end of a Windows taskbar that shows the desktop",
+        "Icon": "user-desktop",
+        "Id": "org.win12.showdesktop",
+        "License": "MIT",
+        "Name": "Win12 show desktop strip",
+        "Version": "0.1"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

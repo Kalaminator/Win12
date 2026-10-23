@@ -293,4 +293,30 @@ sh = shell(1920, ["HDMI-A-2", "DP-1"]); passes(sh, sub(sh, "split-right", 0, tru
   new Function("panels", src)(sh.panels);
   assert.deepStrictEqual(tms.map(t => t.panel.screen + ":" + t.readConfig("launchers").join()),
       ["0:applications:a.desktop,file:///x/ab.desktop", "1:applications:a.desktop,applications:b.desktop?iconData=x,file:///x/ab.desktop"]); }
+// show desktop strip (code/showdesktop.js): a Windows look swaps Plasma's button for org.win12.showdesktop in the same
+// place, the KDE Plasma look swaps it back with its settings; the host's saved orders follow the new ids
+function runSD(sh, STRIP, known = ["org.win12.showdesktop"]) {
+    for (const q of sh.panels()) q.gone = q.gone.filter(w => /systemtray/.test(w.type));
+    const src = read("showdesktop.js").split("@ID@").join(sh.me.id).split("@STRIP@").join(STRIP).split("@STOCK@").join(sh.stock);
+    sh.out = []; new Function("panels", "knownWidgetTypes", "print", src)(sh.panels, known, sh.print); sh.endPass(); return sh.out[0];
+}
+const sdPasses = (sh, STRIP, max = 10) => { for (let i = 1; i <= max; i++) if (runSD(sh, STRIP) === "done") return i; return Infinity; };
+for (const stock of [false, true]) {
+    sh = shell(1920, ["HDMI-A-2"], stock); const sd = sh.host.widgets("org.kde.plasma.showdesktop")[0];
+    sd.writeConfig("icon", "my-icon"); sh.endPass();
+    assert.strictEqual(runSD(sh, true, []), "done", "no strip plugin yet: nothing touched");
+    assert.ok(sdPasses(sh, true) <= 3, "strip in"); assert.deepStrictEqual(types(sh.host), BAR.slice(0, -1).concat("w12:showdesktop"));
+    assert.ok(sdPasses(sh, false) <= 3, "strip out"); assert.deepStrictEqual(types(sh.host), BAR);
+    assert.strictEqual(cfgOf(sh.host.widgets("org.kde.plasma.showdesktop")[0], "icon"), "my-icon", "settings back");
+    // not the last widget: the strip takes the old slot
+    sh = shell(1920, ["HDMI-A-2"], stock); sh.host.widgets("org.kde.plasma.showdesktop")[0].index = 3; sh.endPass();
+    assert.ok(sdPasses(sh, true) <= 4, "strip in mid-bar"); assert.strictEqual(types(sh.host)[3], "w12:showdesktop");
+    assert.strictEqual(cfgOf(sh.host.widgets("org.win12.showdesktop")[0], "win12At"), "", "placed");
+    // inside a split: the strip sits in the tray island; One bar again brings it home in its place
+    sh = shell(1920, ["HDMI-A-2"], stock); const sb = stock ? ssub : sub; passes(sh, sb(sh, "split-right"), 40);
+    assert.ok(sdPasses(sh, true) <= 3); assert.deepStrictEqual(nr(isl(sh, "R")).slice(-1), ["w12:showdesktop"]);
+    assert.ok(passes(sh, sb(sh, "single"), 40) <= 40); assert.deepStrictEqual(types(sh.host), BAR.slice(0, -1).concat("w12:showdesktop"), "strip home");
+}
+// another panel's show desktop is never touched
+sh = shell(); { const o = new sh.Panel(); o.addWidget("org.kde.plasma.showdesktop"); sh.endPass(); sdPasses(sh, true); assert.deepStrictEqual(types(o), ["showdesktop"]); }
 console.log("test_islands OK");

@@ -717,7 +717,7 @@ ContainmentItem {
             root.kdeChecked = true;
         }
     }
-    onKdeCheckedChanged: { syncCenterPanel(); syncIslands(); }
+    onKdeCheckedChanged: { syncCenterPanel(); syncIslands(); syncShowDesktop(); }
     // W9: magnetic islands are placed from their widths: re-run when this panel's width changes (tasks opened or
     // closed) and every 30 s for the other islands (tray icons, weather), which this widget cannot watch.
     readonly property bool islandMagnetic: islandWant !== "single" && cfg.taskbarMagnetic
@@ -798,6 +798,16 @@ ContainmentItem {
             + " if (p.floating && p.hiding !== h) { p.floating = false; p.floating = true; } }"
             + "print('done');";
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
+    }
+    // Windows taskbar looks: Plasma's Show Desktop button becomes a thin strip with no icon (extras/win12-showdesktop);
+    // the KDE Plasma look gets Plasma's button back (code/showdesktop.js, same lock and loop as the other panel syncs).
+    onKdeTaskbarChanged: syncShowDesktop()
+    function syncShowDesktop() {
+        if (!configReady || !kdeChecked || isMirror) return;
+        const file = decodeURIComponent(Qt.resolvedUrl("code/showdesktop.js").toString().replace("file://", ""));
+        const dbus = Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript \"$(sed -e s/@ID@/" + Plasmoid.id + "/ -e s/@STRIP@/" + !kdeTaskbar
+            + "/ -e s/@STOCK@/" + !kdePatched + "/ " + Tiles.shQuote(file) + ")\"";
+        run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" sh -c " + Tiles.shQuote("for i in $(seq 25); do [ \"$(" + dbus + ")\" = done ] && break; sleep 0.3; done"));
     }
     function syncCenterPanel() {
         if (!configReady || !kdeChecked || isMirror || islandsNeedPatch()) return;   // never act on default settings before migrateConfig is done
@@ -1654,6 +1664,7 @@ ContainmentItem {
             root.syncDesktopTheme();
             root.syncPanelPop();
             root.syncIslandReveal();
+            root.syncShowDesktop();   // the strip plugin exists now (setup.sh installs it)
             root.syncPanelLook();   // W12: the onReady run can die with a reloading applet (panel left as the last style)
             root.syncBlurStrength();
             root.readBrightness();   // then syncWindowDeco + syncWindowColors
