@@ -72,8 +72,14 @@ GroupInfo groupInfo(const KFileItem &item, GroupRole role, const QDateTime &now)
         return sizeGroup(item);
     case GroupRole::Name:
         return nameGroup(item);
-    case GroupRole::Type:
-        return item.isDir() ? GroupInfo{0, i18n("File folder")} : GroupInfo{1, item.mimeComment()};
+    case GroupRole::Type: {
+        if (item.isDir())
+            return {0, i18n("File folder")};
+        // Not mimeComment(): that stats the filesystem per item and reads .desktop files. currentMimeType() never
+        // sniffs content; with delayedMimeTypes it is the extension-based guess until the real type is resolved.
+        const QString display = item.entry().stringValue(KIO::UDSEntry::UDS_DISPLAY_TYPE);
+        return {1, display.isEmpty() ? item.currentMimeType().comment() : display};
+    }
     case GroupRole::None:
         break;
     }
