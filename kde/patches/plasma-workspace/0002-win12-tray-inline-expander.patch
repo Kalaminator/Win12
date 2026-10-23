@@ -124,7 +124,7 @@ index 72ebc1c..eac598f 100644
          });
      }
 diff --git a/applets/systemtray/qml/main.qml b/applets/systemtray/qml/main.qml
-index 8e56f1f..d25e2fd 100644
+index 8e56f1f..3c731ec 100644
 --- a/applets/systemtray/qml/main.qml
 +++ b/applets/systemtray/qml/main.qml
 @@ -23,7 +23,9 @@ ContainmentItem {
@@ -138,45 +138,31 @@ index 8e56f1f..d25e2fd 100644
      Layout.minimumHeight: vertical ? mainLayout.implicitHeight + Kirigami.Units.smallSpacing : Kirigami.Units.iconSizes.small
  
      LayoutMirroring.enabled: !vertical && ((Application.layoutDirection === Qt.RightToLeft) !== reverseLayout)
-@@ -37,6 +39,49 @@ ContainmentItem {
+@@ -37,6 +39,35 @@ ContainmentItem {
  
      readonly property alias hiddenModel: hiddenModel
  
 +    // Win12: the Windows taskbar looks set win12Expander. The arrow then sits left of the icons and shows the hidden
 +    // icons in the panel, left of the others (the tray grows to the left, animated), instead of the popup; a second
 +    // click hides them again. Horizontal, unmirrored panels only; not saved (a restart starts closed).
++    // The hidden (passive) icons stay in the panel row, sorted first; closed, the row is cut by their width
++    // (win12Cut), so a click only animates the width: no item is added or removed, nothing is laid out again.
 +    readonly property bool win12Inline: Plasmoid.configuration.win12Expander && !vertical && !LayoutMirroring.enabled
-+    property bool win12Open: false      // the arrow's state
-+    property bool win12Shown: false     // the hidden items are in the panel row (still true while they slide out)
-+    property real win12Cut: 0           // px of the row cut off on the left while closing
-+    property real win12Closed: 0        // the row's width before opening
-+    onWin12InlineChanged: if (!win12Inline) { win12Open = false; win12Shut(); }
-+    onWin12OpenChanged: {
-+        win12Done.stop();
-+        if (win12Open) {
-+            if (!win12Shown) {
-+                win12Closed = mainLayout.implicitWidth;
-+                win12Shown = true;
-+            }
-+            win12Cut = 0;
-+        } else {
-+            win12Cut = Math.max(0, mainLayout.implicitWidth - win12Closed);
-+            win12Done.start();
-+        }
-+    }
-+    onWin12ShownChanged: {
++    property bool win12Open: false
++    onWin12InlineChanged: {
++        win12Open = false;
 +        activeModel.invalidateFilter();
 +        hiddenModel.invalidateFilter();
 +    }
-+    // the slide out is over: the items leave the row and the cut goes with them in one go (the width stays)
-+    function win12Shut() {
-+        win12Shown = false;
-+        win12Cut = 0;
-+    }
-+    Timer {
-+        id: win12Done
-+        interval: Kirigami.Units.longDuration
-+        onTriggered: root.win12Shut()
++    readonly property real win12Cut: win12Inline && !win12Open ? Math.ceil(win12Passive.count / tasksGrid.rowsOrColumns) * tasksGrid.cellWidth : 0
++    // counts the hidden icons (no view: a second view would take the applets from the panel row)
++    KItemModels.KSortFilterProxyModel {
++        id: win12Passive
++        filterRoleName: "effectiveStatus"
++        filterRowCallback: (sourceRow, sourceParent) => {
++            return sourceModel.data(sourceModel.index(sourceRow, 0, sourceParent), filterRole) === PlasmaCore.Types.PassiveStatus;
++        }
++        Component.onCompleted: sourceModel = Plasmoid.systemTrayModel // avoid unnecessary binding, it causes loops
 +    }
 +    // the width the panel gets, animated: the grid shows its right end while it grows or shrinks (win12Scroll)
 +    property real win12Width: mainLayout.implicitWidth - win12Cut
@@ -188,29 +174,29 @@ index 8e56f1f..d25e2fd 100644
      Component.onCompleted: {
          // We need all the plasmoiditems to be there for correct working of shortcuts.
          // Instantiators create the plasmoiditems: ensure this is done after
-@@ -59,8 +104,11 @@ ContainmentItem {
+@@ -59,8 +90,11 @@ ContainmentItem {
          dynamicSortFilter: !systemTrayState.expanded
          filterRowCallback: (sourceRow, sourceParent) => {
              let value = sourceModel.data(sourceModel.index(sourceRow, 0, sourceParent), filterRole);
 -            return value === PlasmaCore.Types.ActiveStatus;
-+            return value === PlasmaCore.Types.ActiveStatus || (root.win12Shown && value === PlasmaCore.Types.PassiveStatus);
++            return value === PlasmaCore.Types.ActiveStatus || (root.win12Inline && value === PlasmaCore.Types.PassiveStatus);
          }
-+        // Win12: open, the hidden (passive) icons come first, next to the arrow; closed, the model's own order
++        // Win12: the hidden (passive) icons come first, next to the arrow (a stable sort: else the model's own order)
 +        sortRoleName: "effectiveStatus"
-+        sortColumn: root.win12Shown ? 0 : -1
++        sortColumn: root.win12Inline ? 0 : -1
          Component.onCompleted: sourceModel = Plasmoid.systemTrayModel // avoid unnecessary binding, it causes loops
      }
  
-@@ -70,7 +118,7 @@ ContainmentItem {
+@@ -70,7 +104,7 @@ ContainmentItem {
          dynamicSortFilter: !systemTrayState.expanded
          filterRowCallback: (sourceRow, sourceParent) => {
              let value = sourceModel.data(sourceModel.index(sourceRow, 0, sourceParent), filterRole);
 -            return value === PlasmaCore.Types.PassiveStatus
-+            return value === PlasmaCore.Types.PassiveStatus && !root.win12Shown
++            return value === PlasmaCore.Types.PassiveStatus && !root.win12Inline
          }
          Component.onCompleted: sourceModel = Plasmoid.systemTrayModel // avoid unnecessary binding, it causes loops
      }
-@@ -193,11 +241,24 @@ ContainmentItem {
+@@ -193,11 +227,24 @@ ContainmentItem {
                  id: tasksGrid
  
                  Layout.row: root.vertical && root.reverseLayout ? 1 : 0 // Explicitly define grid coordinates
@@ -236,7 +222,7 @@ index 8e56f1f..d25e2fd 100644
                  flow: root.vertical ? GridView.LeftToRight : GridView.TopToBottom
  
                  // Tell the grid to populate bottom-to-top when flipped on a vertical panel
-@@ -250,6 +311,7 @@ ContainmentItem {
+@@ -250,6 +297,7 @@ ContainmentItem {
  
                      width: tasksGrid.cellWidth
                      height: tasksGrid.cellHeight
@@ -244,7 +230,7 @@ index 8e56f1f..d25e2fd 100644
  
                      // We need to recalculate the stacking order of the z values due to how keyboard navigation works
                      // the tab order depends exclusively from this, so we redo it as the position in the list
-@@ -272,13 +334,17 @@ ContainmentItem {
+@@ -272,13 +320,17 @@ ContainmentItem {
                  id: expander
  
                  Layout.row: root.vertical && !root.reverseLayout ? 1 : 0 // Explicitly define grid coordinates
@@ -257,7 +243,7 @@ index 8e56f1f..d25e2fd 100644
                  Layout.alignment: vertical ? Qt.AlignVCenter : Qt.AlignHCenter
                  iconSize: tasksGrid.itemSize
 -                visible: root.hiddenLayout.itemCount > 0
-+                visible: root.hiddenLayout.itemCount > 0 || root.win12Shown
++                visible: root.win12Inline ? win12Passive.count > 0 : root.hiddenLayout.itemCount > 0
 +                win12: root.win12Inline
 +                win12Open: root.win12Open
 +                onWin12Toggled: root.win12Open = !root.win12Open
