@@ -1,5 +1,9 @@
 #include "selectbyruledialog.h"
+#include <KLineEdit>
+#include <KUrlRequester>
 #include <QDir>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QFile>
 #include <QLabel>
 #include <QPushButton>
@@ -95,6 +99,21 @@ private Q_SLOTS:
                 t->topLevelItem(i)->setCheckState(0, Qt::Unchecked);
         QVERIFY(sel->isEnabled());
         QVERIFY(d->findChild<QPushButton *>(QStringLiteral("btnTrash"))->isEnabled());
+    }
+    void enterNeverReachesActionButton()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Trash));
+        d->show();
+        runFind(*d);
+        QVERIFY(!d->ticked().isEmpty());
+        QTest::keyClick(static_cast<QWidget *>(d->findChild<KUrlRequester *>()->lineEdit()), Qt::Key_Return);
+        QCOMPARE(d->result(), int(QDialog::Rejected));
+        QVERIFY(d->isVisible());
+        d->setRules({{Field::Name, Test::Regex, QStringLiteral("[")}});
+        QTest::keyClick(d->findChildren<QLineEdit *>().last(), Qt::Key_Enter);
+        QCOMPARE(d->result(), int(QDialog::Rejected));
+        QVERIFY(d->isVisible());
+        QVERIFY(d->ticked().isEmpty()); // stale ticks gone
     }
     void addAndRemoveRuleRows()
     {

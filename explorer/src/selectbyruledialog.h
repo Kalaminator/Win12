@@ -36,6 +36,11 @@ public:
     QUrl lookIn() const;
     void reject() override;
 
+protected:
+    void keyPressEvent(QKeyEvent *) override;
+
+public:
+
 Q_SIGNALS:
     void searchFinished(); // after the last found() was appended
 

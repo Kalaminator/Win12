@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
+#include <QKeyEvent>
 #include <QPushButton>
 #include <QToolButton>
 #include <QTreeWidget>
@@ -147,6 +148,18 @@ SelectByRuleDialog::~SelectByRuleDialog()
     m_search.stop();
 }
 
+void SelectByRuleDialog::keyPressEvent(QKeyEvent *e)
+{
+    // Enter in the look-in or rule fields means "Find", never an action (nothing changes before the list is shown)
+    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QAbstractButton *>(focusWidget())
+        && !(focusWidget() && m_tree->isAncestorOf(focusWidget()))) {
+        find();
+        e->accept();
+        return;
+    }
+    QDialog::keyPressEvent(e);
+}
+
 void SelectByRuleDialog::reject()
 {
     m_search.stop();
@@ -268,6 +281,9 @@ void SelectByRuleDialog::find()
     QString err;
     auto m = RuleMatcher::compile(rules(), &err);
     if (!m) {
+        m_search.stop();
+        m_tree->clear();
+        updateState();
         m_error->setText(err);
         Q_EMIT searchFinished();
         return;
