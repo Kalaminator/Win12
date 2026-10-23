@@ -7,7 +7,7 @@ trap 'rm -rf "$T"' EXIT
 mkdir "$T/bin"
 cat > "$T/bin/xdg-mime" <<'F'
 #!/bin/sh
-if [ "$1" = query ]; then cat "$T/mime"; else printf '%s' "$2" > "$T/mime"; fi
+if [ "$1" = query ]; then cat "$T/mime"; elif [ -e "$T/fail" ]; then exit 1; else printf '%s' "$2" > "$T/mime"; fi
 F
 printf '#!/bin/sh\necho "$@" >> "$T/kw.log"\n' > "$T/bin/kwriteconfig6"
 printf '#!/bin/sh\necho "$@" >> "$T/bus.log"\n' > "$T/bin/busctl"
@@ -44,6 +44,32 @@ eq "$S" unset
 sh "$SCRIPT" off >/dev/null
 grep -q -- '--group Default Applications --key inode/directory --delete' "$T/kw.log"
 eq "$T/mime" org.win12.explorer.desktop
+
+# a current default that is already ours counts as unset
+sh "$SCRIPT" on >/dev/null
+sh "$SCRIPT" off >/dev/null; : > "$T/kw.log"
+printf '%s' org.win12.explorer.desktop > "$T/mime"
+sh "$SCRIPT" on >/dev/null
+eq "$S" unset
+sh "$SCRIPT" off >/dev/null
+
+# a failing "on" writes no saved default (no half setup a later "on" would skip)
+printf '%s' org.kde.dolphin.desktop > "$T/mime"
+touch "$T/fail"
+sh "$SCRIPT" on >/dev/null 2>&1 && { echo "FAIL: on succeeded with failing xdg-mime"; exit 1; }
+[ ! -e "$S" ] || { echo "FAIL: saved-default written by failed on"; exit 1; }
+rm "$T/fail"
+sh "$SCRIPT" on >/dev/null
+eq "$S" org.kde.dolphin.desktop
+
+# a failing "off" keeps the saved default
+touch "$T/fail"
+sh "$SCRIPT" off >/dev/null 2>&1 && { echo "FAIL: off succeeded with failing xdg-mime"; exit 1; }
+eq "$S" org.kde.dolphin.desktop
+rm "$T/fail"
+sh "$SCRIPT" off >/dev/null
+eq "$T/mime" org.kde.dolphin.desktop
+[ ! -e "$S" ] && [ ! -e "$SVC" ]
 
 rc=0; sh "$SCRIPT" bogus >/dev/null 2>&1 || rc=$?
 [ "$rc" = 2 ]

@@ -9,22 +9,25 @@ case "${1:-}" in
 on)
     [ -e "$S" ] && exit 0
     old=$(xdg-mime query default inode/directory || true)
+    [ "$old" = org.win12.explorer.desktop ] && old=
     mkdir -p "$C" "$(dirname "$SVC")"
-    printf '%s\n' "${old:-unset}" > "$S"
     xdg-mime default org.win12.explorer.desktop inode/directory
     printf '[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/bin/win12-explorer --daemon\n' > "$SVC"
+    # written last: "on" is complete only when this exists (a later "on" skips)
+    printf '%s\n' "${old:-unset}" > "$S"
     reload
     echo on ;;
 off)
     [ -e "$S" ] || exit 0
     old=$(cat "$S")
-    rm -f "$S" "$SVC"
     if [ "$old" = unset ]; then
         kwriteconfig6 --file mimeapps.list --group 'Default Applications' --key inode/directory --delete
     else
         xdg-mime default "$old" inode/directory
     fi
     busctl --user call org.win12.explorer /org/win12/explorer org.win12.explorer ReleaseFileManager1 >/dev/null 2>&1 || true
+    # removed only after the restore succeeded (set -e), so a failed "off" keeps the saved value
+    rm -f "$S" "$SVC"
     reload
     echo off ;;
 status)
