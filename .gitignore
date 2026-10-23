@@ -11,3 +11,4 @@ package/contents/images/StartIcon.svg
 docs/research/win11-colours-reference.jpg
 dist/
 .superpowers/
+.worktrees/
