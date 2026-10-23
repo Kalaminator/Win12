@@ -37,6 +37,28 @@ protected:
         p.fillRect(width() - 1, 4, 1, height() - 8, midShade(palette()));
     }
 };
+
+// Big button whose action text is wrapped onto two lines ("Pin to Quick / access" like the reference);
+// QToolButton re-syncs text from its action on ActionChanged, so the wrap is re-applied after that.
+class BigButton : public QToolButton
+{
+public:
+    using QToolButton::QToolButton;
+    void wrap()
+    {
+        QString t = defaultAction() ? defaultAction()->text() : text();
+        const int sp = t.indexOf(QLatin1Char(' '), t.size() / 2 - 3);
+        if (t.size() > 9 && sp > 0)
+            setText(t.replace(sp, 1, QLatin1Char('\n')));
+    }
+
+protected:
+    void actionEvent(QActionEvent *e) override
+    {
+        QToolButton::actionEvent(e);
+        wrap();
+    }
+};
 }
 
 class RibbonTabStrip : public QWidget
@@ -166,11 +188,11 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
                 grid->setSpacing(0);
                 int col = 0, row = 0;
                 for (const Ribbon::Button &b : g.buttons) {
-                    auto *btn = new QToolButton;
+                    const bool big = b.size == Ribbon::Size::Big;
+                    QToolButton *btn = big ? new BigButton : new QToolButton;
                     QAction *a = actions->action(b.action);
                     btn->setDefaultAction(a);
                     btn->setAutoRaise(true);
-                    const bool big = b.size == Ribbon::Size::Big;
                     if (big) {
                         if (row) {
                             ++col;
@@ -179,10 +201,7 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
                         btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
                         btn->setIconSize({32, 32});
                         btn->setMinimumWidth(52);
-                        QString t = a->text(); // two lines like the reference ("Pin to Quick / access")
-                        const int sp = t.indexOf(QLatin1Char(' '), t.size() / 2 - 3);
-                        if (t.size() > 9 && sp > 0)
-                            btn->setText(t.replace(sp, 1, QLatin1Char('\n')));
+                        static_cast<BigButton *>(btn)->wrap();
                         grid->addWidget(btn, 0, col, 3, 1);
                         ++col;
                     } else {

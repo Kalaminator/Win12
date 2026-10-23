@@ -74,9 +74,36 @@ private Q_SLOTS:
         r.collapseAction()->trigger();
         QVERIFY(r.isCollapsed());
         QVERIFY(!r.findChild<QStackedWidget *>()->isVisible());
+        QVERIFY(r.childAt(5, 5)->isVisible()); // the tab strip stays
         QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.first().first().toBool(), true);
         QCOMPARE(r.collapseAction()->shortcut(), QKeySequence(Qt::CTRL | Qt::Key_F1));
+    }
+    void clickingTabWhileCollapsedExpands()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        r.show();
+        r.setCollapsed(true);
+        QWidget *strip = r.childAt(5, 5);
+        const int x = strip->fontMetrics().horizontalAdvance(u"File"_s) + 28 + 10; // inside the Home tab
+        QTest::mouseClick(strip, Qt::LeftButton, {}, QPoint(x, 14));
+        QVERIFY(!r.isCollapsed());
+        QVERIFY(r.findChild<QStackedWidget *>()->isVisible());
+    }
+    void wrappedLabelSurvivesActionChanges()
+    {
+        ExplorerActions a(nullptr);
+        RibbonBar r(&a);
+        r.show();
+        QToolButton *b = r.buttonsFor(u"home_pin"_s).first();
+        QVERIFY(b->text().contains(u'\n'));
+        const int w = b->width();
+        a.action(u"home_pin"_s)->setEnabled(false);
+        a.action(u"home_pin"_s)->setEnabled(true);
+        QCoreApplication::processEvents();
+        QVERIFY(b->text().contains(u'\n'));
+        QCOMPARE(b->width(), w);
     }
     void fileTabUsesAccent()
     {
