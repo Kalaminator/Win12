@@ -555,6 +555,8 @@ var PATCH_CHECK = "pacman -T libplasma-win12 plasma-workspace-win12 plasma-deskt
     + " && [ ! -e \"${XDG_CONFIG_HOME:-$HOME/.config}/win12-force-stock\" ] && echo ok";
 // Spec 12.3: prints "ok" with Win12's kwin (kde/build.sh kwin; readable glass layer B). Kept apart from PATCH_CHECK:
 // layouts never depend on kwin. Only the Appearance page reads it (its note); main.qml writes the keys either way.
+// Prints "ok" when the Win12 Explorer binary is installed (explorer/, built by install.sh); the Windows page greys its switch otherwise.
+var EXPLORER_CHECK = "test -x /usr/bin/win12-explorer && echo ok";
 var KWIN_CHECK = "pacman -T kwin-win12 >/dev/null 2>&1 && echo ok";
 
 function shQuote(s) {

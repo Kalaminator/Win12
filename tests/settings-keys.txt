@@ -140,3 +140,4 @@ squaresColor
 squaresAccent
 buttonMenuItems
 resetRequest
+explorerDefault

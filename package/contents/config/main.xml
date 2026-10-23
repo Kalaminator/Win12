@@ -721,6 +721,10 @@
       <label>Set once the old PlasmoidItem settings ([Configuration][*] groups) were copied to the containment's own groups</label>
       <default>false</default>
     </entry>
+    <entry name="explorerDefault" type="Bool">
+      <label>Use Win12 Explorer as the file manager: inode/directory default, FileManager1, Start menu item and taskbar pin (win12-explorer-default on/off saves and restores the old default)</label>
+      <default>false</default>
+    </entry>
     <entry name="favoritesPortedToKAstats" type="Bool">
       <default>false</default>
     </entry>

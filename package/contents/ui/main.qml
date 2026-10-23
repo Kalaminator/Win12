@@ -276,6 +276,8 @@ ContainmentItem {
         || win12Taskbar && cfg.win10Transparency
     onGlassSuffixChanged: syncWindowDeco()
     onWantBlurChanged: syncWindowDeco()
+    readonly property bool explorerDefault: cfg.explorerDefault
+    onExplorerDefaultChanged: syncExplorerDefault()
     onWindowDecoChanged: readBrightness()
     // Brightness of the user's own colour scheme (the saved one while ours is applied), then both syncs.
     property bool userDark: false
@@ -302,6 +304,7 @@ ContainmentItem {
             const a = ((lines[1] || "").trim() || (lines[2] || "").trim()).split(",").map(Number);
             root.userAccent = a.length >= 3 && a.every(n => n >= 0 && n <= 255) ? Qt.rgba(a[0] / 255, a[1] / 255, a[2] / 255, 1) : "";
             root.syncWindowDeco();
+            root.syncExplorerDefault();
             root.syncWindowColors();
         }
     }
@@ -576,6 +579,24 @@ ContainmentItem {
         } else {
             openUrl(c.target);
         }
+    }
+    // Win12 Explorer as the file manager: the script saves/restores the mime default + FileManager1 override;
+    // the taskbar pin is swapped here (Dolphin <-> Win12 Explorer launcher in this panel's Task Managers).
+    function syncExplorerDefault() {
+        if (!configReady || isMirror) return;
+        run("win12-explorer-default " + (cfg.explorerDefault ? "on" : "off"));
+        syncExplorerLauncher(cfg.explorerDefault);
+    }
+    function syncExplorerLauncher(on) {
+        const from = on ? "applications:org.kde.dolphin.desktop" : "applications:org.win12.explorer.desktop";
+        const to = on ? "applications:org.win12.explorer.desktop" : "applications:org.kde.dolphin.desktop";
+        // Writes only when the list changed; a task manager still on its built-in default reads '' and is skipped.
+        const script = "for (const p of panels()) { if (p.widgetIds.indexOf(" + Plasmoid.id + ") < 0) continue; "
+            + "for (const w of p.widgets()) { if (!/icontasks|taskmanager/.test(w.type)) continue; w.currentConfigGroup = ['General']; "
+            + "const raw = String(w.readConfig('launchers', '')); if (!raw) continue; "
+            + "const l = raw.split(',').map(s => s === " + JSON.stringify(from) + " ? " + JSON.stringify(to) + " : s); "
+            + "if (l.join(',') === raw) continue; w.writeConfig('launchers', l); w.reloadConfig(); } }";
+        run(Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(script));
     }
     // T32: custom pins on the taskbar. Writes win12-pin-<md5>.desktop (Tiles.pinDesktop) and adds/removes its
     // url in the launchers of the Task Manager(s) in this widget's panel (evaluateScript, like "autohide").
@@ -1484,7 +1505,7 @@ ContainmentItem {
             text: i18n("File Explorer")
             icon.name: "system-file-manager"
             visible: root.hasMenuItem("files")
-            onTriggered: root.run("dolphin")
+            onTriggered: root.run(root.cfg.explorerDefault ? "win12-explorer" : "dolphin")
         },
         PlasmaCore.Action {
             text: i18n("System Monitor")

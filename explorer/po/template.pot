@@ -1,0 +1,320 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-23 17:07+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: explorer/src/exploreractions.cpp:109
+msgid "Move to Trash"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:110
+msgid "Delete permanently"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:247 explorer/src/exploreractions.cpp:273
+#: explorer/src/viewsettings.cpp:45
+msgid "Name"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:247 explorer/src/exploreractions.cpp:274
+#: explorer/src/viewsettings.cpp:47
+msgid "Date modified"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:247 explorer/src/exploreractions.cpp:274
+#: explorer/src/viewsettings.cpp:51
+msgid "Type"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:247 explorer/src/exploreractions.cpp:275
+#: explorer/src/viewsettings.cpp:46
+msgid "Size"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:258
+msgid "Ascending"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:258
+msgid "Descending"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:273
+msgid "(None)"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:493
+msgid "Move to"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:493
+msgid "Copy to"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:579
+msgid "Win12"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:588 explorer/src/ribbonspec.cpp:46
+msgid "Open"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:619 explorer/src/ribbonspec.cpp:68
+msgid "View"
+msgstr ""
+
+#: explorer/src/exploreractions.cpp:624
+msgid "Refresh"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:194
+msgid "Select a file to preview."
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:194
+msgid "Select an item to see its details."
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:202
+msgid "Type: %1"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:204 explorer/src/folderview.cpp:257
+msgid "Size: %1"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:205
+msgid "Modified: %1"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:323
+msgid "Recent locations"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:392
+msgid "Details"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:393
+msgid "Large icons"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:497
+msgid "A file named %1 already exists."
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:580
+msgid "%1 - Win12 Explorer"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:582
+msgid "Search %1"
+msgstr ""
+
+#: explorer/src/explorerwindow.cpp:592
+msgid "%1 item"
+msgid_plural "%1 items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: explorer/src/explorerwindow.cpp:594
+msgid " (%1 selected)"
+msgid_plural " (%1 selected)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: explorer/src/explorerwindow.cpp:653
+msgid "No recent folders"
+msgstr ""
+
+#: explorer/src/foldermodel.cpp:164 explorer/src/ribbonspec.cpp:89
+#: explorer/src/viewsettings.cpp:52
+msgid "Tags"
+msgstr ""
+
+#: explorer/src/folderview.cpp:255
+msgid "Date modified: %1"
+msgstr ""
+
+#: explorer/src/main.cpp:47
+msgid "Win12 Explorer"
+msgstr ""
+
+#: explorer/src/ribbonbar.cpp:131 explorer/src/ribbonspec.cpp:16
+msgid "File"
+msgstr ""
+
+#: explorer/src/ribbonbar.cpp:149
+msgid "Collapse the ribbon"
+msgstr ""
+
+#: explorer/src/ribbonbar.cpp:177
+msgid "Advanced tools arrive in a later Win12 version."
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:25
+msgid "Home"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:26
+msgid "Clipboard"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:36
+msgid "Organize"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:42
+msgid "New"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:52
+msgid "Select"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:58
+msgid "Share"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:59
+msgid "Send"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:69
+msgid "Panes"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:74
+msgid "Layout"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:84
+msgid "Current view"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:90
+msgid "Show/hide"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:95
+msgid "Split view"
+msgstr ""
+
+#: explorer/src/ribbonspec.cpp:99
+msgid "Advanced"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:14
+msgid "Today"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:16
+msgid "Yesterday"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:18
+msgid "Earlier this week"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:20
+msgid "Last week"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:22
+msgid "Earlier this month"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:24
+msgid "Last month"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:26
+msgid "Earlier this year"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:27
+msgid "A long time ago"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:33
+msgid "Folders"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:37
+msgid "Empty (0 KB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:39
+msgid "Tiny (0 - 16 KB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:41
+msgid "Small (16 KB - 1 MB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:43
+msgid "Medium (1 - 128 MB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:45
+msgid "Large (128 MB - 1 GB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:47
+msgid "Huge (1 - 4 GB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:48
+msgid "Gigantic (> 4 GB)"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:56
+msgid "0-9"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:58
+msgid "A-H"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:60
+msgid "I-P"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:62
+msgid "Q-Z"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:63
+msgid "Other"
+msgstr ""
+
+#: explorer/src/sortgroup.cpp:77
+msgid "File folder"
+msgstr ""
+
+#: explorer/src/viewsettings.cpp:48
+msgid "Permissions"
+msgstr ""
+
+#: explorer/src/viewsettings.cpp:49
+msgid "Owner"
+msgstr ""
+
+#: explorer/src/viewsettings.cpp:50
+msgid "Group"
+msgstr ""

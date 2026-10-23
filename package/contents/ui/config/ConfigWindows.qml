@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs as Dialogs
 import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
+import org.kde.plasma.plasma5support as P5Support
+import "../code/tiles.js" as Tiles
 
 // Windows page: title bars and frames; the XP Firefox title bar (proposal 3.6).
 KCM.SimpleKCM {
@@ -28,6 +30,13 @@ KCM.SimpleKCM {
     property alias cfg_windowImageAlpha: winImageAlpha.value
     property alias cfg_windowImageTint: winImageTint.checked
     property alias cfg_xpFirefoxTitlebar: ffBox.checked
+    property alias cfg_explorerDefault: explorerBox.checked
+    property bool explorerBuilt: true   // until the check answers
+    P5Support.DataSource {
+        engine: "executable"
+        connectedSources: [Tiles.EXPLORER_CHECK]
+        onNewData: (sourceName, data) => { disconnectSource(sourceName); page.explorerBuilt = String(data.stdout).trim() === "ok"; }
+    }
 
     Dialogs.FileDialog {
         id: winImageFile
@@ -120,6 +129,21 @@ KCM.SimpleKCM {
             id: winImageTint
             enabled: page.cfg_windowTheme && page.cfg_windowImage !== ""
             text: i18n("Tint with the accent colour")
+        }
+
+        Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("File Explorer") }
+        QQC2.Label {
+            visible: !page.explorerBuilt
+            wrapMode: Text.Wrap
+            Layout.maximumWidth: Kirigami.Units.gridUnit * 24
+            text: i18n("Win12 Explorer is not built. Run ./install.sh from the Win12 source folder (Arch; needs a compiler).")
+        }
+        QQC2.CheckBox {
+            id: explorerBox
+            enabled: page.explorerBuilt
+            text: i18n("Use Win12 Explorer as the file manager")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.text: i18n("Folders, \"Show in folder\" from other apps, the Start menu File Explorer item and the taskbar pin open Win12 Explorer. Off puts your previous file manager back.")
         }
 
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Windows XP"); visible: kinds.windowKind === "xp" }
