@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QMimeData>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -216,6 +217,54 @@ private Q_SLOTS:
         QCOMPARE(FolderView::displayName(sub, false), QStringLiteral("sub"));
         QCOMPARE(FolderView::displayName(dot, false), QStringLiteral(".bashrc"));
         QCOMPARE(FolderView::displayName(tar, false), QStringLiteral("archive.tar"));
+    }
+    // A folder dropped onto itself, or onto another dragged folder, never reaches the KIO drop; other drops
+    // do, in the list modes too (QListView's Static movement switches viewport drops off).
+    void dropOntoADraggedItemIsRejected_data()
+    {
+        QTest::addColumn<ViewMode>("mode");
+        QTest::newRow("details") << ViewMode::Details;
+        QTest::newRow("list") << ViewMode::List;
+        QTest::newRow("large icons") << ViewMode::LargeIcons;
+    }
+    void dropOntoADraggedItemIsRejected()
+    {
+        QFETCH(ViewMode, mode);
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        m_view->setViewMode(mode);
+        QAbstractItemView *v = m_view->currentView();
+        QModelIndex sub;
+        for (int row = 0; row < m_view->model()->rowCount(); ++row) {
+            const QModelIndex i = m_view->model()->index(row, 0);
+            if (m_view->model()->itemFor(i).name() == QLatin1String("sub"))
+                sub = i;
+        }
+        QVERIFY(sub.isValid());
+        qRegisterMetaType<QDropEvent *>();
+        QSignalSpy spy(m_view.get(), &FolderView::dropRequested);
+        const auto drop = [&](const QList<QUrl> &urls) {
+            QMimeData mime;
+            mime.setUrls(urls);
+            const QPoint pos = v->visualRect(sub).center();
+            // Drop goes to the target a DragEnter registered with the drag manager, as in a real drag.
+            QDragEnterEvent enter(pos, Qt::CopyAction | Qt::MoveAction, &mime, Qt::LeftButton, Qt::ControlModifier);
+            QApplication::sendEvent(v->viewport(), &enter);
+            QDropEvent e(QPointF(pos), Qt::CopyAction | Qt::MoveAction, &mime, Qt::LeftButton, Qt::ControlModifier);
+            QApplication::sendEvent(v->viewport(), &e);
+        };
+        drop({fileUrl(QStringLiteral("sub"))});
+        drop({fileUrl(QStringLiteral("a.txt")), fileUrl(QStringLiteral("sub"))});
+        QCOMPARE(spy.count(), 0);
+
+        // Control: an outside file dropped (Ctrl = copy) onto sub reaches the default handler and is copied.
+        QTemporaryDir outside;
+        const QString name = QStringLiteral("x%1.txt").arg(int(mode));
+        QFile f(outside.filePath(name));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.close();
+        drop({QUrl::fromLocalFile(f.fileName())});
+        QCOMPARE(spy.count(), 1);
+        QTRY_VERIFY(QFile::exists(m_dir.filePath(QStringLiteral("sub/") + name)));
     }
 };
 

@@ -1,7 +1,12 @@
 #include "folderview.h"
 #include <KDirLister>
+#include <KIO/CopyJob>
+#include <KIO/DropJob>
+#include <KIO/FileUndoManager>
 #include <KIO/Global>
+#include <KJobWidgets>
 #include <KLocalizedString>
+#include <KUrlMimeData>
 #include <QApplication>
 #include <QHeaderView>
 #include <QItemSelectionModel>
@@ -278,9 +283,19 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
         const QUrl dest = !target.isNull() && target.isDir() ? target.url() : m_url;
         if ((e->source() == m_list || e->source() == m_tree) && dest == m_url)
             return e->ignore(); // dropped back onto its own folder
+        const QList<QUrl> dragged = KUrlMimeData::urlsFromMimeData(e->mimeData());
+        if (std::any_of(dragged.begin(), dragged.end(), [&](const QUrl &u) { return u.matches(dest, QUrl::StripTrailingSlash); }))
+            return e->ignore(); // a folder dropped onto itself or onto another dragged folder
         e->acceptProposedAction();
         Q_EMIT dropRequested(e, dest);
     };
+    connect(this, &FolderView::dropRequested, this, [this](QDropEvent *e, const QUrl &dest) {
+        KIO::DropJob *job = KIO::drop(e, dest);
+        KJobWidgets::setWindow(job, this);
+        connect(job, &KIO::DropJob::copyJobStarted, job, [](KIO::CopyJob *copy) {
+            KIO::FileUndoManager::self()->recordCopyJob(copy);
+        });
+    });
     list->onDrop = onDrop;
     tree->onDrop = onDrop;
 
@@ -461,6 +476,8 @@ void FolderView::apply(const ViewSettings &s)
         // setViewMode resets flow, wrapping, movement and resize mode, so it goes first.
         m_list->setViewMode(isIconMode(s.mode) ? QListView::IconMode : QListView::ListMode);
         m_list->setMovement(QListView::Static);
+        m_list->setDragEnabled(true); // Static movement switches dragging and viewport drops off; files still move by KIO
+        m_list->viewport()->setAcceptDrops(true);
         m_list->setResizeMode(QListView::Adjust);
         m_list->setFlow(s.mode == ViewMode::List || s.mode == ViewMode::Content ? QListView::TopToBottom : QListView::LeftToRight);
         m_list->setWrapping(s.mode != ViewMode::Content);
