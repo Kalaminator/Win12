@@ -38,3 +38,4 @@ endif()
 
 explorer_add_test(ribbonspec_test)
 explorer_add_test(viewsettings_test)
+explorer_add_test(sortgroup_test)
