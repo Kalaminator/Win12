@@ -799,8 +799,9 @@ ContainmentItem {
             + "print('done');";
         run("flock \"${XDG_RUNTIME_DIR:-/tmp}/win12-panel.lock\" " + Tiles.QDBUS + " org.kde.plasmashell /PlasmaShell evaluateScript " + Tiles.shQuote(js));
     }
-    // Windows taskbar looks: Plasma's Show Desktop button becomes a thin strip with no icon (extras/win12-showdesktop);
-    // the KDE Plasma look gets Plasma's button back (code/showdesktop.js, same lock and loop as the other panel syncs).
+    // Windows taskbar looks: Plasma's Show Desktop button becomes a thin strip with no icon (extras/win12-showdesktop)
+    // and the tray arrow opens the hidden icons in the panel (key win12Expander, needs Win12's plasma-workspace patch);
+    // the KDE Plasma look gets Plasma's button and arrow back (code/showdesktop.js, same lock and loop as the other panel syncs).
     onKdeTaskbarChanged: syncShowDesktop()
     function syncShowDesktop() {
         if (!configReady || !kdeChecked || isMirror) return;

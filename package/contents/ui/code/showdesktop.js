@@ -1,4 +1,6 @@
-// Show desktop strip, run by main.qml syncShowDesktop through plasmashell evaluateScript until it prints "done".
+// Show desktop strip and tray arrow, run by main.qml syncShowDesktop through plasmashell evaluateScript until it prints "done".
+// The tray: win12Expander = @STRIP@ (Win12's plasma-workspace patch, kde/patches: the arrow left of the icons opens the
+// hidden icons in the panel; a stock tray ignores the key).
 // @STRIP@ = a Windows taskbar look: Plasma's Show Desktop widget becomes org.win12.showdesktop (extras/win12-showdesktop,
 // a thin strip with no icon); false (KDE Plasma look) = Plasma's widget back. @ID@ = this widget's id, @STOCK@ = !kdePatched.
 // Only the panel with this widget (the host) and the island panels (win12Island) are touched, never the user's other panels.
@@ -15,6 +17,7 @@ const host = panels().find(p => !get(p, 'win12Island') && p.widgets().some(w => 
 if (host && (!STRIP || Array.prototype.indexOf.call(knownWidgetTypes, NEW) >= 0)) {
  const gone = get(host, 'win12Gone').split(';').map(Number), qs = [host].concat(panels().filter(q => get(q, 'win12Island')));
  // every index read first: on STOCK an index read after a layout change in the same pass is stale
+ for (const q of qs) for (const w of q.widgets()) if (gone.indexOf(w.id) < 0 && /systemtray/.test(w.type) && get(w, 'win12Expander') !== String(STRIP)) { put(w, 'win12Expander', STRIP); w.reloadConfig(); }
  const ws = [].concat(...qs.map(q => q.widgets().filter(w => gone.indexOf(w.id) < 0 && (w.type === FROM || w.type === TO)).map(w => ({ q, w, i: w.index }))));
  const swapId = (a, b) => { const s = get(host, 'win12Layout'), po = get(host, 'win12PanelOrder');
   if (s) { const o = JSON.parse(s); for (const k of ['order', 'moved']) if (o[k]) o[k] = o[k].map(x => x === a ? b : x); put(host, 'win12Layout', JSON.stringify(o)); }

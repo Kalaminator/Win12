@@ -306,7 +306,9 @@ for (const stock of [false, true]) {
     sd.writeConfig("icon", "my-icon"); sh.endPass();
     assert.strictEqual(runSD(sh, true, []), "done", "no strip plugin yet: nothing touched");
     assert.ok(sdPasses(sh, true) <= 3, "strip in"); assert.deepStrictEqual(types(sh.host), BAR.slice(0, -1).concat("w12:showdesktop"));
+    assert.strictEqual(cfgOf(sh.host.widgets("org.kde.plasma.systemtray")[0], "win12Expander"), "true", "tray arrow on");
     assert.ok(sdPasses(sh, false) <= 3, "strip out"); assert.deepStrictEqual(types(sh.host), BAR);
+    assert.strictEqual(cfgOf(sh.host.widgets("org.kde.plasma.systemtray")[0], "win12Expander"), "false", "tray arrow off");
     assert.strictEqual(cfgOf(sh.host.widgets("org.kde.plasma.showdesktop")[0], "icon"), "my-icon", "settings back");
     // not the last widget: the strip takes the old slot
     sh = shell(1920, ["HDMI-A-2"], stock); sh.host.widgets("org.kde.plasma.showdesktop")[0].index = 3; sh.endPass();
