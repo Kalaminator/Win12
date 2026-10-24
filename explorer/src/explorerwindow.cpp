@@ -27,6 +27,7 @@
 #include <KUrlNavigator>
 #include <QAbstractItemView>
 #include <QApplication>
+#include <QScrollBar>
 #include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -315,7 +316,8 @@ ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
 
     resize(1100, 700);
     setAutoSaveSettings(u"MainWindow"_s);
-    setContentsMargins(1, 1, 1, 1); // room for the outline
+    syncFrame(); // after setAutoSaveSettings: a restored maximised state keeps its 0 margins
+    connect(m_titleBar, &TitleBar::coloursChanged, this, qOverload<>(&QWidget::update)); // the outline follows
     qApp->installEventFilter(this); // child widgets cover the edges: the band is found app-wide
 }
 
@@ -339,11 +341,11 @@ Qt::Edges ExplorerWindow::resizeEdgesAt(const QPoint &pos, const QSize &size, in
     return e;
 }
 
-Qt::Edges ExplorerWindow::edgesForPress(const QPoint &windowPos) const
+Qt::Edges ExplorerWindow::edgesForPress(const QPoint &windowPos, bool overScrollBar) const
 {
     if (isMaximized() || isFullScreen())
         return {};
-    return resizeEdgesAt(windowPos, size());
+    return resizeEdgesAt(windowPos, size(), overScrollBar ? ScrollBarBorder : ResizeBorder);
 }
 
 void ExplorerWindow::setResizeCursor(Qt::Edges edges)
@@ -371,10 +373,12 @@ bool ExplorerWindow::eventFilter(QObject *watched, QEvent *event)
     const QEvent::Type type = event->type();
     if (type != QEvent::MouseMove && type != QEvent::MouseButtonPress)
         return KMainWindow::eventFilter(watched, event);
+    if (watched->isWindowType()) // the QWidgetWindow sees each event first; the widget delivery does the work
+        return false;
     auto *widget = qobject_cast<QWidget *>(watched);
     auto *me = static_cast<QMouseEvent *>(event);
     const bool ours = widget && widget->window() == this;
-    const Qt::Edges edges = ours ? edgesForPress(mapFromGlobal(me->globalPosition().toPoint())) : Qt::Edges();
+    const Qt::Edges edges = ours ? edgesForPress(mapFromGlobal(me->globalPosition().toPoint()), qobject_cast<QScrollBar *>(widget)) : Qt::Edges();
     if (type == QEvent::MouseMove) {
         if (me->buttons() == Qt::NoButton || !ours) // a drag or rubber band keeps its cursor
             setResizeCursor(edges);
@@ -391,15 +395,19 @@ void ExplorerWindow::changeEvent(QEvent *e)
     if (!m_titleBar)
         return;
     if (e->type() == QEvent::WindowStateChange) {
-        const bool full = isMaximized() || isFullScreen();
-        setContentsMargins(full ? QMargins() : QMargins(1, 1, 1, 1));
-        m_titleBar->maximizeButton()->setIcon(QIcon::fromTheme(isMaximized() ? u"window-restore"_s : u"window-maximize"_s));
-        if (full)
+        syncFrame();
+        if (isMaximized() || isFullScreen())
             setResizeCursor({});
     } else if (e->type() == QEvent::ActivationChange) {
         m_titleBar->setActive(isActiveWindow());
         update(); // the outline follows the title colour
     }
+}
+
+void ExplorerWindow::syncFrame()
+{
+    setContentsMargins(isMaximized() || isFullScreen() ? QMargins() : QMargins(1, 1, 1, 1)); // room for the outline
+    m_titleBar->updateMaximizeIcon();
 }
 
 void ExplorerWindow::leaveEvent(QEvent *e)

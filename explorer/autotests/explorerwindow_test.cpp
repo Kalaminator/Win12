@@ -336,6 +336,26 @@ private Q_SLOTS:
         QCOMPARE(ExplorerWindow::resizeEdgesAt({6, 300}, s, 6), Qt::Edges());
     }
 
+    void scrollbarsGetANarrowBand()
+    {
+        ExplorerWindow *w = shownWindow();
+        const int x = w->width() - 4;
+        QCOMPARE(w->edgesForPress({x, 300}, true), Qt::Edges());
+        QCOMPARE(w->edgesForPress({w->width() - 1, 300}, true), Qt::Edges(Qt::RightEdge));
+        QCOMPARE(w->edgesForPress({x, 300}), Qt::Edges(Qt::RightEdge));
+        delete w;
+    }
+
+    void maximizeIconFollowsState()
+    {
+        ExplorerWindow *w = shownWindow();
+        const QIcon normal = w->titleBar()->maximizeButton()->icon();
+        w->showMaximized();
+        QTRY_VERIFY(w->isMaximized());
+        QCOMPARE_NE(w->titleBar()->maximizeButton()->icon().name(), normal.name());
+        delete w;
+    }
+
     void noResizeEdgesWhenMaximized()
     {
         ExplorerWindow *w = shownWindow();

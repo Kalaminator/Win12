@@ -81,7 +81,8 @@ public:
     ~ExplorerWindow() override;
     static constexpr int ResizeBorder = 6; // frameless: the band at the window edges that resizes
     static Qt::Edges resizeEdgesAt(const QPoint &pos, const QSize &size, int border = ResizeBorder); // corners: two edges
-    Qt::Edges edgesForPress(const QPoint &windowPos) const; // none while maximised or full screen
+    static constexpr int ScrollBarBorder = 2; // over a scroll bar the band is thin so its right part still drags
+    Qt::Edges edgesForPress(const QPoint &windowPos, bool overScrollBar = false) const; // none while maximised or full screen
     TitleBar *titleBar() const { return m_titleBar; }
     FolderPage *page() const;
     FolderView *activeView() const;
@@ -106,6 +107,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override; // app-wide: resize band cursor and press
     void changeEvent(QEvent *) override;
     void leaveEvent(QEvent *) override;
+    void syncFrame(); // margins, outline and maximize icon from the real window state
     void paintEvent(QPaintEvent *) override; // the 1 px outline in place of KWin's frame
 
 private:

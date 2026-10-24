@@ -1,3 +1,4 @@
+#include <QApplication>
 #include "titlebar.h"
 #include <KColorScheme>
 #include <KConfigGroup>
@@ -89,7 +90,7 @@ void TitleBar::reloadColours()
 void TitleBar::applyColours()
 {
     m_colours = readColours(m_config);
-    m_max->setIcon(QIcon::fromTheme(window()->isMaximized() ? QStringLiteral("window-restore") : QStringLiteral("window-maximize")));
+    updateMaximizeIcon();
     m_ribbon->setTabStripColours(background(), foreground());
     QColor hover = foreground();
     hover.setAlphaF(0.15);
@@ -103,6 +104,12 @@ void TitleBar::applyColours()
     style()->unpolish(m_close);
     style()->polish(m_close);
     update();
+    Q_EMIT coloursChanged();
+}
+
+void TitleBar::updateMaximizeIcon()
+{
+    m_max->setIcon(QIcon::fromTheme(window()->isMaximized() ? QStringLiteral("window-restore") : QStringLiteral("window-maximize")));
 }
 
 void TitleBar::setActive(bool on)
@@ -122,7 +129,6 @@ QRect TitleBar::dragArea() const
 void TitleBar::toggleMaximized()
 {
     window()->isMaximized() ? window()->showNormal() : window()->showMaximized();
-    m_max->setIcon(QIcon::fromTheme(window()->isMaximized() ? QStringLiteral("window-restore") : QStringLiteral("window-maximize")));
 }
 
 void TitleBar::paintEvent(QPaintEvent *)
@@ -132,8 +138,24 @@ void TitleBar::paintEvent(QPaintEvent *)
 
 void TitleBar::mousePressEvent(QMouseEvent *e)
 {
-    if (e->button() == Qt::LeftButton && dragArea().contains(e->position().toPoint()) && window()->windowHandle())
-        window()->windowHandle()->startSystemMove();
+    m_dragPending = e->button() == Qt::LeftButton && dragArea().contains(e->position().toPoint());
+    m_pressPos = e->position().toPoint();
+}
+
+void TitleBar::mouseMoveEvent(QMouseEvent *e)
+{
+    // the move starts only after a drag, so a double-click reaches mouseDoubleClickEvent on every compositor
+    if (m_dragPending && (e->buttons() & Qt::LeftButton)
+        && (e->position().toPoint() - m_pressPos).manhattanLength() >= QApplication::startDragDistance()) {
+        m_dragPending = false;
+        if (window()->windowHandle())
+            window()->windowHandle()->startSystemMove();
+    }
+}
+
+void TitleBar::mouseReleaseEvent(QMouseEvent *)
+{
+    m_dragPending = false;
 }
 
 void TitleBar::mouseDoubleClickEvent(QMouseEvent *e)

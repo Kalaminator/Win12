@@ -22,6 +22,7 @@ public:
     static WmColours readColours(const KSharedConfig::Ptr &kdeglobals);
     void reloadColours();
     void setActive(bool);
+    void updateMaximizeIcon(); // restore or maximize glyph from the window state
     bool isActive() const { return m_active; }
     QColor background() const { return m_active ? m_colours.activeBg : m_colours.inactiveBg; }
     QColor foreground() const { return m_active ? m_colours.activeFg : m_colours.inactiveFg; }
@@ -30,9 +31,14 @@ public:
     QToolButton *closeButton() const { return m_close; }
     QRect dragArea() const;
 
+Q_SIGNALS:
+    void coloursChanged();
+
 protected:
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
     void mouseDoubleClickEvent(QMouseEvent *) override;
     bool event(QEvent *) override;
 
@@ -46,4 +52,6 @@ private:
     QToolButton *m_min, *m_max, *m_close;
     QWidget *m_stretch;
     bool m_active = true;
+    QPoint m_pressPos;
+    bool m_dragPending = false;
 };
