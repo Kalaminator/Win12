@@ -84,6 +84,11 @@ public:
     TabPage *currentPage() const;
     FolderView *activeView() const;
     void runSavedRule(const QString &name, const QList<QUrl> &urls); // Dolphin's Win12 > My rules; unknown name: error box
+    static QUrl folderFor(const QList<QUrl> &urls); // urls[0] when a local folder, else its parent; empty: Home
+    void selectByRuleOn(const QList<QUrl> &urls); // Dolphin's Win12 > Select by rule
+    void renameManyOn(const QList<QUrl> &urls); // Dolphin's Win12 > Rename many
+    static ExplorerWindow *last(); // newest living window, or null
+    ExplorerActions *explorerActions() const { return m_actions; } // not actions(): QWidget has one
     void selectItems(const QList<QUrl> &); // opens the parent folder in the current tab, then selects
     void showProperties(const QList<QUrl> &);
 

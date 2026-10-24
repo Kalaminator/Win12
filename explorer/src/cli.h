@@ -7,6 +7,8 @@ struct CliOptions {
     bool daemon = false;
     bool select = false;
     bool newWindow = false;
+    bool selectByRule = false; // --select-by-rule <folder>: open it and the Select by rule dialog
+    bool renameMany = false; // --rename-many <files>: open their folder and the Rename many dialog
     QString rule; // --rule <name>: run a saved rule on urls
     QList<QUrl> urls;
 };

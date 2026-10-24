@@ -216,12 +216,19 @@ void SidePane::refresh()
 
 // ---------------------------------------------------------------- ExplorerWindow
 
+static ExplorerWindow *s_last = nullptr; // newest living window
+
 ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
     : KMainWindow(parent)
     , m_config(KSharedConfig::openConfig())
     , m_store(m_config)
     , m_actions(new ExplorerActions(this))
 {
+    s_last = this;
+    connect(this, &QObject::destroyed, [this] {
+        if (s_last == this)
+            s_last = nullptr;
+    });
     auto *central = new QWidget(this);
     auto *layout = new QVBoxLayout(central);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -602,6 +609,42 @@ void ExplorerWindow::selectItems(const QList<QUrl> &urls)
         connect(lister, &KCoreDirLister::completed, v, [v, urls] { v->selectUrls(urls); }, Qt::SingleShotConnection);
 }
 
+QUrl ExplorerWindow::folderFor(const QList<QUrl> &urls)
+{
+    QUrl folder = urls.value(0);
+    if (folder.isEmpty())
+        return QUrl::fromLocalFile(QDir::homePath());
+    if (!(folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir()))
+        folder = folder.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
+    return folder;
+}
+
+void ExplorerWindow::selectByRuleOn(const QList<QUrl> &urls)
+{
+    if (FolderView *v = activeView())
+        v->openUrl(folderFor(urls));
+    m_actions->selectByRule(SelectByRuleDialog::Action::Select);
+}
+
+void ExplorerWindow::renameManyOn(const QList<QUrl> &urls)
+{
+    KFileItemList items;
+    for (const QUrl &u : urls)
+        items << KFileItem(u);
+    if (items.isEmpty()) {
+        KMessageBox::information(this, i18n("Select the files to rename first"));
+        return;
+    }
+    if (FolderView *v = activeView())
+        v->openUrl(folderFor(urls));
+    m_actions->renameMany(items);
+}
+
+ExplorerWindow *ExplorerWindow::last()
+{
+    return s_last;
+}
+
 void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
 {
     const QList<SavedRule> all = m_actions->library().all();
@@ -621,14 +664,8 @@ void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
         m_actions->renameMany(items, it->text);
         return;
     }
-    QUrl folder = urls.value(0);
-    if (folder.isEmpty()) {
-        folder = QUrl::fromLocalFile(QDir::homePath());
-    } else if (!(folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir())) {
-        folder = folder.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
-    }
     if (FolderView *v = activeView())
-        v->openUrl(folder);
+        v->openUrl(folderFor(urls));
     if (it->kind == SavedRule::Kind::Select)
         m_actions->selectByFormula(it->text);
     else

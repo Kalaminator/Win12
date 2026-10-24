@@ -1,5 +1,9 @@
 #include "explorerwindow.h"
+#include "exploreractions.h"
 #include "folderview.h"
+#include "renamemanydialog.h"
+#include "rulelibrary.h"
+#include "selectbyruledialog.h"
 #include "tagregistry.h"
 #include "taglist.h"
 #include "tagstore.h"
@@ -199,6 +203,66 @@ private Q_SLOTS:
         w->selectItems({QUrl::fromLocalFile(d.filePath(QStringLiteral("top.txt")))}); // back to a listed folder
         QTRY_COMPARE(sel(w).fileName(), QStringLiteral("top.txt"));
         delete w;
+    }
+    void selectByRuleOnOpensFolderDialog()
+    {
+        ExplorerWindow *w = shownWindow();
+        QUrl seen;
+        w->explorerActions()->setExecSelectDialog([&](SelectByRuleDialog &d) {
+            seen = d.lookIn();
+            return false;
+        });
+        w->selectByRuleOn({QUrl::fromLocalFile(m_dir.path() + QStringLiteral("/x.txt"))});
+        QCOMPARE(seen, QUrl::fromLocalFile(m_dir.path()));
+        delete w;
+    }
+    void selectByRuleOnNoUrlsUsesHome()
+    {
+        ExplorerWindow *w = shownWindow();
+        QUrl seen;
+        w->explorerActions()->setExecSelectDialog([&](SelectByRuleDialog &d) {
+            seen = d.lookIn();
+            return false;
+        });
+        w->selectByRuleOn({});
+        QCOMPARE(seen, QUrl::fromLocalFile(QDir::homePath()));
+        delete w;
+    }
+    void renameManyOnSingleFolder()
+    {
+        QVERIFY(QDir(m_dir.path()).mkpath(QStringLiteral("sub")));
+        ExplorerWindow *w = shownWindow();
+        qsizetype rows = -1;
+        w->explorerActions()->setExecRenameDialog([&](RenameManyDialog &d) {
+            rows = d.plan().size();
+            return false;
+        });
+        w->renameManyOn({QUrl::fromLocalFile(m_dir.path() + QStringLiteral("/sub"))});
+        QCOMPARE(rows, 1);
+        delete w;
+    }
+    void runSavedRuleSelectKindOpensFormula()
+    {
+        ExplorerWindow *w = shownWindow();
+        QString err;
+        QVERIFY(w->explorerActions()->library().save({QStringLiteral("r"), QStringLiteral("=ISFILE()"), SavedRule::Kind::Select}, &err));
+        QString seen;
+        w->explorerActions()->setExecSelectDialog([&](SelectByRuleDialog &d) {
+            seen = d.formula();
+            return false;
+        });
+        w->runSavedRule(QStringLiteral("r"), {});
+        QCOMPARE(seen, QStringLiteral("=ISFILE()"));
+        delete w;
+    }
+    void lastWindowTracksNewest()
+    {
+        ExplorerWindow *a = shownWindow();
+        ExplorerWindow *b = shownWindow();
+        QCOMPARE(ExplorerWindow::last(), b);
+        delete b;
+        QVERIFY(ExplorerWindow::last() == nullptr);
+        delete a;
     }
 };
 

@@ -9,6 +9,10 @@ CliOptions parseCli(const QStringList &args, const QString &cwd)
             o.daemon = true;
         else if (a == QLatin1String("--select"))
             o.select = true;
+        else if (a == QLatin1String("--select-by-rule"))
+            o.selectByRule = true;
+        else if (a == QLatin1String("--rename-many"))
+            o.renameMany = true;
         else if (a == QLatin1String("--rule")) {
             if (i + 1 < args.size())
                 o.rule = args[++i];
