@@ -211,7 +211,7 @@ QVariant TagsColumns::extraColumnData(const QModelIndex &parent, int row, int, i
         return {};
     const QUrl url = itemFor(index(row, 0, parent)).url();
     auto it = m_cache.find(url);
-    if (it == m_cache.end()) // ponytail: one getxattr per visible row on first paint; move to the PreviewLoader thread if a network mount is slow
+    if (it == m_cache.end()) // ponytail: one getxattr per row, the first time the row is read (paint, or the view's slot-width scan); move to the PreviewLoader thread if a network mount is slow
         it = m_cache.insert(url, TagStore::read(url));
     if (role == TagsRole)
         return QVariant::fromValue(*it);

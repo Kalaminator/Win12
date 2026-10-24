@@ -457,6 +457,34 @@ private Q_SLOTS:
         m_view->model()->invalidateTags({tagUrl(QStringLiteral("b"))});
         QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Red/Xiaomi", m_view->font()));
     }
+    // A longer tag arriving in a later batch widens a clean slot (the insert path adds no full rescan) and stays right.
+    void insertWidensWithoutFullRescan()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Gold/Go")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::Details);
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Gold/Go", m_view->font())); // clean now
+        QFile f(m_tagDir->filePath(QStringLiteral("b")));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.close();
+        QCOMPARE(TagStore().add({tagUrl(QStringLiteral("b"))}, T("Red/Xiaomi")), TagStore::Error::None);
+        QTRY_COMPARE(m_view->tagSlotWidth(), ribbonWidth("Red/Xiaomi", m_view->font()));
+        QTest::qWait(100);
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Red/Xiaomi", m_view->font()));
+    }
+
+    // Untagged rows paint no ribbons in the Tags column; the slot width is still right for the tagged ones.
+    void untaggedRowsDoNotComputeSlot()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {}}, {QStringLiteral("b"), {T("Gold/Go")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::Details);
+        QTRY_VERIFY(!painted(cell(QStringLiteral("b"), TagsColumns::TagsColumn), colour("Gold/Go")).isEmpty());
+        QVERIFY(painted(cell(QStringLiteral("a"), TagsColumns::TagsColumn), colour("Gold/Go")).isEmpty());
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Gold/Go", m_view->font()));
+    }
 };
 
 QTEST_MAIN(FolderViewTest)

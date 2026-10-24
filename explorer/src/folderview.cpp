@@ -132,8 +132,8 @@ public:
             if (tagsColumn)
                 opt.text.clear(); // the ribbons replace the "Red/Xiaomi, ..." text
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
-            if (tagsColumn)
-                paintRibbons(p, opt.rect.left() + margin, opt.rect, opt.rect, tagsOf(index));
+            if (const QList<Tag> tags = tagsColumn ? tagsOf(index) : QList<Tag>(); !tags.isEmpty()) // untagged rows never touch the slot width
+                paintRibbons(p, opt.rect.left() + margin, opt.rect, opt.rect, tags);
         } else if (const QList<Tag> tags = tagsOf(index); tags.isEmpty()) {
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
         } else if (isIconMode(mode)) {
@@ -441,7 +441,15 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
         m_tagSlotDirty = true;
     };
     connect(m_model, &QAbstractItemModel::modelReset, this, tagsDirty);
-    connect(m_model, &QAbstractItemModel::rowsInserted, this, tagsDirty);
+    // Inserts can only widen the slot: while it is clean, look at the new rows alone (a listing arrives in many batches).
+    connect(m_model, &QAbstractItemModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int last) {
+        if (m_tagSlotDirty)
+            return;
+        const QFontMetrics fm(TagRibbon::font(font()));
+        for (int r = first; r <= last; ++r)
+            for (const Tag &t : m_model->index(r, TagsColumns::TagsColumn, parent).data(TagsColumns::TagsRole).value<QList<Tag>>())
+                m_tagSlotWidth = qMax(m_tagSlotWidth, TagRibbon::width(t, fm));
+    });
     connect(m_model, &QAbstractItemModel::rowsRemoved, this, tagsDirty);
     connect(m_model, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &, const QModelIndex &, const QList<int> &roles) {
         if (!roles.isEmpty() && !roles.contains(TagsColumns::TagsRole))
