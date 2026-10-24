@@ -46,6 +46,11 @@ private Q_SLOTS:
     {
         QCOMPARE(RenamePlan::buildName({B(RenameBlock::Text, S(" - ")), B(RenameBlock::CurrentName)}, I("holiday.jpg"), 0), S(" - holiday"));
     }
+    void trailingDotIsNotAnExtension()
+    {
+        auto p = RenamePlan::plan({B(RenameBlock::Text, S("x"))}, {I("a.")}, {});
+        QCOMPARE(p[0].newName, S("x"));
+    }
     void extensionAlwaysKept()
     {
         Blocks b{B(RenameBlock::Number), B(RenameBlock::Text, S(" - ")), B(RenameBlock::CurrentName)};

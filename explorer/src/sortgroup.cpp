@@ -11,7 +11,7 @@ static GroupInfo modifiedGroup(const KFileItem &item, const QDateTime &now)
     const QDate d = item.time(KFileItem::ModificationTime).date(), n = now.date();
     const auto weekStart = [](const QDate &x) { return x.addDays(1 - x.dayOfWeek()); };
     const int months = (n.year() * 12 + n.month()) - (d.year() * 12 + d.month());
-    if (d == n)
+    if (d >= n)
         return {0, i18n("Today")};
     if (d == n.addDays(-1))
         return {1, i18n("Yesterday")};

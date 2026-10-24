@@ -1,6 +1,8 @@
 #include "fxeval.h"
 #include <QDir>
 #include <QRegularExpression>
+#include <algorithm>
+#include <climits>
 #include <cmath>
 
 using namespace Qt::Literals::StringLiterals;
@@ -15,9 +17,9 @@ int fxColourIndex(const QString &word)
             return i;
     return -1;
 }
-
 namespace
 {
+static int toInt(double x) { return std::isnan(x) ? 0 : int(std::clamp(x, double(INT_MIN), double(INT_MAX))); }
 using V = FxValue;
 using Type = FxValue::Type;
 
@@ -337,12 +339,12 @@ struct Evaluator {
                 return fail();
             if (x < 0)
                 return fail();
-            return V::text(f == u"LEFT"_s ? s(0).left(int(x)) : s(0).right(int(x)));
+            return V::text(f == u"LEFT"_s ? s(0).left(toInt(x)) : s(0).right(toInt(x)));
         }
         if (f == u"MID"_s) {
             if (!num(1, &x) || !num(2, &y) || x < 1 || y < 0)
                 return fail();
-            return V::text(s(0).mid(int(x) - 1, int(y)));
+            return V::text(s(0).mid(toInt(x - 1), toInt(y)));
         }
         if (f == u"LEN"_s)
             return V::number(s(0).size());
@@ -350,7 +352,7 @@ struct Evaluator {
             x = 1;
             if ((a.size() > 2 && !num(2, &x)) || x < 1)
                 return fail();
-            const int at = s(1).indexOf(s(0), int(x) - 1, Qt::CaseSensitive);
+            const int at = s(1).indexOf(s(0), toInt(x - 1), Qt::CaseSensitive);
             return at < 0 ? fail() : V::number(at + 1);
         }
         if (f == u"SUBSTITUTE"_s)
@@ -410,8 +412,8 @@ struct Evaluator {
         if (f == u"DATE"_s) {
             if (!num(0, &x) || !num(1, &y) || !num(2, &z))
                 return fail();
-            const QDate d{int(x), int(y), int(z)};
-            return d.isValid() ? V::date(QDateTime(d, QTime(0, 0))) : fail(FxError::Num);
+            const QDate d{toInt(x), toInt(y), toInt(z)};
+            return d.isValid() && d.year() >= 1 && d.year() <= 9999 ? V::date(QDateTime(d, QTime(0, 0))) : fail(FxError::Num); // Excel's year range
         }
         if (f == u"DATEVALUE"_s) {
             const QDate d = QDate::fromString(s(0).trimmed(), Qt::ISODate);

@@ -4,6 +4,7 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSignalSpy>
 #include <QStandardPaths>
@@ -188,6 +189,12 @@ private Q_SLOTS:
         QVERIFY(spy.wait(5000));
         QVERIFY(!reg.contains(T("Red/z"))); // list empty, nothing to pick
         QVERIFY(!del->isEnabled());
+    }
+    void newTagRefusesQuote()
+    {
+        NewTagDialog d(nullptr);
+        d.findChild<QLineEdit *>()->setText(QStringLiteral("a\"b"));
+        QVERIFY(!d.findChild<QLineEdit *>()->hasAcceptableInput());
     }
 };
 QTEST_MAIN(ManageTagsDialogTest)
