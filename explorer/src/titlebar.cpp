@@ -2,6 +2,7 @@
 #include "titlebar.h"
 #include <KColorScheme>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QAction>
 #include <QEvent>
 #include <QHBoxLayout>
@@ -20,10 +21,11 @@ QColor wmColour(const KConfigGroup &g, const char *key, const QColor &fallback)
     return c.isValid() ? c : fallback;
 }
 
-QToolButton *windowButton(QWidget *parent, const char *icon)
+QToolButton *windowButton(QWidget *parent, const char *icon, const QString &tip)
 {
     auto *b = new QToolButton(parent);
     b->setIcon(QIcon::fromTheme(QString::fromLatin1(icon)));
+    b->setToolTip(tip);
     b->setAutoRaise(true);
     b->setFixedSize(46, TitleBar::Height);
     b->setFocusPolicy(Qt::NoFocus);
@@ -53,9 +55,9 @@ TitleBar::TitleBar(RibbonBar *ribbon, const KSharedConfig::Ptr &kdeglobals, QWid
     collapse->setDefaultAction(ribbon->collapseAction());
     collapse->setAutoRaise(true);
     m_stretch = new QWidget(this);
-    m_min = windowButton(this, "window-minimize");
-    m_max = windowButton(this, "window-maximize");
-    m_close = windowButton(this, "window-close");
+    m_min = windowButton(this, "window-minimize", i18n("Minimise"));
+    m_max = windowButton(this, "window-maximize", i18n("Maximise"));
+    m_close = windowButton(this, "window-close", i18n("Close"));
 
     auto *lay = new QHBoxLayout(this);
     lay->setContentsMargins(8, 0, 0, 0);
@@ -109,6 +111,7 @@ void TitleBar::applyColours()
 
 void TitleBar::updateMaximizeIcon()
 {
+    m_max->setToolTip(window()->isMaximized() ? i18n("Restore") : i18n("Maximise"));
     m_max->setIcon(QIcon::fromTheme(window()->isMaximized() ? QStringLiteral("window-restore") : QStringLiteral("window-maximize")));
 }
 

@@ -76,6 +76,8 @@ public:
         setFixedHeight(RibbonBar::TabStripHeight);
         setAutoFillBackground(false);
     }
+    QSize sizeHint() const override { return {tabRect(m_tabs.size() - 1).right() + 1, RibbonBar::TabStripHeight}; }
+    QSize minimumSizeHint() const override { return sizeHint(); }
     QRect tabRect(int i) const // i == -1 is the File tab
     {
         const QFontMetrics fm = fontMetrics();
@@ -90,6 +92,12 @@ public:
     }
 
 protected:
+    void changeEvent(QEvent *e) override
+    {
+        QWidget::changeEvent(e);
+        if (e->type() == QEvent::FontChange)
+            updateGeometry();
+    }
     void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);

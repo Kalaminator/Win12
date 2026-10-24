@@ -50,7 +50,7 @@ QStringList allTexts(QMenu *menu)
 {
     QStringList t;
     for (QAction *a : menu->actions()) {
-        t << a->text();
+        t << a->text().section(QLatin1Char('\t'), 0, 0); // drop the shortcut column
         if (a->menu())
             t << allTexts(a->menu());
     }
@@ -493,7 +493,7 @@ private Q_SLOTS:
         QVERIFY(!t.contains(QStringLiteral("Open in New Window")));
         QVERIFY(!t.contains(QStringLiteral("Open in Split View")));
         for (QAction *x : m->actions())
-            if (x->text() == QStringLiteral("Copy Location"))
+            if (x->text().section(QLatin1Char('\t'), 0, 0) == QStringLiteral("Copy Location"))
                 x->trigger();
         const QString clip = QApplication::clipboard()->text();
         QVERIFY(clip.contains(d.localPath()));
@@ -521,6 +521,10 @@ private Q_SLOTS:
         ExplorerActions a(nullptr);
         QCOMPARE(a.action(QStringLiteral("home_copy_path"))->shortcut(), QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
         QCOMPARE(a.action(QStringLiteral("file_terminal"))->shortcut(), QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4));
+        // the menu's own entries only show the keys; a second registered shortcut would be ambiguous
+        std::unique_ptr<QMenu> m(a.contextMenu({}, QUrl::fromLocalFile(QDir::tempPath())));
+        for (QAction *x : m->actions())
+            QVERIFY2(x->shortcut().isEmpty() || x->menu(), qPrintable(x->text()));
     }
     void contextMenuTextsAreUnique()
     {

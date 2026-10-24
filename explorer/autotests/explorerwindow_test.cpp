@@ -337,6 +337,12 @@ private Q_SLOTS:
         QVERIFY(tb);
         auto *ribbon = w->findChild<RibbonBar *>();
         QVERIFY(tb->isAncestorOf(ribbon->tabStrip()));
+        QWidget *strip = ribbon->tabStrip();
+        QVERIFY(strip->sizeHint().width() > 100);
+        QVERIFY(strip->minimumSizeHint().width() > 100);
+        QVERIFY(strip->width() >= strip->sizeHint().width());
+        QCOMPARE(tb->closeButton()->toolTip(), u"Close"_s);
+        QCOMPARE(tb->maximizeButton()->toolTip(), u"Maximise"_s);
         auto *body = ribbon->findChild<QStackedWidget *>();
         QVERIFY(body);
         QCOMPARE(body->mapTo(w, QPoint(0, 0)).y(), tb->mapTo(w, QPoint(0, tb->height())).y());
@@ -416,6 +422,8 @@ private Q_SLOTS:
         QWidget *strip = ribbon->tabStrip();
         const QFontMetrics fm = strip->fontMetrics();
         const int x = fm.horizontalAdvance(u"File"_s) + 28 + fm.horizontalAdvance(u"Home"_s) + 28 + 10; // inside View
+        QVERIFY(strip->width() > x); // the strip really has room for the View tab
+        QCOMPARE(w->childAt(strip->mapTo(w, QPoint(x, 20))), strip); // and is what sits there in the window
         QTest::mouseClick(strip, Qt::LeftButton, {}, QPoint(x, 20));
         QCOMPARE(ribbon->currentTab(), 1);
         delete w;

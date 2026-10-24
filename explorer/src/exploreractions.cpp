@@ -1041,17 +1041,15 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         return a;
     };
     const bool canPaste = folder.isValid() && clipboardHasUrls();
+    // text only: a second registered shortcut would be ambiguous with home_copy_path / file_terminal
+    const auto keyColumn = [](const QKeySequence &k) { return u'\t' + k.toString(QKeySequence::NativeText); };
     // Dolphin's own "Copy Location" / "Open Terminal Here"; shortcuts are shown, the real ones live on home_copy_path / file_terminal.
     const auto locationAndTerminal = [&](const KFileItemList &sel, const QUrl &termUrl) {
-        QAction *c = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), i18n("Copy Location"));
-        c->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
-        c->setShortcutVisibleInContextMenu(true);
+        QAction *c = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), i18n("Copy Location") + keyColumn(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C)));
         connect(c, &QAction::triggered, this, [this, sel, folder] {
             copyPaths(sel.isEmpty() ? KFileItemList{KFileItem(folder)} : sel);
         });
-        QAction *t = menu->addAction(QIcon::fromTheme(QStringLiteral("utilities-terminal")), i18n("Open Terminal Here"));
-        t->setShortcut(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4));
-        t->setShortcutVisibleInContextMenu(true);
+        QAction *t = menu->addAction(QIcon::fromTheme(QStringLiteral("utilities-terminal")), i18n("Open Terminal Here") + keyColumn(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4)));
         t->setEnabled(termUrl.isLocalFile());
         connect(t, &QAction::triggered, this, [this, termUrl] { openTerminal(termUrl); });
     };
