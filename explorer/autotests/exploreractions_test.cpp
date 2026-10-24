@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMenu>
+#include <QPointer>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -22,6 +23,8 @@
 #include <QLineEdit>
 #include <memory>
 #include "tagstore.h"
+#include "scriptdialog.h"
+#include "selectbyruledialog.h"
 #include <KFileMetaData/UserMetaData>
 #include <QStandardPaths>
 
@@ -240,7 +243,7 @@ private Q_SLOTS:
     void everySpecIdHasAnAction()
     {
         ExplorerActions actions(nullptr);
-        const QStringList menuIds = {QStringLiteral("home_history"), QStringLiteral("view_sort"), QStringLiteral("view_group"),
+        const QStringList menuIds = {QStringLiteral("adv_my_rules"), QStringLiteral("adv_my_scripts"), QStringLiteral("home_history"), QStringLiteral("view_sort"), QStringLiteral("view_group"),
                                      QStringLiteral("view_columns"), QStringLiteral("home_new_item"), QStringLiteral("home_delete"),
                                      QStringLiteral("home_open"), QStringLiteral("share_share"), QStringLiteral("tags_add"),
                                      QStringLiteral("tags_remove")};
@@ -331,6 +334,126 @@ private Q_SLOTS:
         QCOMPARE(view.selectedItems().size(), 1);
         actions.action(QStringLiteral("home_open"))->trigger();
         QCOMPARE(view.url(), sub);
+    }
+
+    void clearLibrary(ExplorerActions &a)
+    {
+        for (const SavedRule &r : a.library().all())
+            a.library().remove(r.name, r.kind, nullptr);
+    }
+    void selectByFormulaOpensFormulaMode()
+    {
+        QTemporaryDir dir;
+        ExplorerActions a(nullptr);
+        QTemporaryDir cfg;
+        ViewSettingsStore store(KSharedConfig::openConfig(cfg.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        a.setActiveView(&view);
+        int calls = 0;
+        a.setExecSelectDialog([&](SelectByRuleDialog &d) {
+            calls += d.mode() == SelectByRuleDialog::Mode::Formula && d.formula() == QStringLiteral("=ISFILE()");
+            return false;
+        });
+        a.selectByFormula(QStringLiteral("=ISFILE()"));
+        QCOMPARE(calls, 1);
+    }
+    void myRulesMenuListsByKind()
+    {
+        ExplorerActions a(nullptr);
+        clearLibrary(a);
+        QVERIFY(a.library().save({QStringLiteral("A"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
+        QVERIFY(a.library().save({QStringLiteral("B"), QStringLiteral("=2"), SavedRule::Kind::Rename}, nullptr));
+        QVERIFY(a.library().save({QStringLiteral("C"), QStringLiteral("x"), SavedRule::Kind::Script}, nullptr));
+        std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+        const auto acts = m->actions();
+        QCOMPARE(acts.size(), 4);
+        QCOMPARE(acts[0]->text(), QStringLiteral("A"));
+        QCOMPARE(acts[1]->text(), QStringLiteral("B"));
+        QVERIFY(acts[2]->isSeparator());
+        QCOMPARE(acts[3]->text(), QStringLiteral("C"));
+        QMenu *s = a.action(QStringLiteral("adv_my_scripts"))->menu(); // the ribbon button's menu
+        QMetaObject::invokeMethod(s, "aboutToShow");
+        QCOMPARE(s->actions().size(), 1);
+        QCOMPARE(s->actions()[0]->text(), QStringLiteral("C"));
+        clearLibrary(a);
+    }
+    void ruleNameAmpersandIsEscaped()
+    {
+        ExplorerActions a(nullptr);
+        clearLibrary(a);
+        QVERIFY(a.library().save({QStringLiteral("A&B"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
+        std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+        QCOMPARE(m->actions()[0]->text(), QStringLiteral("A&&B"));
+        clearLibrary(a);
+    }
+    void myRulesMenuEmptyEntry()
+    {
+        ExplorerActions a(nullptr);
+        clearLibrary(a);
+        std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+        QCOMPARE(m->actions().size(), 1);
+        QVERIFY(!m->actions()[0]->isEnabled());
+    }
+    void contextMenuHasMyRulesWhenSaved()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions a(nullptr);
+        clearLibrary(a);
+        const auto hasRules = [&] {
+            std::unique_ptr<QMenu> m(a.contextMenu(items, folder));
+            for (QAction *w : win12Entries(m.get()))
+                for (QAction *x : w->menu()->actions())
+                    if (x->text() == QStringLiteral("My rules"))
+                        return true;
+            return false;
+        };
+        QVERIFY(!hasRules());
+        QVERIFY(a.library().save({QStringLiteral("A"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
+        QVERIFY(hasRules());
+        { // empty space: still there; and the submenu dies with the context menu
+            std::unique_ptr<QMenu> m(a.contextMenu({}, folder));
+            QPointer<QMenu> rules;
+            for (QAction *w : win12Entries(m.get()))
+                for (QAction *x : w->menu()->actions())
+                    if (x->text() == QStringLiteral("My rules"))
+                        rules = x->menu();
+            QVERIFY(rules);
+            m.reset();
+            QVERIFY(!rules);
+        }
+        { // a Rename rule with nothing selected says so
+            QVERIFY(a.library().save({QStringLiteral("R"), QStringLiteral("=1"), SavedRule::Kind::Rename}, nullptr));
+            QString msg;
+            a.setShowError([&](const QString &t) { msg = t; });
+            std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+            for (QAction *x : m->actions())
+                if (x->text() == QStringLiteral("R"))
+                    x->trigger();
+            QVERIFY(!msg.isEmpty());
+        }
+        clearLibrary(a);
+    }
+    void openScriptLoadsText()
+    {
+        QTemporaryDir dir;
+        ExplorerActions a(nullptr);
+        QTemporaryDir cfg;
+        ViewSettingsStore store(KSharedConfig::openConfig(cfg.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        a.setActiveView(&view);
+        QString got;
+        a.setExecScriptDialog([&](ScriptDialog &d) { got = d.script(); });
+        a.openScript(QStringLiteral("x = 1"));
+        QCOMPARE(got, QStringLiteral("x = 1"));
     }
 
     void contextMenuHasWin12OnlyWhenFilled()

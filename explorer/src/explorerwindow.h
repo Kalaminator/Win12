@@ -83,6 +83,7 @@ public:
     void closeTab(int); // closing the last tab closes the window
     TabPage *currentPage() const;
     FolderView *activeView() const;
+    void runSavedRule(const QString &name, const QList<QUrl> &urls); // Dolphin's Win12 > My rules; unknown name: error box
     void selectItems(const QList<QUrl> &); // opens the parent folder in the current tab, then selects
     void showProperties(const QList<QUrl> &);
 

@@ -1,5 +1,9 @@
 #include "selectbyruledialog.h"
+#include "formulaedit.h"
+#include "fxfile.h"
 #include <KIO/Global>
+#include <KMessageBox>
+#include <QInputDialog>
 #include <KLocalizedString>
 #include <KUrlRequester>
 #include <QCheckBox>
@@ -40,9 +44,27 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
     bar->addWidget(m_recursive);
     top->addLayout(bar);
 
+    auto *modes = new QHBoxLayout;
+    auto mkMode = [&](const QString &text, const QString &name) {
+        auto *b = new QToolButton;
+        b->setObjectName(name);
+        b->setText(text);
+        b->setCheckable(true);
+        b->setAutoExclusive(true);
+        modes->addWidget(b);
+        return b;
+    };
+    m_modeRules = mkMode(i18n("Simple rules"), QStringLiteral("modeRules"));
+    m_modeFormula = mkMode(i18n("fx Formula"), QStringLiteral("modeFormula"));
+    m_modeRules->setChecked(true);
+    modes->addStretch();
+    top->addLayout(modes);
+    m_fx = new FormulaEdit;
+    m_fx->hide();
+    top->addWidget(m_fx);
     m_rowsLayout = new QVBoxLayout;
     top->addLayout(m_rowsLayout);
-    auto *addRow_ = new QToolButton;
+    auto *addRow_ = m_addRule = new QToolButton;
     addRow_->setObjectName(QStringLiteral("addRule"));
     addRow_->setText(i18n("+ Add rule"));
     addRow_->setAutoRaise(true);
@@ -112,6 +134,52 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
         recompile();
     });
     connect(m_find, &QPushButton::clicked, this, &SelectByRuleDialog::find);
+    connect(m_modeRules, &QToolButton::clicked, this, [this] { setMode(Mode::Rules); });
+    connect(m_modeFormula, &QToolButton::clicked, this, [this] { setMode(Mode::Formula); });
+    connect(m_fx, &FormulaEdit::formulaChanged, this, [this] { recompile(); });
+    connect(m_fx, &FormulaEdit::submitted, this, &SelectByRuleDialog::find);
+    connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
+        if (!m_library)
+            return;
+        bool ok = false;
+        const QString name = QInputDialog::getText(this, i18n("Save formula"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
+        QString err;
+        if (ok && !name.isEmpty() && !m_library->save({name, text, SavedRule::Kind::Select}, &err))
+            KMessageBox::error(this, err);
+    });
+    connect(&m_run, &FormulaRun::results, this, [this](const QList<FxRowResult> &rows) {
+        const QSignalBlocker block(m_tree);
+        const QString base = QDir::cleanPath(this->lookIn().toLocalFile());
+        const bool sorting = m_tree->isSortingEnabled();
+        m_tree->setSortingEnabled(false);
+        for (const FxRowResult &r : rows) {
+            auto *row = new QTreeWidgetItem(m_tree);
+            const QString rel = QDir(base).relativeFilePath(r.item.url().toLocalFile());
+            row->setText(0, rel);
+            row->setIcon(0, QIcon::fromTheme(r.item.iconName()));
+            row->setText(1, r.row ? r.row->ext() : QString());
+            row->setText(2, r.item.isDir() ? QString() : KIO::convertSize(r.item.size()));
+            row->setText(3, QLocale().toString(r.item.time(KFileItem::ModificationTime), QLocale::ShortFormat));
+            QStringList tags;
+            if (r.row)
+                for (const Tag &t : r.row->tags())
+                    tags << t.display();
+            row->setText(4, tags.join(QStringLiteral(", ")));
+            row->setText(5, r.value.display());
+            if (r.value.isError())
+                row->setForeground(5, Qt::red);
+            const bool isTrue = r.value.type == FxValue::Type::Bool && r.value.b;
+            row->setCheckState(0, isTrue ? Qt::Checked : Qt::Unchecked);
+            row->setData(0, Qt::UserRole, QVariant::fromValue(r.item));
+        }
+        m_tree->setSortingEnabled(sorting);
+        updateState();
+    });
+    connect(&m_run, &FormulaRun::finished, this, [this](bool ok, const QString &err) {
+        if (!ok)
+            m_error->setText(err);
+        Q_EMIT searchFinished();
+    });
     connect(m_recursive, &QCheckBox::toggled, this, [this](bool on) {
         m_keep->setEnabled(on);
         updateState();
@@ -147,6 +215,7 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
 SelectByRuleDialog::~SelectByRuleDialog()
 {
     m_search.stop();
+    m_run.stop();
 }
 
 void SelectByRuleDialog::keyPressEvent(QKeyEvent *e)
@@ -164,6 +233,7 @@ void SelectByRuleDialog::keyPressEvent(QKeyEvent *e)
 void SelectByRuleDialog::reject()
 {
     m_search.stop();
+    m_run.stop();
     QDialog::reject();
 }
 
@@ -244,6 +314,9 @@ void SelectByRuleDialog::setRules(const QList<Rule> &rules)
     m_rows.clear();
     for (const Rule &r : rules)
         addRow(r);
+    if (m_mode == Mode::Formula)
+        for (const RuleRow &r : std::as_const(m_rows))
+            r.widget->hide();
     recompile();
 }
 
@@ -263,8 +336,54 @@ void SelectByRuleDialog::setRecursive(bool on)
     m_recursive->setChecked(on);
 }
 
+void SelectByRuleDialog::setMode(Mode m)
+{
+    m_mode = m;
+    const bool fx = m == Mode::Formula;
+    m_modeRules->setChecked(!fx);
+    m_modeFormula->setChecked(fx);
+    m_fx->setVisible(fx);
+    m_addRule->setVisible(!fx);
+    for (const RuleRow &r : std::as_const(m_rows))
+        r.widget->setVisible(!fx);
+    m_search.stop();
+    m_run.stop();
+    m_tree->clear();
+    m_tree->setHeaderLabels(fx ? QStringList{i18n("Name"), i18n("Ext"), i18n("Size"), i18n("Modified"), i18n("Tags"), i18n("fx result")}
+                               : QStringList{i18n("Name"), i18n("Modified"), i18n("Size")});
+    m_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    recompile();
+    updateState();
+}
+
+SelectByRuleDialog::Mode SelectByRuleDialog::mode() const
+{
+    return m_mode;
+}
+
+void SelectByRuleDialog::setFormula(const QString &t)
+{
+    m_fx->setText(t);
+    recompile(); // don't wait for the debounce: Find must reflect it now
+}
+
+QString SelectByRuleDialog::formula() const
+{
+    return m_fx->text();
+}
+
+void SelectByRuleDialog::setLibrary(RuleLibrary *l)
+{
+    m_library = l;
+}
+
 void SelectByRuleDialog::recompile()
 {
+    if (m_mode == Mode::Formula) {
+        m_find->setEnabled(m_fx->expr().has_value());
+        m_error->clear(); // the FormulaEdit shows its own error
+        return;
+    }
     QString err;
     const bool ok = RuleMatcher::compile(rules(), &err).has_value();
     m_error->setText(ok ? QString() : err);
@@ -278,6 +397,16 @@ QUrl SelectByRuleDialog::lookIn() const
 
 void SelectByRuleDialog::find()
 {
+    if (m_mode == Mode::Formula) {
+        m_search.stop();
+        m_tree->clear();
+        updateState();
+        if (auto e = m_fx->expr())
+            m_run.start(lookIn(), m_recursive->isChecked(), *e);
+        else
+            Q_EMIT searchFinished();
+        return;
+    }
     QString err;
     auto m = RuleMatcher::compile(rules(), &err);
     if (!m) {
@@ -326,7 +455,10 @@ void SelectByRuleDialog::updateState()
         if (i.url().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash) != base)
             allInLookIn = false;
     }
-    m_count->setText(i18n("Found: %1 items · %2", t.size(), KIO::convertSize(total)));
+    if (m_mode == Mode::Formula)
+        m_count->setText(i18np("%1 row is TRUE", "%1 rows are TRUE", t.size()));
+    else
+        m_count->setText(i18n("Found: %1 items · %2", t.size(), KIO::convertSize(total)));
     for (QPushButton *b : std::as_const(m_buttons))
         b->setEnabled(!t.isEmpty());
     for (QAction *a : std::as_const(m_menuActs))

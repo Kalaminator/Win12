@@ -11,6 +11,8 @@
 #include "newtagdialog.h"
 #include "tagregistry.h"
 #include "tagstore.h"
+#include "rulelibrary.h"
+#include "scriptdialog.h"
 
 
 class FolderView;
@@ -45,6 +47,13 @@ public:
     void copyPaths(const KFileItemList &); // one path per line, local path or display url
     static KFileItemList withoutNested(const KFileItemList &); // drops items inside another listed folder
     void selectByRule(SelectByRuleDialog::Action defaultAction);
+    void selectByFormula(const QString &formula = QString()); // Select by rule in Formula mode; non-empty: setFormula + find()
+    void renameMany(const KFileItemList &items, const QString &formula); // Formula mode preloaded
+    void openScript(const QString &text = QString()); // ScriptDialog on folder(); non-empty: setScript + buildPlan()
+    QMenu *myRulesMenu(const KFileItemList &items, QWidget *parent = nullptr); // caller owns
+    RuleLibrary &library() { return m_library; }
+    void setExecScriptDialog(std::function<void(ScriptDialog &)> exec) { m_execScriptDialog = std::move(exec); } // test seam
+    void setExecSelectDialog(std::function<bool(SelectByRuleDialog &)> exec) { m_execSelectDialog = std::move(exec); } // test seam
     void setPickFolder(std::function<QUrl(const QUrl &start)> pick) { m_pickFolder = std::move(pick); } // test seam
     // Opens the Rename many dialog for items (view order) and runs the Status::Rename rows of its plan.
     void renameMany(const KFileItemList &items);
@@ -105,6 +114,12 @@ private:
     void fillTagsMenu(QMenu *, const KFileItemList &);
     QWidget *m_window;
     TagStore m_tagStore;
+    RuleLibrary m_library;
+    std::function<void(ScriptDialog &)> m_execScriptDialog = [](ScriptDialog &d) { d.exec(); };
+    std::function<bool(SelectByRuleDialog &)> m_execSelectDialog = [](SelectByRuleDialog &d) { return d.exec() == QDialog::Accepted; };
+    void fillRulesMenu(QMenu *, const KFileItemList &items, bool selectRename, bool scripts);
+    void selectDialog(SelectByRuleDialog::Action defaultAction, const QString &formula, bool formulaMode);
+    void renameManyImpl(const KFileItemList &items, const QString &formula, bool formulaMode);
     TagRegistry m_registry;
     std::function<bool(NewTagDialog &)> m_execNewTagDialog = [](NewTagDialog &d) { return d.exec() == QDialog::Accepted; };
     std::function<void(const QString &)> m_showError;

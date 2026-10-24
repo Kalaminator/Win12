@@ -1,4 +1,6 @@
 #pragma once
+#include "formularun.h"
+#include "rulelibrary.h"
 #include "rulematcher.h"
 #include "rulesearch.h"
 #include <KFileItem>
@@ -7,6 +9,7 @@
 #include <QMap>
 #include <QUrl>
 
+class FormulaEdit;
 class KUrlRequester;
 class QCheckBox;
 class QComboBox;
@@ -28,6 +31,12 @@ public:
 
     void setRules(const QList<Rule> &);
     QList<Rule> rules() const;
+    enum class Mode { Rules, Formula };
+    void setMode(Mode);
+    Mode mode() const;
+    void setFormula(const QString &);
+    QString formula() const;
+    void setLibrary(RuleLibrary *);
     void setRecursive(bool);
     void find(); // starts RuleSearch; the Find button and Enter in a value field call this
     Action chosenAction() const; // valid after accept()
@@ -64,6 +73,11 @@ private:
     QVBoxLayout *m_rowsLayout;
     QList<RuleRow> m_rows;
     QLabel *m_error, *m_count;
+    FormulaEdit *m_fx;
+    QToolButton *m_modeRules, *m_modeFormula, *m_addRule;
+    FormulaRun m_run;
+    RuleLibrary *m_library = nullptr;
+    Mode m_mode = Mode::Rules;
     QPushButton *m_find;
     QTreeWidget *m_tree;
     QMap<Action, QPushButton *> m_buttons;

@@ -7,6 +7,7 @@ struct CliOptions {
     bool daemon = false;
     bool select = false;
     bool newWindow = false;
+    QString rule; // --rule <name>: run a saved rule on urls
     QList<QUrl> urls;
 };
 

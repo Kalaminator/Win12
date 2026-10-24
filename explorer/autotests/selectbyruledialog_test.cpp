@@ -1,4 +1,10 @@
 #include "selectbyruledialog.h"
+#include "formulaedit.h"
+#include "rulelibrary.h"
+#include <QInputDialog>
+#include <QStandardPaths>
+#include <QTimer>
+#include <QApplication>
 #include <KLineEdit>
 #include <KUrlRequester>
 #include <QAction>
@@ -164,6 +170,107 @@ private Q_SLOTS:
         QCOMPARE(d->rules().size(), 2);
         d->findChildren<QToolButton *>(QStringLiteral("removeRule")).first()->click();
         QCOMPARE(d->rules().size(), 1);
+    }
+
+    // ---- fx formula mode ----
+    void formulaModeHidesRulesShowsEdit()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->show();
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        QVERIFY(d->findChild<FormulaEdit *>()->isVisible());
+        QVERIFY(!d->findChild<QAbstractButton *>(QStringLiteral("addRule"))->isVisible());
+        d->setMode(SelectByRuleDialog::Mode::Rules);
+        QVERIFY(!d->findChild<FormulaEdit *>()->isVisible());
+        QVERIFY(d->findChild<QAbstractButton *>(QStringLiteral("addRule"))->isVisible());
+    }
+    void formulaFindListsAllRowsTicksTrue()
+    {
+        QTemporaryDir fd;
+        QFile a(fd.filePath(QStringLiteral("a.txt")));
+        QVERIFY(a.open(QIODevice::WriteOnly));
+        a.write("abc");
+        a.close();
+        QFile b(fd.filePath(QStringLiteral("b.txt")));
+        QVERIFY(b.open(QIODevice::WriteOnly));
+        b.close();
+        SelectByRuleDialog d(QUrl::fromLocalFile(fd.path()), SelectByRuleDialog::Action::Select, nullptr);
+        d.setMode(SelectByRuleDialog::Mode::Formula);
+        d.setFormula(QStringLiteral("SIZE>0"));
+        runFind(d);
+        auto *t = d.findChild<QTreeWidget *>(QStringLiteral("results"));
+        QTRY_COMPARE(t->topLevelItemCount(), 2);
+        QCOMPARE(d.ticked().size(), 1);
+        QCOMPARE(d.ticked().first().url().fileName(), QStringLiteral("a.txt"));
+        QCOMPARE(d.findChild<QLabel *>(QStringLiteral("countLabel"))->text(), QStringLiteral("1 row is TRUE"));
+    }
+    void formulaErrorRowShowsCode()
+    {
+        QTemporaryDir fd;
+        QFile b(fd.filePath(QStringLiteral("b.txt")));
+        QVERIFY(b.open(QIODevice::WriteOnly));
+        b.close();
+        SelectByRuleDialog d(QUrl::fromLocalFile(fd.path()), SelectByRuleDialog::Action::Select, nullptr);
+        d.setMode(SelectByRuleDialog::Mode::Formula);
+        d.setFormula(QStringLiteral("1/SIZE"));
+        runFind(d);
+        auto *t = d.findChild<QTreeWidget *>(QStringLiteral("results"));
+        QTRY_COMPARE(t->topLevelItemCount(), 1);
+        QCOMPARE(t->topLevelItem(0)->text(t->columnCount() - 1), QStringLiteral("#DIV/0!"));
+        QVERIFY(d.ticked().isEmpty());
+    }
+    void invalidFormulaDisablesFind()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        d->setFormula(QStringLiteral("LEFT(NAME"));
+        QTRY_VERIFY(!d->findChild<QPushButton *>(QStringLiteral("findButton"))->isEnabled());
+        QCOMPARE(d->findChild<QLabel *>(QStringLiteral("fxError"))->text(), QStringLiteral("Expected )"));
+    }
+    void saveAsStoresSelectRule()
+    {
+        QStandardPaths::setTestModeEnabled(true);
+        QFile::remove(RuleLibrary::path());
+        RuleLibrary lib;
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->setLibrary(&lib);
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        d->setFormula(QStringLiteral("SIZE>0"));
+        QTimer::singleShot(200, [] {
+            auto *w = qobject_cast<QInputDialog *>(QApplication::activeModalWidget());
+            if (w) {
+                w->setTextValue(QStringLiteral("Old"));
+                w->accept();
+            }
+        });
+        d->findChild<QAbstractButton *>(QStringLiteral("fxSave"))->click();
+        QCOMPARE(lib.all().size(), 1);
+        QCOMPARE(lib.all().first(), (SavedRule{QStringLiteral("Old"), QStringLiteral("SIZE>0"), SavedRule::Kind::Select}));
+    }
+    void setRulesInFormulaModeStaysHidden()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->show();
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        d->setRules({{Field::Name, Test::Contains, QStringLiteral("x")}});
+        for (auto *w : d->findChildren<QComboBox *>())
+            QVERIFY(!w->isVisible());
+    }
+    void everyFunctionHasAHelpGroup()
+    {
+        for (const FxFunctionSpec &f : FxFunctions::all())
+            QVERIFY2(!fxFunctionGroup(f.name).isEmpty(), qPrintable(f.name));
+    }
+    void rejectStopsFormulaRun()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        d->setFormula(QStringLiteral("SIZE>0"));
+        QSignalSpy sp(d.get(), &SelectByRuleDialog::searchFinished);
+        d->find();
+        d->reject();
+        QTest::qWait(300);
+        QCOMPARE(sp.count(), 0);
     }
 };
 

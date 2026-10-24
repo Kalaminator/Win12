@@ -1,5 +1,11 @@
 #include "renamemanydialog.h"
+#include "formulaedit.h"
+#include <KFileItem>
 #include <QDialogButtonBox>
+#include <QDir>
+#include <QSignalSpy>
+#include <QTemporaryDir>
+#include <QFile>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QListWidget>
@@ -65,6 +71,79 @@ private Q_SLOTS:
         d.setBlocks({cur});
         QVERIFY(!okEnabled(d));
         QCOMPARE(okText(d), QStringLiteral("Rename 0"));
+    }
+    void whyColumnShowsClash()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        RenameBlock t;
+        t.text = QStringLiteral("a");
+        d.setBlocks({t});
+        auto *tr = d.findChild<QTreeWidget *>(QStringLiteral("previewTree"));
+        QCOMPARE(tr->topLevelItem(1)->text(2), QStringLiteral("Same name planned above"));
+    }
+    void formulaModeMockup()
+    {
+        QTemporaryDir tmp;
+        QList<RenameItem> l;
+        for (const char *n : {"Trip/holiday.jpg", "Trip/beach.jpg", "Work/notes.txt"}) {
+            const QString path = tmp.filePath(QLatin1String(n));
+            QDir().mkpath(QFileInfo(path).absolutePath());
+            QFile f(path);
+            QVERIFY(f.open(QIODevice::WriteOnly));
+            f.close();
+            const QUrl u = QUrl::fromLocalFile(path);
+            l << RenameItem{u, QFileInfo(path).fileName(), {}, KFileItem(u)};
+        }
+        RenameManyDialog d(l, {}, nullptr);
+        d.setMode(RenameManyDialog::Mode::Formula);
+        QCOMPARE(d.base(), QUrl::fromLocalFile(tmp.filePath(QStringLiteral(""))));
+        QSignalSpy done(&d, &RenameManyDialog::evaluated);
+        d.setFormula(QStringLiteral("TEXT(ROWINFOLDER(),\"00\") & \" - \" & PROPER(NAME)"));
+        QVERIFY(!okEnabled(d)); // evaluating
+        QVERIFY(done.wait(5000));
+        QVERIFY(okEnabled(d));
+        const auto p = d.plan();
+        QCOMPARE(p.value(0).newName, QStringLiteral("01 - Holiday.jpg"));
+        QCOMPARE(p.value(1).newName, QStringLiteral("02 - Beach.jpg"));
+        QCOMPARE(p.value(2).newName, QStringLiteral("01 - Notes.txt"));
+
+        d.setFormula(QStringLiteral("1/0"));
+        QVERIFY(!okEnabled(d));
+        QVERIFY(done.wait(5000));
+        for (const auto &r : d.plan()) {
+            QCOMPARE(r.status, PlannedRename::Invalid);
+            QCOMPARE(r.note, QStringLiteral("#DIV/0!"));
+        }
+        auto *tr = d.findChild<QTreeWidget *>(QStringLiteral("previewTree"));
+        QCOMPARE(tr->topLevelItem(0)->text(2), QStringLiteral("#DIV/0!"));
+    }
+    void okDisabledWhileEvaluating()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        d.setMode(RenameManyDialog::Mode::Formula);
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(!okEnabled(d));
+    }
+    void typingMakesPlanStaleAtOnce()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        d.setMode(RenameManyDialog::Mode::Formula);
+        QSignalSpy done(&d, &RenameManyDialog::evaluated);
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        QVERIFY(okEnabled(d));
+        d.findChild<QLineEdit *>(QStringLiteral("formulaEdit"))->setText(QStringLiteral("NAME & \"y\""));
+        QVERIFY(!okEnabled(d)); // before the 300 ms debounce
+    }
+    void setFormulaSameTextTwiceIsNotStuck()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        QSignalSpy done(&d, &RenameManyDialog::evaluated);
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        QVERIFY(okEnabled(d));
     }
     void enterInTextFieldDoesNotAccept()
     {
