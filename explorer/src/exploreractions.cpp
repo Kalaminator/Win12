@@ -652,7 +652,18 @@ void ExplorerActions::fillRulesMenu(QMenu *menu, const KFileItemList &items, boo
     };
     if (selectRename) {
         add(K::Select, [this](const QString &t) { selectByFormula(t); });
-        add(K::Rename, [this, items](const QString &t) { renameMany(items.isEmpty() ? selection() : items, t); });
+        add(K::Rename, [this, items](const QString &t) {
+            const KFileItemList target = items.isEmpty() ? selection() : items;
+            if (target.isEmpty()) {
+                const QString msg = i18n("Select the files to rename first");
+                if (m_showError)
+                    m_showError(msg);
+                else
+                    KMessageBox::information(m_window, msg);
+                return;
+            }
+            renameMany(target, t);
+        });
     }
     if (scripts) {
         if (!menu->isEmpty() && !m_library.ofKind(K::Script).isEmpty())
@@ -663,9 +674,9 @@ void ExplorerActions::fillRulesMenu(QMenu *menu, const KFileItemList &items, boo
         menu->addAction(i18n("(nothing saved yet)"))->setEnabled(false);
 }
 
-QMenu *ExplorerActions::myRulesMenu(const KFileItemList &items)
+QMenu *ExplorerActions::myRulesMenu(const KFileItemList &items, QWidget *parent)
 {
-    auto *menu = new QMenu(i18n("My rules"), m_window);
+    auto *menu = new QMenu(i18n("My rules"), parent ? parent : m_window);
     fillRulesMenu(menu, items, true, true);
     return menu;
 }
@@ -1015,8 +1026,8 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
         if (!items.isEmpty())
             win12->addAction(i18n("Rename many…"), this, [this, items] { renameMany(items); });
-        if (!items.isEmpty() && !m_library.all().isEmpty())
-            win12->addMenu(myRulesMenu(items));
+        if (!m_library.all().isEmpty())
+            win12->addMenu(myRulesMenu(items, win12)); // owned by win12, dies with the context menu
         Q_EMIT fillWin12Menu(win12, items);
         if (win12->isEmpty())
             delete win12;

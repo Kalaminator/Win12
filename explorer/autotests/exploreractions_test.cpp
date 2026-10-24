@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMenu>
+#include <QPointer>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -405,6 +406,27 @@ private Q_SLOTS:
         QVERIFY(!hasRules());
         QVERIFY(a.library().save({QStringLiteral("A"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
         QVERIFY(hasRules());
+        { // empty space: still there; and the submenu dies with the context menu
+            std::unique_ptr<QMenu> m(a.contextMenu({}, folder));
+            QPointer<QMenu> rules;
+            for (QAction *w : win12Entries(m.get()))
+                for (QAction *x : w->menu()->actions())
+                    if (x->text() == QStringLiteral("My rules"))
+                        rules = x->menu();
+            QVERIFY(rules);
+            m.reset();
+            QVERIFY(!rules);
+        }
+        { // a Rename rule with nothing selected says so
+            QVERIFY(a.library().save({QStringLiteral("R"), QStringLiteral("=1"), SavedRule::Kind::Rename}, nullptr));
+            QString msg;
+            a.setShowError([&](const QString &t) { msg = t; });
+            std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+            for (QAction *x : m->actions())
+                if (x->text() == QStringLiteral("R"))
+                    x->trigger();
+            QVERIFY(!msg.isEmpty());
+        }
         clearLibrary(a);
     }
     void openScriptLoadsText()

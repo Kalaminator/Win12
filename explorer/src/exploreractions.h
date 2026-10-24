@@ -50,7 +50,7 @@ public:
     void selectByFormula(const QString &formula = QString()); // Select by rule in Formula mode; non-empty: setFormula + find()
     void renameMany(const KFileItemList &items, const QString &formula); // Formula mode preloaded
     void openScript(const QString &text = QString()); // ScriptDialog on folder(); non-empty: setScript + buildPlan()
-    QMenu *myRulesMenu(const KFileItemList &items); // caller owns
+    QMenu *myRulesMenu(const KFileItemList &items, QWidget *parent = nullptr); // caller owns
     QMenu *myScriptsMenu(); // caller owns
     RuleLibrary &library() { return m_library; }
     void setExecScriptDialog(std::function<void(ScriptDialog &)> exec) { m_execScriptDialog = std::move(exec); } // test seam
