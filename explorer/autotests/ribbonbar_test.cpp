@@ -42,7 +42,7 @@ private Q_SLOTS:
     {
         ExplorerActions a(nullptr);
         RibbonBar r(&a);
-        QCOMPARE(r.visibleGroupTitles(3), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s}));
+        QCOMPARE(r.visibleGroupTitles(3), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s}));
     }
     void everyVisibleButtonHasItsAction()
     {

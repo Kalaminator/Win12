@@ -55,11 +55,23 @@ private Q_SLOTS:
     void actionIdsUniqueAndNamed()
     {
         const QStringList ids = Ribbon::actionIds();
-        QCOMPARE(ids.size(), 65);
-        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 65);
+        QCOMPARE(ids.size(), 69);
+        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 69);
         const QRegularExpression re(u"^(file|home|share|view|adv|tags)_[a-z_]+$"_s);
         for (const auto &id : ids)
             QVERIFY2(re.match(id).hasMatch(), qPrintable(id));
+    }
+    void automateGroupHasFourButtons()
+    {
+        const auto &g = tab(u"advanced"_s)->groups[3];
+        QStringList ids;
+        for (const auto &b : g.buttons)
+            ids << b.action;
+        QCOMPARE(ids, (QStringList{u"adv_formula"_s, u"adv_script"_s, u"adv_my_rules"_s, u"adv_my_scripts"_s}));
+        QVERIFY(Ribbon::button(u"adv_my_rules"_s)->menu);
+        QVERIFY(Ribbon::button(u"adv_my_scripts"_s)->menu);
+        QVERIFY(!Ribbon::button(u"adv_formula"_s)->menu);
+        QVERIFY(Ribbon::phaseBuilt(4));
     }
     void advancedTabHasPhase3Groups()
     {

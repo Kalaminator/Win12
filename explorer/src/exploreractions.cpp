@@ -119,6 +119,17 @@ ExplorerActions::ExplorerActions(QWidget *windowParent)
         else if (b->menu)
             a->setMenu(ownedMenu(this, new QMenu(m_window)));
     }
+    // the Automate menus refill from the library each time they open (the library signals changed())
+    QMenu *rulesMenu = action(QStringLiteral("adv_my_rules"))->menu();
+    connect(rulesMenu, &QMenu::aboutToShow, this, [this, rulesMenu] {
+        rulesMenu->clear();
+        fillRulesMenu(rulesMenu, {}, true, true);
+    });
+    QMenu *scriptsMenu = action(QStringLiteral("adv_my_scripts"))->menu();
+    connect(scriptsMenu, &QMenu::aboutToShow, this, [this, scriptsMenu] {
+        scriptsMenu->clear();
+        fillRulesMenu(scriptsMenu, {}, false, true);
+    });
     QMenu *deleteMenu = action(QStringLiteral("home_delete"))->menu();
     deleteMenu->addAction(add(QStringLiteral("home_delete_trash"), i18n("Move to Trash"), QStringLiteral("user-trash")));
     deleteMenu->addAction(add(QStringLiteral("home_delete_permanent"), i18n("Delete permanently"), QStringLiteral("edit-delete")));
@@ -217,6 +228,8 @@ void ExplorerActions::updateEnabled()
         action(id)->setEnabled(hasView);
     action(QStringLiteral("adv_rename_undo"))->setEnabled(!m_lastBatch.isEmpty());
     action(QStringLiteral("adv_rename_many"))->setEnabled(hasView);
+    for (const char *id : {"adv_formula", "adv_script", "adv_my_rules", "adv_my_scripts"})
+        action(QString::fromLatin1(id))->setEnabled(hasView);
     for (const char *id : {"adv_select_rule", "adv_select_matches", "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches"})
         action(QString::fromLatin1(id))->setEnabled(hasView);
     const bool canPaste = hasView && clipboardHasUrls();
@@ -418,6 +431,8 @@ void ExplorerActions::connectActions()
         if (m_view)
             renameMany(m_view->itemsInViewOrder(m_view->selectedCount() > 0));
     });
+    on("adv_formula", [this] { selectByFormula(); });
+    on("adv_script", [this] { openScript(); });
     on("adv_rename_undo", [this] { undoRenameBatch(); });
     on("adv_rename_matches", [this] { selectByRule(A::Rename); });
     on("adv_tag_matches", [this] { selectByRule(A::AddTag); });
@@ -613,12 +628,79 @@ KFileItemList ExplorerActions::withoutNested(const KFileItemList &items)
     return out;
 }
 
+void ExplorerActions::openScript(const QString &text)
+{
+    if (!folder().isValid())
+        return;
+    // parent = the window, exec() on the stack: ScriptDialog::reject() refuses to close while its plan runs
+    ScriptDialog dialog(folder(), &m_tagStore, &m_library, m_window);
+    if (!text.isEmpty()) {
+        dialog.setScript(text);
+        dialog.buildPlan();
+    }
+    m_execScriptDialog(dialog);
+}
+
+void ExplorerActions::fillRulesMenu(QMenu *menu, const KFileItemList &items, bool selectRename, bool scripts)
+{
+    using K = SavedRule::Kind;
+    const auto add = [&](K kind, const std::function<void(const QString &)> &fn) {
+        for (const SavedRule &r : m_library.ofKind(kind)) {
+            const QString text = r.text;
+            menu->addAction(r.name, this, [fn, text] { fn(text); });
+        }
+    };
+    if (selectRename) {
+        add(K::Select, [this](const QString &t) { selectByFormula(t); });
+        add(K::Rename, [this, items](const QString &t) { renameMany(items.isEmpty() ? selection() : items, t); });
+    }
+    if (scripts) {
+        if (!menu->isEmpty() && !m_library.ofKind(K::Script).isEmpty())
+            menu->addSeparator();
+        add(K::Script, [this](const QString &t) { openScript(t); });
+    }
+    if (menu->isEmpty())
+        menu->addAction(i18n("(nothing saved yet)"))->setEnabled(false);
+}
+
+QMenu *ExplorerActions::myRulesMenu(const KFileItemList &items)
+{
+    auto *menu = new QMenu(i18n("My rules"), m_window);
+    fillRulesMenu(menu, items, true, true);
+    return menu;
+}
+
+QMenu *ExplorerActions::myScriptsMenu()
+{
+    auto *menu = new QMenu(i18n("My scripts"), m_window);
+    fillRulesMenu(menu, {}, false, true);
+    return menu;
+}
+
 void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
+{
+    selectDialog(defaultAction, QString(), false);
+}
+
+void ExplorerActions::selectByFormula(const QString &formula)
+{
+    selectDialog(SelectByRuleDialog::Action::Trash, formula, true);
+}
+
+void ExplorerActions::selectDialog(SelectByRuleDialog::Action defaultAction, const QString &formula, bool formulaMode)
 {
     if (!folder().isValid())
         return;
     SelectByRuleDialog dialog(folder(), defaultAction, m_window);
-    if (dialog.exec() != QDialog::Accepted)
+    dialog.setLibrary(&m_library);
+    if (formulaMode) {
+        dialog.setMode(SelectByRuleDialog::Mode::Formula);
+        if (!formula.isEmpty()) {
+            dialog.setFormula(formula);
+            dialog.find();
+        }
+    }
+    if (!m_execSelectDialog(dialog))
         return;
     KFileItemList items = dialog.ticked();
     if (items.isEmpty())
@@ -716,6 +798,16 @@ QString ExplorerActions::runRenames(const QList<PlannedRename> &rows, QList<Plan
 
 void ExplorerActions::renameMany(const KFileItemList &items)
 {
+    renameManyImpl(items, QString(), false);
+}
+
+void ExplorerActions::renameMany(const KFileItemList &items, const QString &formula)
+{
+    renameManyImpl(items, formula, true);
+}
+
+void ExplorerActions::renameManyImpl(const KFileItemList &items, const QString &formula, bool formulaMode)
+{
     if (items.isEmpty())
         return;
     QList<RenameItem> ritems;
@@ -738,6 +830,12 @@ void ExplorerActions::renameMany(const KFileItemList &items)
         }
     }
     RenameManyDialog dialog(ritems, existing, m_window);
+    dialog.setLibrary(&m_library);
+    if (formulaMode) {
+        dialog.setMode(RenameManyDialog::Mode::Formula);
+        if (!formula.isEmpty())
+            dialog.setFormula(formula);
+    }
     if (!m_execRenameDialog(dialog))
         return;
     QList<PlannedRename> executed;
@@ -917,6 +1015,8 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
         if (!items.isEmpty())
             win12->addAction(i18n("Rename many…"), this, [this, items] { renameMany(items); });
+        if (!items.isEmpty() && !m_library.all().isEmpty())
+            win12->addMenu(myRulesMenu(items));
         Q_EMIT fillWin12Menu(win12, items);
         if (win12->isEmpty())
             delete win12;

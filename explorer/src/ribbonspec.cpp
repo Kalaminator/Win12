@@ -119,7 +119,12 @@ const QList<Tab> &spec()
                 B("adv_tag_matches", ki18n("Tag matches…"), "tag-new"),
                 B("adv_trash_matches", ki18n("Trash matches"), "user-trash", S::Big),
             }, 3},
-            {i18n("Automate"), {}, 4},
+            {i18n("Automate"), {
+                B("adv_formula", ki18n("Formula"), "accessories-calculator", S::Big),
+                B("adv_script", ki18n("Script editor"), "text-x-script", S::Big),
+                B("adv_my_rules", ki18n("My rules"), "bookmarks", S::Small, true),
+                B("adv_my_scripts", ki18n("My scripts"), "bookmarks", S::Small, true),
+            }, 4},
         }, false, 3},
     };
     return t;
