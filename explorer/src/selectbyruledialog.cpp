@@ -314,6 +314,9 @@ void SelectByRuleDialog::setRules(const QList<Rule> &rules)
     m_rows.clear();
     for (const Rule &r : rules)
         addRow(r);
+    if (m_mode == Mode::Formula)
+        for (const RuleRow &r : std::as_const(m_rows))
+            r.widget->hide();
     recompile();
 }
 

@@ -73,6 +73,15 @@ class FormulaRunTest : public QObject
     }
 
 private Q_SLOTS:
+    void tagsAreLoadedOnTheWorker()
+    {
+        QTemporaryDir own{QDir::homePath() + u"/.cache/formularun-XXXXXX"_s};
+        touch(own.filePath(u"a.txt"_s));
+        FormulaRun run;
+        const auto rs = collect(run, [&] { run.start(QUrl::fromLocalFile(own.path()), false, fx(u"SIZE>0"_s)); });
+        QCOMPARE(rs.size(), 1);
+        QVERIFY(rs.first().row->tagsLoaded());
+    }
     void initTestCase()
     {
         QStandardPaths::setTestModeEnabled(true);

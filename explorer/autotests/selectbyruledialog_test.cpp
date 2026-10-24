@@ -247,6 +247,20 @@ private Q_SLOTS:
         QCOMPARE(lib.all().size(), 1);
         QCOMPARE(lib.all().first(), (SavedRule{QStringLiteral("Old"), QStringLiteral("SIZE>0"), SavedRule::Kind::Select}));
     }
+    void setRulesInFormulaModeStaysHidden()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        d->show();
+        d->setMode(SelectByRuleDialog::Mode::Formula);
+        d->setRules({{Field::Name, Test::Contains, QStringLiteral("x")}});
+        for (auto *w : d->findChildren<QComboBox *>())
+            QVERIFY(!w->isVisible());
+    }
+    void everyFunctionHasAHelpGroup()
+    {
+        for (const FxFunctionSpec &f : FxFunctions::all())
+            QVERIFY2(!fxFunctionGroup(f.name).isEmpty(), qPrintable(f.name));
+    }
     void rejectStopsFormulaRun()
     {
         std::unique_ptr<SelectByRuleDialog> d(make());

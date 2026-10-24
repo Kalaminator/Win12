@@ -16,15 +16,20 @@ using namespace Qt::StringLiterals;
 namespace
 {
 // Excel names are not translated; the groups follow the mockup footer.
-QString groupOf(const QString &fn)
+}
+
+QString fxFunctionGroup(const QString &fn)
 {
     static const QSet<QString> text{u"LEFT"_s, u"RIGHT"_s, u"MID"_s, u"LEN"_s, u"FIND"_s, u"SUBSTITUTE"_s, u"UPPER"_s, u"LOWER"_s,
                                     u"PROPER"_s, u"TRIM"_s, u"TEXT"_s, u"CONTAINS"_s, u"STARTSWITH"_s, u"ENDSWITH"_s, u"REGEX"_s};
     static const QSet<QString> logic{u"IF"_s, u"IFS"_s, u"AND"_s, u"OR"_s, u"NOT"_s};
     static const QSet<QString> date{u"TODAY"_s, u"DAYS"_s, u"YEAR"_s, u"MONTH"_s, u"DAY"_s, u"DATE"_s, u"DATEVALUE"_s};
-    return text.contains(fn) ? i18n("Text") : logic.contains(fn) ? i18n("Logic") : date.contains(fn) ? i18n("Date") : i18n("Files");
+    static const QSet<QString> files{u"HASTAG"_s, u"COUNTTAGS"_s, u"ROW"_s, u"ROWINFOLDER"_s, u"COUNTIN"_s, u"FILES"_s};
+    return text.contains(fn) ? i18n("Text") : logic.contains(fn) ? i18n("Logic") : date.contains(fn) ? i18n("Date") : files.contains(fn) ? i18n("Files") : QString();
 }
 
+namespace
+{
 class FxHelpDialog : public QDialog
 {
 public:
@@ -40,7 +45,7 @@ public:
         for (const QString &g : {i18n("Text"), i18n("Logic"), i18n("Date"), i18n("Files")}) {
             h += u"<h4>"_s + g.toHtmlEscaped() + u"</h4>"_s;
             for (const FxFunctionSpec &f : FxFunctions::all())
-                if (groupOf(f.name) == g)
+                if (fxFunctionGroup(f.name) == g)
                     h += u"<p><code>"_s + f.signature.toHtmlEscaped() + u"</code><br>"_s + f.help.toHtmlEscaped() + u"</p>"_s;
         }
         b->setHtml(h);

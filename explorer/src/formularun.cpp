@@ -119,6 +119,7 @@ void FormulaRun::evaluate(KFileItemList items, const QUrl &base, const FxExpr &e
             const int rowInFolder = ++inFolder[p.mid(0, p.size() - 1).join(u'/')];
             auto file = fxFileFor(item, base, ++row, rowInFolder);
             FxValue value = fxEvaluate(expr, file, ctx);
+            file->tags(); // cache here: the UI thread reads them for the Tags column
             batch << FxRowResult{item, std::move(file), std::move(value)};
             if (batch.size() >= 200 || sinceFlush.hasExpired(250)) {
                 post([self, batch] { Q_EMIT self->results(batch); });

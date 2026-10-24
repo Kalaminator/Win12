@@ -27,6 +27,7 @@ struct FxFile {
     std::function<FxPhoto()> loadPhoto; // optional, called once, cached
 
     QList<Tag> tags();
+    bool tagsLoaded() const { return m_tags.has_value(); }
     FxPhoto photo();
     void setTags(const QList<Tag> &); // scripts' .Tag/.Untag
 

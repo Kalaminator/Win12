@@ -8,6 +8,8 @@ class QLineEdit;
 class QTimer;
 
 // "fx" + mono line edit + Functions… + Save as…, with a red parse-error label below.
+QString fxFunctionGroup(const QString &upperName); // "Text" / "Logic" / "Date" / "Files"; empty when unclassified
+
 class FormulaEdit : public QWidget
 {
     Q_OBJECT
