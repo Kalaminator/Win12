@@ -1,3 +1,4 @@
+#include <KFileMetaData/UserMetaData>
 #include "exploreractions.h"
 #include "folderview.h"
 #include "ribbonspec.h"
@@ -126,6 +127,55 @@ private Q_SLOTS:
         QCOMPARE(m->actions().size(), 1);
         QVERIFY(!m->actions().first()->isEnabled());
         QCOMPARE(m->actions().first()->text(), TagStore::errorText(TagStore::Error::Unsupported));
+    }
+    void tagsMenuGreysOutAtThree()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        a.registry().touch(T("Blue/other"));
+        const QUrl u = tagFile(QStringLiteral("full"));
+        for (const char *t : {"Red/1", "Gold/2", "Green/3"})
+            a.addTag({KFileItem(u)}, T(t));
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
+        int enabledChecked = 0, disabledUnchecked = 0;
+        QAction *newTag = nullptr;
+        for (QAction *act : m->actions()) {
+            if (act->isCheckable())
+                (act->isChecked() ? enabledChecked : disabledUnchecked) += act->isEnabled() == act->isChecked();
+            if (act->text().startsWith(QLatin1String("New tag")))
+                newTag = act;
+        }
+        QCOMPARE(enabledChecked, 3);
+        QCOMPARE(disabledUnchecked, 1);
+        QVERIFY(newTag && !newTag->isEnabled());
+        QVERIFY(newTag->text().contains(QLatin1String("max 3 tags")));
+    }
+    void removeMenuUnsupportedSaysSo()
+    {
+        ExplorerActions a(nullptr);
+        QMenu m;
+        a.fillRemoveMenu(&m, {KFileItem(QUrl(QStringLiteral("http://example.org/x")))});
+        QCOMPARE(m.actions().size(), 1);
+        QVERIFY(!m.actions().first()->isEnabled());
+        QCOMPARE(m.actions().first()->text(), TagStore::errorText(TagStore::Error::Unsupported));
+    }
+    void removeAllKeepsForeignTag()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        const QUrl u = tagFile(QStringLiteral("foreign"));
+        a.addTag({KFileItem(u)}, T("Red/x"));
+        KFileMetaData::UserMetaData md(u.toLocalFile());
+        QVERIFY(md.setTags(md.tags() << QStringLiteral("plainforeign")) == KFileMetaData::UserMetaData::NoError);
+        QVERIFY(TagStore::read(u).last().colour < 0);
+        QMenu m;
+        a.fillRemoveMenu(&m, {KFileItem(u)});
+        QCOMPARE(m.actions().size(), 3); // Red/x, separator, All tags
+        m.actions().last()->trigger();
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("plainforeign")});
     }
     void contextMenuHasTagsSubmenu()
     {

@@ -55,6 +55,7 @@ public:
     void removeTag(const KFileItemList &, const Tag &);
     void newTag(const KFileItemList &); // NewTagDialog, then addTag
     QMenu *tagsMenu(const KFileItemList &); // caller owns
+    void fillRemoveMenu(QMenu *, const KFileItemList &); // Win12 tags only, never foreign ones
     TagRegistry &registry() { return m_registry; }
     void setExecNewTagDialog(std::function<bool(NewTagDialog &)> exec) { m_execNewTagDialog = std::move(exec); } // test seam
     void setShowError(std::function<void(const QString &)> show) { m_showError = std::move(show); } // test seam
@@ -102,7 +103,6 @@ private:
     std::function<QUrl(const QUrl &)> m_pickFolder;
     std::function<bool(RenameManyDialog &)> m_execRenameDialog = [](RenameManyDialog &d) { return d.exec() == QDialog::Accepted; };
     void fillTagsMenu(QMenu *, const KFileItemList &);
-    void fillRemoveMenu(QMenu *);
     QWidget *m_window;
     TagStore m_tagStore;
     TagRegistry m_registry;

@@ -377,7 +377,7 @@ void ExplorerActions::buildViewMenus()
     QMenu *add = action(QStringLiteral("tags_add"))->menu();
     connect(add, &QMenu::aboutToShow, this, [this, add] { fillTagsMenu(add, selection()); });
     QMenu *remove = action(QStringLiteral("tags_remove"))->menu();
-    connect(remove, &QMenu::aboutToShow, this, [this, remove] { fillRemoveMenu(remove); });
+    connect(remove, &QMenu::aboutToShow, this, [this, remove] { fillRemoveMenu(remove, selection()); });
 }
 
 void ExplorerActions::connectActions()
@@ -837,7 +837,7 @@ void ExplorerActions::newTag(const KFileItemList &items)
 
 QMenu *ExplorerActions::tagsMenu(const KFileItemList &items)
 {
-    auto *menu = new QMenu(i18n("Tags"), m_window);
+    auto *menu = new QMenu(i18n("Tags"));
     fillTagsMenu(menu, items);
     return menu;
 }
@@ -851,13 +851,20 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
         return;
     }
     QList<QList<Tag>> have;
-    for (const KFileItem &i : items)
+    bool full = true; // every item already at MaxTags: only removing is left
+    for (const KFileItem &i : items) {
         have << TagStore::read(i.url());
+        full = full && win12TagCount(have.last()) >= MaxTags;
+    }
     const QList<Tag> known = m_registry.tags();
     for (const Tag &t : known.mid(0, 8)) {
         QAction *a = menu->addAction(ribbonIcon(t), t.display());
         a->setCheckable(true);
         a->setChecked(std::all_of(have.begin(), have.end(), [&](const QList<Tag> &h) { return h.contains(t); }));
+        if (full && !a->isChecked()) {
+            a->setEnabled(false);
+            a->setToolTip(i18n("max 3 tags"));
+        }
         connect(a, &QAction::triggered, this, [this, items, t](bool on) {
             if (on)
                 addTag(items, t);
@@ -866,18 +873,25 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
         });
     }
     menu->addSeparator();
-    menu->addAction(QIcon::fromTheme(QStringLiteral("tag-new")), i18n("New tag…"), this, [this, items] { newTag(items); });
+    QAction *newTagAction = menu->addAction(QIcon::fromTheme(QStringLiteral("tag-new")), i18n("New tag…"), this, [this, items] { newTag(items); });
+    if (full) {
+        newTagAction->setEnabled(false);
+        newTagAction->setText(i18n("New tag… (max 3 tags)"));
+    }
     menu->addAction(QIcon::fromTheme(QStringLiteral("tag-properties")), i18n("Manage tags…"), this, [this] { Q_EMIT manageTagsRequested(); });
 }
 
-void ExplorerActions::fillRemoveMenu(QMenu *menu)
+void ExplorerActions::fillRemoveMenu(QMenu *menu, const KFileItemList &items)
 {
     menu->clear();
-    const KFileItemList items = selection();
+    if (!items.isEmpty() && !std::all_of(items.begin(), items.end(), [](const KFileItem &i) { return TagStore::supported(i.url()); })) {
+        menu->addAction(TagStore::errorText(TagStore::Error::Unsupported))->setEnabled(false);
+        return;
+    }
     QList<Tag> present;
     for (const KFileItem &i : items)
         for (const Tag &t : TagStore::read(i.url()))
-            if (!present.contains(t))
+            if (t.colour >= 0 && !present.contains(t))
                 present << t;
     for (const Tag &t : present)
         menu->addAction(ribbonIcon(t), t.display(), this, [this, items, t] { removeTag(items, t); });
@@ -928,7 +942,9 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         menu->addSeparator();
         fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services);
         menu->addSeparator();
-        menu->addMenu(tagsMenu(items));
+        auto *tags = tagsMenu(items);
+        tags->setParent(menu, tags->windowFlags()); // dies with the context menu
+        menu->addMenu(tags);
         addWin12();
         menu->addSeparator();
         entry(QStringLiteral("home_delete_trash"), [this, items] { trash(items); });
