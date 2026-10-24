@@ -23,7 +23,7 @@ public:
     QAction *collapseAction() const { return m_collapse; }
     QMenu *fileMenu() const { return m_fileMenu; }
     int currentTab() const { return m_current; }
-    void setCurrentTab(int); // index into the non-File tabs: 0 Home, 1 Share, 2 View, 3 Advanced
+    void setCurrentTab(int); // index into the non-File tabs: 0 Home, 1 View, 2 Advanced
     QList<QToolButton *> buttonsFor(const QString &actionId) const { return m_buttons.values(actionId); }
     QStringList visibleGroupTitles(int tab) const { return m_titles.value(tab); }
 

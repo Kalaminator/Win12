@@ -55,16 +55,6 @@ const QList<Tab> &spec()
                 B("home_select_invert", ki18n("Invert selection"), "edit-select-invert"),
             }},
         }},
-        {QStringLiteral("share"), i18n("Share"), {
-            {i18n("Send"), {
-                B("share_share", ki18n("Share"), "document-share", S::Big, true),
-                B("share_email", ki18n("Email"), "mail-send"),
-                B("share_zip", ki18n("Zip"), "archive-insert"),
-                B("share_print", ki18n("Print"), "document-print"),
-                B("share_terminal", ki18n("Open terminal"), "utilities-terminal"),
-                B("share_security", ki18n("Advanced security"), "security-high"),
-            }},
-        }},
         {QStringLiteral("view"), i18n("View"), {
             {i18n("Panes"), {
                 B("view_nav_pane", ki18n("Navigation pane"), "view-split-left-right", S::Big),
@@ -125,6 +115,14 @@ const QList<Tab> &spec()
                 B("adv_my_rules", ki18n("My rules"), "bookmarks", S::Small, true),
                 B("adv_my_scripts", ki18n("My scripts"), "bookmarks", S::Small, true),
             }, 4},
+            {i18n("Share"), {
+                B("share_share", ki18n("Share"), "document-share", S::Big, true),
+                B("share_email", ki18n("Email"), "mail-send"),
+                B("share_zip", ki18n("Zip"), "archive-insert"),
+                B("share_print", ki18n("Print"), "document-print"),
+                B("share_terminal", ki18n("Open terminal"), "utilities-terminal"),
+                B("share_security", ki18n("Advanced security"), "security-high"),
+            }},
         }, false, 3},
     };
     return t;

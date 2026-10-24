@@ -28,9 +28,20 @@ private Q_SLOTS:
         QStringList ids;
         for (const auto &t : Ribbon::spec())
             ids << t.id;
-        QCOMPARE(ids, (QStringList{u"file"_s, u"home"_s, u"share"_s, u"view"_s, u"advanced"_s}));
+        QCOMPARE(ids, (QStringList{u"file"_s, u"home"_s, u"view"_s, u"advanced"_s}));
         QVERIFY(Ribbon::spec()[0].isFileMenu);
-        QCOMPARE(Ribbon::spec()[4].phase, 3);
+        QCOMPARE(Ribbon::spec()[3].phase, 3);
+    }
+    void shareGroupLastInAdvanced()
+    {
+        QCOMPARE(groupTexts(u"advanced"_s).last(), u"Share"_s);
+        QStringList ids;
+        for (const auto &b : tab(u"advanced"_s)->groups.last().buttons)
+            ids << b.action;
+        QCOMPARE(ids, (QStringList{u"share_share"_s, u"share_email"_s, u"share_zip"_s, u"share_print"_s, u"share_terminal"_s,
+                                   u"share_security"_s}));
+        QVERIFY(Ribbon::button(u"share_share"_s)->menu);
+        QCOMPARE(tab(u"share"_s), nullptr);
     }
     void homeGroups()
     {
@@ -75,7 +86,7 @@ private Q_SLOTS:
     }
     void advancedTabHasPhase3Groups()
     {
-        QCOMPARE(groupTexts(u"advanced"_s), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s}));
+        QCOMPARE(groupTexts(u"advanced"_s), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s, u"Share"_s}));
         QCOMPARE(tab(u"advanced"_s)->groups[3].phase, 4);
         const QStringList ids = Ribbon::actionIds();
         for (const char *id : {"adv_select_rule", "adv_rename_many", "adv_rename_undo", "adv_select_matches",

@@ -35,14 +35,15 @@ private Q_SLOTS:
     {
         ExplorerActions a(nullptr);
         RibbonBar r(&a);
-        QCOMPARE(r.visibleGroupTitles(2),
+        QCOMPARE(r.visibleGroupTitles(1),
                  (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Tags"_s, u"Show/hide"_s, u"Split view"_s}));
     }
     void advancedShowsBuiltGroups()
     {
         ExplorerActions a(nullptr);
         RibbonBar r(&a);
-        QCOMPARE(r.visibleGroupTitles(3), (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s}));
+        QCOMPARE(r.visibleGroupTitles(2),
+                 (QStringList{u"Select"_s, u"Rename"_s, u"Bulk actions"_s, u"Automate"_s, u"Share"_s}));
     }
     void everyVisibleButtonHasItsAction()
     {
