@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 
 namespace {
-constexpr int stripHeight = 28;
+constexpr int TabInset = 6;
 
 QColor midShade(const QPalette &p)
 {
@@ -64,9 +64,16 @@ protected:
 class RibbonTabStrip : public QWidget
 {
 public:
+    QColor bg, fg;
+    void setColours(const QColor &b, const QColor &f)
+    {
+        bg = b;
+        fg = f;
+        update();
+    }
     RibbonTabStrip(RibbonBar *bar, const QStringList &tabs) : QWidget(bar), m_bar(bar), m_tabs(tabs)
     {
-        setFixedHeight(stripHeight);
+        setFixedHeight(RibbonBar::TabStripHeight);
         setAutoFillBackground(false);
     }
     QRect tabRect(int i) const // i == -1 is the File tab
@@ -76,7 +83,7 @@ public:
         for (int k = -1; k < m_tabs.size(); ++k) {
             const int w = fm.horizontalAdvance(label(k)) + 28;
             if (k == i)
-                return {x, 0, w, stripHeight};
+                return {x, 0, w, RibbonBar::TabStripHeight};
             x += w;
         }
         return {};
@@ -87,25 +94,21 @@ protected:
     {
         QPainter p(this);
         const QPalette pal = palette();
-        p.fillRect(rect(), pal.base());
-        const QColor line = midShade(pal);
+        const QColor bg = this->bg.isValid() ? this->bg : pal.window().color(); // default follows the palette
+        const QColor fg = this->fg.isValid() ? this->fg : pal.windowText().color();
+        p.fillRect(rect(), bg);
         const int cur = m_bar->isCollapsed() ? -2 : m_bar->currentTab();
-        p.fillRect(0, stripHeight - 1, width(), 1, line); // the ribbon's top edge, opened under the current tab
         for (int i = -1; i < m_tabs.size(); ++i) {
             const QRect r = tabRect(i);
+            const QRect fill = r.adjusted(0, TabInset, 0, 0);
             if (i == -1) {
-                p.fillRect(r, pal.highlight());
+                p.fillRect(fill, pal.highlight());
                 p.setPen(pal.color(QPalette::HighlightedText));
             } else if (i == cur) {
-                p.fillRect(r, pal.window());
-                p.setPen(line);
-                p.drawLine(r.topLeft(), r.bottomLeft());
-                p.drawLine(r.topLeft(), r.topRight());
-                p.drawLine(r.topRight(), r.bottomRight());
-                p.fillRect(r.left() + 1, stripHeight - 1, r.width() - 1, 1, pal.window());
+                p.fillRect(fill, pal.window());
                 p.setPen(pal.color(QPalette::WindowText));
             } else {
-                p.setPen(pal.color(QPalette::WindowText));
+                p.setPen(fg);
             }
             p.drawText(r, Qt::AlignCenter, label(i));
         }
@@ -140,7 +143,8 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
     for (const Ribbon::Tab &t : spec)
         if (!t.isFileMenu)
             names << t.text;
-    m_strip = new RibbonTabStrip(this, names);
+    auto *strip = new RibbonTabStrip(this, names);
+    m_strip = strip;
     m_body = new QStackedWidget(this);
     m_body->setObjectName(QStringLiteral("ribbonBody"));
     m_body->setMinimumHeight(86);
@@ -154,6 +158,7 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
 
     m_fileMenu = new QMenu(this);
     auto *collapseButton = new QToolButton(m_strip);
+    m_stripCollapse = collapseButton;
     collapseButton->setDefaultAction(m_collapse);
     collapseButton->setAutoRaise(true);
     auto *stripLay = new QHBoxLayout(m_strip);
@@ -243,6 +248,20 @@ RibbonBar::RibbonBar(ExplorerActions *actions, QWidget *parent) : QWidget(parent
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 }
 
+QWidget *RibbonBar::takeTabStrip()
+{
+    delete m_stripCollapse; // the title bar gets its own collapse button
+    if (m_strip)
+        layout()->removeWidget(m_strip);
+    return m_strip;
+}
+
+void RibbonBar::setTabStripColours(const QColor &bg, const QColor &fg)
+{
+    if (m_strip)
+        static_cast<RibbonTabStrip *>(m_strip.data())->setColours(bg, fg);
+}
+
 void RibbonBar::setCollapsed(bool on)
 {
     if (on == m_collapsed)
@@ -251,7 +270,8 @@ void RibbonBar::setCollapsed(bool on)
     m_body->setVisible(!on);
     m_collapse->setChecked(on);
     m_collapse->setIcon(QIcon::fromTheme(on ? QStringLiteral("arrow-down") : QStringLiteral("arrow-up")));
-    m_strip->update();
+    if (m_strip)
+        m_strip->update();
     Q_EMIT collapsedChanged(on);
 }
 
@@ -261,5 +281,6 @@ void RibbonBar::setCurrentTab(int i)
         return;
     m_current = i;
     m_body->setCurrentIndex(i);
-    m_strip->update();
+    if (m_strip)
+        m_strip->update();
 }
