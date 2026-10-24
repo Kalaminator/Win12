@@ -1,0 +1,28 @@
+# Maintainer: Kalaminator <https://github.com/Kalaminator>
+# AUR copy of explorer/PKGBUILD, built from a GitHub release instead of the local tree.
+pkgname=win12-explorer
+pkgver=0.2.0
+pkgrel=1
+pkgdesc='Win12 Explorer: ribbon file manager for KDE (Win12)'
+arch=(x86_64)
+url='https://github.com/Kalaminator/Win12'
+license=(MIT)
+depends=(qt6-base kio kitemmodels kxmlgui ki18n kconfig kconfigwidgets kcolorscheme kdbusaddons purpose kfilemetadata baloo kwindowsystem xdg-utils)
+optdepends=('ark: Compress and Extract in the right-click menu')
+makedepends=(cmake extra-cmake-modules)
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('bdbc7ae171c54422263ce0ff5f712dcaf7c532f7d31b81bb970805e5edda1a54')
+
+build() {
+  cmake -B build -S "Win12-$pkgver/explorer" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+  cmake --build build
+}
+
+check() {
+  QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 "Win12-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
