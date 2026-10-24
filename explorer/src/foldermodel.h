@@ -1,11 +1,13 @@
 #pragma once
 #include "sortgroup.h"
+#include "tag.h"
 #include "viewsettings.h"
 #include <KDirModel>
 #include <KDirSortFilterProxyModel>
 #include <KExtraColumnsProxyModel>
 #include <KFileItem>
 #include <QHash>
+#include <QUrl>
 #include <QPixmap>
 #include <QPointer>
 #include <QTimer>
@@ -50,17 +52,23 @@ private:
     mutable QDateTime m_now; // taken when the cache starts filling, i.e. once per sort pass
 };
 
+Q_DECLARE_METATYPE(Tag)
+
 class TagsColumns : public KExtraColumnsProxyModel
 {
     Q_OBJECT
 public:
     static constexpr int TagsColumn = KDirModel::ColumnCount; // 7
-    static constexpr int TagsRole = Qt::UserRole + 101; // QStringList
+    static constexpr int TagsRole = Qt::UserRole + 101; // QList<Tag>
     explicit TagsColumns(FolderModel *source, QObject *parent = nullptr);
     FolderModel *folderModel() const;
     KFileItem itemFor(const QModelIndex &) const; // maps through both proxies
     QVariant extraColumnData(const QModelIndex &parent, int row, int extraColumn, int role) const override;
     QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override; // columnTitle()
+    void invalidateTags(const QList<QUrl> &); // drops the cached tags, repaints column 0 and the Tags column of those rows
+
+private:
+    mutable QHash<QUrl, QList<Tag>> m_cache;
 };
 
 class PreviewLoader : public QObject

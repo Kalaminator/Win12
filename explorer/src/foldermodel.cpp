@@ -1,9 +1,11 @@
 #include "foldermodel.h"
+#include "tagstore.h"
 #include <KDirLister>
 #include <KIO/PreviewJob>
 #include <KLocalizedString>
 #include <QAbstractItemView>
 #include <QScrollBar>
+#include <QSet>
 
 FolderModel::FolderModel(QObject *parent)
     : KDirSortFilterProxyModel(parent)
@@ -173,6 +175,10 @@ TagsColumns::TagsColumns(FolderModel *source, QObject *parent)
 {
     appendColumn(i18n("Tags"));
     setSourceModel(source);
+    auto clear = [this] { m_cache.clear(); };
+    connect(source, &QAbstractItemModel::modelReset, this, clear);
+    connect(source, &QAbstractItemModel::rowsRemoved, this, clear);
+    connect(source, &QAbstractItemModel::dataChanged, this, clear);
 }
 
 FolderModel *TagsColumns::folderModel() const
@@ -195,14 +201,27 @@ QVariant TagsColumns::headerData(int section, Qt::Orientation orientation, int r
     return KExtraColumnsProxyModel::headerData(section, orientation, role);
 }
 
-QVariant TagsColumns::extraColumnData(const QModelIndex &, int, int, int role) const
+QVariant TagsColumns::extraColumnData(const QModelIndex &parent, int row, int, int role) const
 {
-    // ponytail: phase 1 has no tag storage; the column exists so layouts and headers are final.
-    if (role == Qt::DisplayRole)
-        return QString();
+    if (role != TagsRole && role != Qt::DisplayRole && role != Qt::ToolTipRole)
+        return {};
+    const QUrl url = itemFor(index(row, 0, parent)).url();
+    auto it = m_cache.find(url);
+    if (it == m_cache.end()) // ponytail: one getxattr per visible row on first paint; move to the PreviewLoader thread if a network mount is slow
+        it = m_cache.insert(url, TagStore::read(url));
     if (role == TagsRole)
-        return QStringList();
-    return {};
+        return QVariant::fromValue(*it);
+    return encodeAll(*it).join(QStringLiteral(", "));
+}
+
+void TagsColumns::invalidateTags(const QList<QUrl> &urls)
+{
+    for (const QUrl &u : urls)
+        m_cache.remove(u);
+    const QSet<QUrl> set(urls.begin(), urls.end());
+    for (int r = 0; r < rowCount(); ++r)
+        if (set.contains(itemFor(index(r, 0)).url()))
+            Q_EMIT dataChanged(index(r, 0), index(r, TagsColumn));
 }
 
 static std::pair<QUrl, qint64> cacheKey(const KFileItem &item)
