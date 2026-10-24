@@ -1,4 +1,5 @@
 #include "exploreractions.h"
+#include "managetagsdialog.h"
 #include <algorithm>
 #include "folderview.h"
 #include "ribbonspec.h"
@@ -364,6 +365,14 @@ void ExplorerActions::buildViewMenus()
         KSharedConfig::openConfig(QStringLiteral("win12-explorerrc"))->sync();
     });
     connect(action(QStringLiteral("tags_manage")), &QAction::triggered, this, &ExplorerActions::manageTagsRequested);
+    connect(this, &ExplorerActions::manageTagsRequested, this, [this] {
+        ManageTagsDialog dialog(&m_registry, &m_tagStore, m_view ? m_view->url() : QUrl::fromLocalFile(QDir::homePath()), m_window);
+        dialog.exec();
+    });
+    connect(&m_tagStore, &TagStore::tagsChanged, this, [this](const QList<QUrl> &urls) {
+        if (m_view)
+            m_view->model()->invalidateTags(urls);
+    });
     QMenu *add = action(QStringLiteral("tags_add"))->menu();
     connect(add, &QMenu::aboutToShow, this, [this, add] { fillTagsMenu(add, selection()); });
     QMenu *remove = action(QStringLiteral("tags_remove"))->menu();
