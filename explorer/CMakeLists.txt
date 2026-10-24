@@ -8,17 +8,24 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMAddTests)
 include(FeatureSummary)
 find_package(Qt6 6.6 REQUIRED Widgets DBus Test)
-find_package(KF6 6.0 REQUIRED KIO ItemModels XmlGui I18n Config ConfigWidgets ColorScheme DBusAddons Purpose)
+find_package(KF6 6.0 REQUIRED KIO ItemModels XmlGui I18n Config ConfigWidgets ColorScheme DBusAddons Purpose FileMetaData Baloo CoreAddons)
 set(CMAKE_CXX_STANDARD 20) # KDECompilerSettings' default; defaulted comparisons need it
 enable_testing()
 
 file(GLOB SRCS CONFIGURE_DEPENDS src/*.cpp)
 list(FILTER SRCS EXCLUDE REGEX "/main\\.cpp$")
+file(GLOB TAG_SRCS CONFIGURE_DEPENDS src/tags/*.cpp)
+add_library(win12tags STATIC ${TAG_SRCS})
+set_property(TARGET win12tags PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(win12tags PUBLIC src/tags)
+target_link_libraries(win12tags PUBLIC Qt6::Gui KF6::FileMetaData KF6::ConfigCore KF6::I18n)
+target_compile_definitions(win12tags PUBLIC TRANSLATION_DOMAIN="win12-explorer")
+
 add_library(win12explorer STATIC ${SRCS})
 target_include_directories(win12explorer PUBLIC src)
 target_link_libraries(win12explorer PUBLIC Qt6::Widgets Qt6::DBus KF6::KIOCore KF6::KIOGui KF6::KIOWidgets
     KF6::KIOFileWidgets KF6::ItemModels KF6::XmlGui KF6::I18n KF6::ConfigCore KF6::ConfigWidgets
-    KF6::ColorScheme KF6::DBusAddons KF6::PurposeWidgets)
+    KF6::ColorScheme KF6::DBusAddons KF6::PurposeWidgets win12tags)
 target_compile_definitions(win12explorer PUBLIC TRANSLATION_DOMAIN="win12-explorer")
 
 add_executable(win12-explorer src/main.cpp)
@@ -52,3 +59,4 @@ explorer_add_test(rulesearch_test)
 explorer_add_test(selectbyruledialog_test)
 explorer_add_test(renameplan_test)
 explorer_add_test(renamemanydialog_test)
+explorer_add_test(tag_test)
