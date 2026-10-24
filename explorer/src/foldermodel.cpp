@@ -178,7 +178,11 @@ TagsColumns::TagsColumns(FolderModel *source, QObject *parent)
     auto clear = [this] { m_cache.clear(); };
     connect(source, &QAbstractItemModel::modelReset, this, clear);
     connect(source, &QAbstractItemModel::rowsRemoved, this, clear);
-    connect(source, &QAbstractItemModel::dataChanged, this, clear);
+    // KDirModel emits dataChanged for every icon/preview/mimetype update: drop only those rows.
+    connect(source, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &tl, const QModelIndex &br) {
+        for (int r = tl.row(); r <= br.row(); ++r)
+            m_cache.remove(folderModel()->itemFor(folderModel()->index(r, 0, tl.parent())).url());
+    });
 }
 
 FolderModel *TagsColumns::folderModel() const

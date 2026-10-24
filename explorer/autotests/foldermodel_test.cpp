@@ -127,6 +127,40 @@ private Q_SLOTS:
         QCOMPARE(t.itemFor(t.index(0, 7)).name(), model.itemFor(model.index(0, 0)).name());
     }
 
+    void sourceDataChangedDropsOnlyItsRows()
+    {
+        QTemporaryDir dir{QDir::homePath() + QStringLiteral("/.cache/foldermodel-XXXXXX")};
+        if (!dir.isValid() || !TagStore::supported(QUrl::fromLocalFile(dir.path())))
+            QSKIP("xattr tags not supported here");
+        const QString a = dir.filePath(QStringLiteral("a.txt")), b = dir.filePath(QStringLiteral("b.txt"));
+        touch(a);
+        touch(b);
+        KFileMetaData::UserMetaData(a).setTags({QStringLiteral("Red/One")});
+        KFileMetaData::UserMetaData(b).setTags({QStringLiteral("Red/One")});
+        FolderModel model;
+        QVERIFY(list(model, dir));
+        TagsColumns t(&model);
+        auto word = [&](const QString &name) {
+            for (int r = 0; r < t.rowCount(); ++r)
+                if (t.itemFor(t.index(r, 0)).name() == name)
+                    return t.index(r, 7).data(TagsColumns::TagsRole).value<QList<Tag>>().value(0).word;
+            return QString();
+        };
+        QCOMPARE(word(QStringLiteral("a.txt")), QStringLiteral("One")); // fills the cache
+        QCOMPARE(word(QStringLiteral("b.txt")), QStringLiteral("One"));
+        KFileMetaData::UserMetaData(a).setTags({QStringLiteral("Red/Two")});
+        KFileMetaData::UserMetaData(b).setTags({QStringLiteral("Red/Two")});
+        int rowA = -1;
+        for (int r = 0; r < model.rowCount(); ++r)
+            if (model.itemFor(model.index(r, 0)).name() == QStringLiteral("a.txt"))
+                rowA = r;
+        Q_EMIT model.dataChanged(model.index(rowA, 0), model.index(rowA, 0));
+        QCOMPARE(word(QStringLiteral("b.txt")), QStringLiteral("One")); // untouched row keeps its entry
+        QCOMPARE(word(QStringLiteral("a.txt")), QStringLiteral("Two")); // changed row is re-read
+        t.invalidateTags({QUrl::fromLocalFile(b)});
+        QCOMPARE(word(QStringLiteral("b.txt")), QStringLiteral("Two"));
+    }
+
     void invalidateTagsEmitsDataChanged()
     {
         QTemporaryDir dir;
