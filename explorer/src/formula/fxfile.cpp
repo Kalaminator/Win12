@@ -4,9 +4,12 @@
 #include <KFileMetaData/Extractor>
 #include <KFileMetaData/ExtractorCollection>
 #include <KFileMetaData/SimpleExtractionResult>
+#include <QCollator>
 #include <QFileInfo>
 #include <QImageReader>
 #include <QMimeDatabase>
+#include <algorithm>
+#include <numeric>
 
 QList<Tag> FxFile::tags()
 {
@@ -65,6 +68,23 @@ QString fxRelativePath(const QUrl &url, const QUrl &base)
         b += u'/';
     const QString p = url.path();
     return url.scheme() == base.scheme() && url.host() == base.host() && p.startsWith(b) ? p.mid(b.size()) : url.fileName();
+}
+
+QList<int> fxRowOrder(const QList<QStringList> &parts)
+{
+    QList<int> order(parts.size());
+    std::iota(order.begin(), order.end(), 0);
+    QCollator coll;
+    coll.setNumericMode(true);
+    coll.setCaseSensitivity(Qt::CaseInsensitive);
+    std::stable_sort(order.begin(), order.end(), [&](int a, int b) {
+        const QStringList &x = parts[a], &y = parts[b];
+        for (int i = 0; i < x.size() && i < y.size(); ++i)
+            if (const int c = coll.compare(x[i], y[i]))
+                return c < 0;
+        return x.size() < y.size();
+    });
+    return order;
 }
 
 static FxPhoto readPhoto(const QString &path)

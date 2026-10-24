@@ -3,6 +3,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -48,3 +49,6 @@ private:
 std::shared_ptr<FxFile> fxFileFor(const KFileItem &item, const QUrl &base, int row, int rowInFolder);
 // item's path relative to base ("sub/b.txt"); the file name when it is not below base
 QString fxRelativePath(const QUrl &url, const QUrl &base);
+// Indices of `parts` (relative paths split at '/') in row order: numeric, case-insensitive,
+// compared part by part so a folder comes right before its children
+QList<int> fxRowOrder(const QList<QStringList> &parts);

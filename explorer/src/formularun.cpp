@@ -1,12 +1,10 @@
 #include "formularun.h"
 #include "fxeval.h"
 #include "fxfile.h"
-#include <QCollator>
 #include <QElapsedTimer>
 #include <QHash>
 #include <QMutex>
 #include <QtConcurrent/QtConcurrentRun>
-#include <algorithm>
 #include <atomic>
 #include <numeric>
 
@@ -90,18 +88,10 @@ void FormulaRun::evaluate(KFileItemList items, const QUrl &base, const FxExpr &e
         for (const KFileItem &item : std::as_const(items))
             parts << fxRelativePath(item.url(), base).split(u'/');
         QList<int> order(items.size());
-        std::iota(order.begin(), order.end(), 0);
         if (sort) {
-            QCollator coll;
-            coll.setNumericMode(true);
-            coll.setCaseSensitivity(Qt::CaseInsensitive);
-            std::stable_sort(order.begin(), order.end(), [&](int a, int b) {
-                const QStringList &x = parts[a], &y = parts[b];
-                for (int i = 0; i < x.size() && i < y.size(); ++i)
-                    if (const int c = coll.compare(x[i], y[i]))
-                        return c < 0;
-                return x.size() < y.size();
-            });
+            order = fxRowOrder(parts);
+        } else {
+            std::iota(order.begin(), order.end(), 0);
         }
 
         FxContext ctx; // one per run: COUNTIN's cache lives here
