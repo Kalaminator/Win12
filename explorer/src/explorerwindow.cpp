@@ -8,6 +8,7 @@
 #include "ribbonbar.h"
 #include "ribbonspec.h"
 #include "titlebar.h"
+#include "windowshadow.h"
 #include <KConfigGroup>
 #include <KDirLister>
 #include <KFilePlacesModel>
@@ -319,6 +320,7 @@ ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
     syncFrame(); // after setAutoSaveSettings: a restored maximised state keeps its 0 margins
     connect(m_titleBar, &TitleBar::coloursChanged, this, qOverload<>(&QWidget::update)); // the outline follows
     qApp->installEventFilter(this); // child widgets cover the edges: the band is found app-wide
+    WindowShadow::install(this);
 }
 
 ExplorerWindow::~ExplorerWindow()

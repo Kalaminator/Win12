@@ -9,6 +9,7 @@
 #include "taglist.h"
 #include "tagstore.h"
 #include "titlebar.h"
+#include "windowshadow.h"
 #include <QAbstractItemView>
 #include <KConfigGroup>
 #include <KSharedConfig>
@@ -46,6 +47,23 @@ private Q_SLOTS:
     void initTestCase()
     {
         QStandardPaths::setTestModeEnabled(true);
+    }
+
+    void shadowImageIsSoftAndSymmetric()
+    {
+        const QImage img = WindowShadow::image(8, Qt::black);
+        QCOMPARE(img.size(), QSize(17, 17));
+        QVERIFY(img.pixelColor(8, 8).alpha() > img.pixelColor(1, 1).alpha());
+        QVERIFY(img.pixelColor(1, 1).alpha() > 0);
+        QCOMPARE(img.pixelColor(0, 8), img.pixelColor(16, 8));
+        QVERIFY(img.pixelColor(0, 0).alpha() < 20);
+    }
+
+    void shadowInstallIsHarmlessOffscreen()
+    {
+        ExplorerWindow *w = shownWindow();
+        QVERIFY(w->isVisible());
+        delete w;
     }
 
     void tagPickShowsResultsAndNavigationClears()
