@@ -95,6 +95,12 @@ void PlanView::setPlan(const QList<PlanStep> &plan)
     updateButtons();
 }
 
+void PlanView::setBusy(bool busy)
+{
+    m_busy = busy;
+    updateButtons();
+}
+
 void PlanView::updateButtons()
 {
     int n = 0;
@@ -102,7 +108,7 @@ void PlanView::updateButtons()
         n += !s.skipped;
     const bool running = m_runner.isRunning();
     m_run->setText(i18n("Run plan (%1 steps)", n));
-    m_run->setEnabled(m_fresh && n > 0 && !running);
+    m_run->setEnabled(m_fresh && n > 0 && !running && !m_busy);
     m_stop->setEnabled(running);
     m_undo->setEnabled(!running && m_runner.executedCount() > 0);
 }

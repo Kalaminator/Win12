@@ -14,6 +14,7 @@ class PlanView : public QWidget
 public:
     PlanView(QWidget *window, TagStore *tags, QWidget *parent = nullptr);
     void setPlan(const QList<PlanStep> &);
+    void setBusy(bool); // a script build is in flight: Run plan stays disabled
     QList<PlanStep> plan() const { return m_plan; }
     PlanRunner &runner() { return m_runner; }
 
@@ -30,5 +31,6 @@ private:
     QProgressBar *m_progress;
     QPushButton *m_run, *m_stop, *m_undo;
     QString m_pendingNote;
+    bool m_busy = false;
     bool m_fresh = false; // a plan is shown that has not been run yet
 };

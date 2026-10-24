@@ -132,6 +132,48 @@ private Q_SLOTS:
         QVERIFY(!child<QPushButton>(d.get(), "buildPlan")->isEnabled());
         QCOMPARE(child<QLabel>(d.get(), "scriptStatus")->text(), u"Scripts work on local folders only"_s);
     }
+    void editingClearsPlan()
+    {
+        std::unique_ptr<ScriptDialog> d;
+        built(d);
+        child<QPlainTextEdit>(d.get(), "scriptEdit")->appendPlainText(u"' edit"_s);
+        QCOMPARE(child<QTreeWidget>(d.get(), "planTree")->topLevelItemCount(), 0);
+        QVERIFY(!child<QPushButton>(d.get(), "runPlan")->isEnabled());
+    }
+    void failedBuildClearsPlan()
+    {
+        std::unique_ptr<ScriptDialog> d;
+        built(d);
+        d->setScript(u"If x Then\nf.Trash"_s);
+        d->buildPlan();
+        QTRY_VERIFY(child<QLabel>(d.get(), "scriptStatus")->text().startsWith(u"Line 1:"_s));
+        QCOMPARE(child<QTreeWidget>(d.get(), "planTree")->topLevelItemCount(), 0);
+        QVERIFY(!child<QPushButton>(d.get(), "runPlan")->isEnabled());
+    }
+    void runPlanDisabledWhileBuilding()
+    {
+        std::unique_ptr<ScriptDialog> d;
+        built(d);
+        d->buildPlan();
+        QVERIFY(!child<QPushButton>(d.get(), "runPlan")->isEnabled());
+        QTRY_COMPARE(child<QTreeWidget>(d.get(), "planTree")->topLevelItemCount(), 3);
+        QTRY_VERIFY(child<QPushButton>(d.get(), "runPlan")->isEnabled());
+    }
+    void rejectRefusedWhileRunning()
+    {
+        std::unique_ptr<ScriptDialog> d;
+        built(d);
+        d->show();
+        QSignalSpy fin(d->planView(), &PlanView::runFinished);
+        QTimer::singleShot(300, [] { // dismiss the "plan is running" message
+            if (auto *w = QApplication::activeModalWidget())
+                w->close();
+        });
+        child<QPushButton>(d.get(), "runPlan")->click();
+        d->reject();
+        QVERIFY(d->isVisible());
+        QTRY_COMPARE(fin.count(), 1);
+    }
     void rejectStopsRun()
     {
         std::unique_ptr<ScriptDialog> d(make(QUrl::fromLocalFile(dir.path())));

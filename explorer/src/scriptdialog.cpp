@@ -57,6 +57,7 @@ ScriptDialog::ScriptDialog(const QUrl &baseFolder, TagStore *tags, RuleLibrary *
     connect(m_build, &QPushButton::clicked, this, &ScriptDialog::buildPlan);
     connect(m_stop, &QPushButton::clicked, this, [this] {
         m_run.stop();
+        m_plan->setPlan({});
         m_status->setText(i18n("Stopped"));
         updateButtons();
     });
@@ -73,7 +74,9 @@ ScriptDialog::ScriptDialog(const QUrl &baseFolder, TagStore *tags, RuleLibrary *
         m_status->setText(i18n("Building plan… %1 statements, %2 steps", statements, steps));
     });
     connect(&m_run, &ScriptRun::finished, this, [this](const ScriptResult &r) {
+        m_plan->setBusy(false);
         if (!r.ok) {
+            m_plan->setPlan({});
             m_status->setText(i18n("Line %1: %2", r.line, r.error));
             if (r.line > 0)
                 m_edit->setTextCursor(QTextCursor(m_edit->document()->findBlockByNumber(r.line - 1)));
@@ -82,6 +85,10 @@ ScriptDialog::ScriptDialog(const QUrl &baseFolder, TagStore *tags, RuleLibrary *
             m_status->setText(i18np("%1 step", "%1 steps", r.plan.size()));
         }
         updateButtons();
+    });
+    connect(m_edit, &QPlainTextEdit::textChanged, this, [this] {
+        if (!m_plan->runner().isRunning()) // a plan always matches the text it was built from
+            m_plan->setPlan({});
     });
     connect(&m_plan->runner(), &PlanRunner::progress, this, &ScriptDialog::updateButtons);
     connect(m_plan, &PlanView::runStarted, this, &ScriptDialog::updateButtons);
@@ -105,14 +112,17 @@ void ScriptDialog::updateButtons()
 {
     m_build->setEnabled(m_base.isLocalFile() && !m_plan->runner().isRunning());
     m_stop->setEnabled(m_run.isRunning());
+    m_edit->setReadOnly(m_plan->runner().isRunning());
 }
 
 void ScriptDialog::buildPlan()
 {
     if (!m_base.isLocalFile() || m_plan->runner().isRunning())
         return;
+    m_plan->setPlan({});
     m_status->setText(i18n("Building plan… %1 statements, %2 steps", 0, 0));
     m_run.start(script(), m_base.toLocalFile());
+    m_plan->setBusy(m_run.isRunning()); // a parse error may finish synchronously
     updateButtons();
 }
 
@@ -123,5 +133,6 @@ void ScriptDialog::reject()
         return;
     }
     m_run.stop();
+    m_plan->setBusy(false);
     QDialog::reject();
 }
