@@ -18,7 +18,7 @@ QString PlanStep::actionText() const
     case Tag:
         return i18n("Tag %1", tag.encode());
     case Untag:
-        return i18n("Untag %1", tag.display());
+        return i18n("Untag %1", tag.encode());
     case Trash:
         break;
     }

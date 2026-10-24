@@ -12,7 +12,7 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-static QList<std::shared_ptr<FxFile>> listFolder(const QString &abs, bool subfolders, QString *error)
+static QList<std::shared_ptr<FxFile>> listFolder(const QString &abs, bool subfolders, QString *error, const std::atomic_bool *cancel)
 {
     if (!QFileInfo(abs).isDir()) {
         *error = i18n("Folder not found: %1", abs);
@@ -23,7 +23,12 @@ static QList<std::shared_ptr<FxFile>> listFolder(const QString &abs, bool subfol
     QList<QUrl> urls;
     QList<QStringList> parts;
     while (it.hasNext()) {
-        urls << QUrl::fromLocalFile(it.next());
+        if (cancel && *cancel)
+            return {};
+        const QString path = it.next();
+        if (it.fileInfo().isDir() && !it.fileInfo().isSymLink())
+            continue; // Files() yields files only; folders are walked, not listed
+        urls << QUrl::fromLocalFile(path);
         parts << fxRelativePath(urls.last(), base).split(u'/');
     }
     QList<std::shared_ptr<FxFile>> rows;
@@ -52,7 +57,7 @@ struct Run {
     QHash<QString, FxValue> vars; // lower-case names
     FxContext ctx;
     std::shared_ptr<FxFile> row; // the innermost For Each file: bare columns and HASTAG read it
-    QSet<QString> plannedNames; // paths planned renames lead to
+    QSet<QString> plannedNames; // paths that planned renames, moves and copies lead to
     QHash<QString, int> trashed; // path -> line of its Trash
 
     bool fail(const QString &message, int line)
@@ -149,7 +154,7 @@ struct Run {
         if (!value(call.args[0], st.line, &folder) || (call.args.size() > 1 && !condition(call.args[1], st.line, &subfolders)))
             return Flow::Fail;
         QString error;
-        const QList<std::shared_ptr<FxFile>> rows = lister(resolve(folder.toText()), subfolders, &error);
+        const QList<std::shared_ptr<FxFile>> rows = lister(resolve(folder.toText()), subfolders, &error, cancel);
         if (!error.isEmpty() && !fail(error, st.line))
             return Flow::Fail;
         const std::shared_ptr<FxFile> outer = row;
@@ -168,20 +173,21 @@ struct Run {
         return f == Flow::ExitFor ? Flow::Next : f;
     }
 
-    // "Invoice", "Orange" | "Orange/Invoice" | "Orange" (colour only)
-    bool tagFrom(const QStringList &args, int line, Tag *out)
+    // Tag: "Invoice", "Orange" | "Orange/Invoice" | "Orange" (colour only). Untag: "Invoice" | "Orange/Invoice"
+    // (a bare word matches any colour: colour = -1). The colour goes through fxColourIndex either way (R2).
+    bool tagFrom(const QStringList &args, int line, Tag *out, bool untag)
     {
-        QString colour = args[0], word;
-        if (args.size() > 1) {
+        QString colour = untag ? QString() : args[0], word = untag ? args[0] : QString();
+        if (!untag && args.size() > 1) {
             word = args[0];
             colour = args[1];
-        } else if (const qsizetype slash = colour.indexOf(u'/'); slash >= 0) {
-            word = colour.mid(slash + 1);
-            colour.truncate(slash);
+        } else if (const qsizetype slash = args[0].indexOf(u'/'); slash >= 0) {
+            word = args[0].mid(slash + 1);
+            colour = args[0].left(slash);
         }
-        out->colour = fxColourIndex(colour);
         out->word = word;
-        return out->colour >= 0 || fail(i18n("Unknown colour %1", colour), line);
+        out->colour = colour.isEmpty() ? -1 : fxColourIndex(colour);
+        return colour.isEmpty() || out->colour >= 0 || fail(i18n("Unknown colour %1", colour), line);
     }
 
     bool action(const ScriptStmt &st)
@@ -212,6 +218,18 @@ struct Run {
             s.skipped = true;
             s.note = note;
         };
+        // dest/name must be free on disk and not planned yet; a free name is reserved
+        auto claim = [this, &skip](const QString &to) {
+            if (QFileInfo::exists(to)) {
+                skip(i18n("Name exists"));
+            } else if (plannedNames.contains(to)) {
+                skip(i18n("Same name planned above"));
+            } else {
+                plannedNames.insert(to);
+                return true;
+            }
+            return false;
+        };
         const QString &a = st.action;
         if (a == u"Trash"_s) {
             s.kind = PlanStep::Trash;
@@ -220,11 +238,12 @@ struct Run {
             s.kind = a == u"MoveTo"_s ? PlanStep::Move : PlanStep::Copy;
             const QString dest = resolve(args[0]);
             s.destFolder = QUrl::fromLocalFile(dest);
-            if (s.kind == PlanStep::Move) {
-                if (dest == folder)
-                    skip(i18n("Already there"));
-                else
-                    f.path = dest + u'/' + QFileInfo(f.path).fileName();
+            const QString to = dest + u'/' + QFileInfo(f.path).fileName();
+            if (s.kind == PlanStep::Move && dest == folder) {
+                skip(i18n("Already there"));
+            } else if (claim(to) && s.kind == PlanStep::Move) {
+                plannedNames.remove(f.path);
+                f.path = to;
             }
         } else if (a == u"Rename"_s) {
             const QString &name = args[0];
@@ -233,17 +252,13 @@ struct Run {
             s.kind = PlanStep::Rename;
             s.newName = name;
             const QString to = folder + u'/' + name;
-            if (QFileInfo::exists(to)) {
-                skip(i18n("Name exists"));
-            } else if (plannedNames.contains(to)) {
-                skip(i18n("Same name planned above"));
-            } else {
-                plannedNames.insert(to);
+            if (claim(to)) {
+                plannedNames.remove(f.path);
                 f.path = to;
             }
         } else if (a == u"Tag"_s) {
             s.kind = PlanStep::Tag;
-            if (!tagFrom(args, line, &s.tag))
+            if (!tagFrom(args, line, &s.tag, false))
                 return false;
             QList<Tag> tags = f.tags();
             if (tags.contains(s.tag)) {
@@ -256,10 +271,13 @@ struct Run {
             }
         } else { // Untag: every tag whose word or "Colour/Word" matches (HASTAG's rule)
             s.kind = PlanStep::Untag;
+            Tag want;
+            if (!tagFrom(args, line, &want, true))
+                return false;
             const QList<Tag> tags = f.tags();
             QList<Tag> kept;
             for (const Tag &t : tags) {
-                if (t.word.compare(args[0], Qt::CaseInsensitive) == 0 || t.encode().compare(args[0], Qt::CaseInsensitive) == 0) {
+                if (t.word.compare(want.word, Qt::CaseInsensitive) == 0 && (want.colour < 0 || t.colour == want.colour)) {
                     s.tag = t;
                     r.plan << s;
                 } else {
@@ -270,7 +288,7 @@ struct Run {
                 f.setTags(kept);
                 return true;
             }
-            s.tag = Tag{-1, args[0]};
+            s.tag = want;
             skip(i18n("Tag not present"));
         }
         r.plan << s;

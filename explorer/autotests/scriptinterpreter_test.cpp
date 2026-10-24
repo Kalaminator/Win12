@@ -49,6 +49,14 @@ private Q_SLOTS:
         touch(u"Downloads/keep.txt"_s);
         touch(u"Deep/inner/nested.txt"_s);
         touch(u"Deep/top.txt"_s);
+        touch(u"Mv/a/x.txt"_s);
+        touch(u"Mv/b/x.txt"_s);
+        touch(u"Mv2/x.txt"_s);
+        touch(u"Out2/x.txt"_s);
+        touch(u"Rn/a.txt"_s);
+        touch(u"Rn/sub/b.txt"_s);
+        touch(u"Hollow/e0.txt"_s, QByteArray());
+        QDir().mkpath(dir.filePath(u"Hollow/emptydir"_s));
         for (int i = 0; i < 10; ++i)
             touch(u"Ten/f%1.txt"_s.arg(i));
     }
@@ -185,7 +193,7 @@ private Q_SLOTS:
         QCOMPARE(r.plan.size(), 9);
         QCOMPARE(r.plan[1].kind, PlanStep::Untag);
         QVERIFY(!r.plan[1].skipped);
-        QCOMPARE(r.plan[1].actionText(), u"Untag Invoice"_s);
+        QCOMPARE(r.plan[1].actionText(), u"Untag Red/Invoice"_s);
         QVERIFY(r.plan[2].skipped);
         QCOMPARE(r.plan[2].note, u"Tag not present"_s);
     }
@@ -207,6 +215,64 @@ private Q_SLOTS:
         QCOMPARE(r.plan[0].note, u"Already there"_s);
     }
 
+    void movesReserveTheDestinationName()
+    {
+        const ScriptResult r = run(u"For Each f In Files(\"Mv\", Subfolders:=True)\n  f.MoveTo \"Out\"\nNext"_s);
+        QVERIFY2(r.ok, qPrintable(r.error));
+        QCOMPARE(r.plan.size(), 2);
+        QVERIFY(!r.plan[0].skipped);
+        QVERIFY(r.plan[1].skipped);
+        QCOMPARE(r.plan[1].note, u"Same name planned above"_s);
+        const ScriptResult onDisk = run(u"For Each f In Files(\"Mv2\")\n  f.MoveTo \"Out2\"\n  f.CopyTo \"Out2\"\nNext"_s);
+        QVERIFY2(onDisk.ok, qPrintable(onDisk.error));
+        QCOMPARE(onDisk.plan.size(), 2);
+        QVERIFY(onDisk.plan[0].skipped);
+        QCOMPARE(onDisk.plan[0].note, u"Name exists"_s);
+        QVERIFY(onDisk.plan[1].skipped);
+        QCOMPARE(onDisk.plan[1].note, u"Name exists"_s);
+    }
+
+    void renameCollidingWithMovedInFileIsSkipped()
+    {
+        const ScriptResult r = run(u"For Each f In Files(\"Rn/sub\")\n  f.MoveTo \"Rn\"\nNext\n"
+                                   "For Each g In Files(\"Rn\")\n  g.Rename \"b.txt\"\nNext"_s);
+        QVERIFY2(r.ok, qPrintable(r.error));
+        QVERIFY(!r.plan[0].skipped);
+        QVERIFY(r.plan.last().skipped);
+        QCOMPARE(r.plan.last().note, u"Same name planned above"_s);
+    }
+
+    void untagUnderstandsColourSlashWord()
+    {
+        const ScriptResult r = run(u"For Each f In Files(\"Downloads\")\n  f.Tag \"Orange/Invoice\"\n  f.Untag \"Orange/Invoice\"\nNext"_s);
+        QVERIFY2(r.ok, qPrintable(r.error));
+        QCOMPARE(r.plan[1].kind, PlanStep::Untag);
+        QVERIFY(!r.plan[1].skipped);
+        QCOMPARE(r.plan[0].actionText(), u"Tag OrangeBright/Invoice"_s);
+        QCOMPARE(r.plan[1].actionText(), u"Untag OrangeBright/Invoice"_s);
+    }
+
+    void filesYieldsFilesOnly()
+    {
+        const ScriptResult r = run(u"For Each f In Files(\"Hollow\", Subfolders:=True)\n  If f.Size = 0 Then\n    f.Trash\n  End If\nNext"_s);
+        QVERIFY2(r.ok, qPrintable(r.error));
+        QCOMPARE(r.plan.size(), 1);
+        QCOMPARE(r.plan[0].fileText(), u"e0.txt"_s);
+    }
+
+    void listerGetsTheCancelFlag()
+    {
+        ScriptInterpreter in(dir.path());
+        std::atomic_bool cancel{false};
+        const std::atomic_bool *seen = nullptr;
+        in.setLister([&](const QString &, bool, QString *, const std::atomic_bool *c) {
+            seen = c;
+            return QList<std::shared_ptr<FxFile>>{};
+        });
+        in.run(parse(u"For Each f In Files(\"Virtual\")\n  f.Trash\nNext"_s), &cancel);
+        QCOMPARE(seen, &cancel);
+    }
+
     void stepLimit()
     {
         const ScriptResult r = run(u"For Each f In Files(\"Ten\")\n  f.Trash\nNext"_s, 5);
@@ -219,9 +285,7 @@ private Q_SLOTS:
     void cancelStops()
     {
         ScriptInterpreter in(dir.path());
-        int listed = 0;
-        in.setLister([&](const QString &, bool, QString *) {
-            ++listed;
+        in.setLister([&](const QString &, bool, QString *, const std::atomic_bool *) {
             QList<std::shared_ptr<FxFile>> rows;
             for (int i = 0; i < 1000; ++i) {
                 auto f = std::make_shared<FxFile>();
@@ -277,10 +341,10 @@ private Q_SLOTS:
         };
         const ScriptResult flat = run(u"For Each f In Files(\"Deep\")\n  f.Trash\nNext"_s);
         QVERIFY2(flat.ok, qPrintable(flat.error));
-        QCOMPARE(names(flat), (QStringList{u"inner"_s, u"top.txt"_s}));
+        QCOMPARE(names(flat), (QStringList{u"top.txt"_s}));
         const ScriptResult deep = run(u"For Each f In Files(\"Deep\", Subfolders:=True)\n  f.CopyTo \"Out\"\nNext"_s);
         QVERIFY2(deep.ok, qPrintable(deep.error));
-        QCOMPARE(names(deep), (QStringList{u"inner"_s, u"nested.txt"_s, u"top.txt"_s}));
+        QCOMPARE(names(deep), (QStringList{u"nested.txt"_s, u"top.txt"_s}));
         QCOMPARE(deep.plan[0].actionText(), u"Copy → Out"_s);
     }
 

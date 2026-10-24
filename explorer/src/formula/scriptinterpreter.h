@@ -15,8 +15,8 @@ public:
     static constexpr qint64 DefaultMaxStatements = 1'000'000; // Call 11
     explicit ScriptInterpreter(const QString &baseFolder, qint64 maxStatements = DefaultMaxStatements);
 
-    // Rows of Files(folder[, subfolders]); a non-empty *error fails the script at the For Each line
-    using Lister = std::function<QList<std::shared_ptr<FxFile>>(const QString &absFolder, bool subfolders, QString *error)>;
+    // Rows of Files(folder[, subfolders]): files only (folders are walked, never yielded); a lister should stop early when *cancel is set; a non-empty *error fails the script at the For Each line
+    using Lister = std::function<QList<std::shared_ptr<FxFile>>(const QString &absFolder, bool subfolders, QString *error, const std::atomic_bool *cancel)>;
     void setLister(Lister); // default: QDirIterator, rows sorted and numbered like FormulaRun
 
     ScriptResult run(const Script &, const std::atomic_bool *cancel); // cancel -> ok = false, error "Stopped"
