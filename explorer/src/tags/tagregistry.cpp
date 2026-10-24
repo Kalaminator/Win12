@@ -1,5 +1,6 @@
 #include "tagregistry.h"
 using namespace Qt::StringLiterals;
+#include <KLocalizedString>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -47,15 +48,15 @@ bool TagRegistry::contains(const Tag &t) const
     return indexOf(t) >= 0;
 }
 
-void TagRegistry::touch(const Tag &t)
+bool TagRegistry::touch(const Tag &t)
 {
     if (t.isForeign())
-        return;
+        return true;
     const int i = indexOf(t);
     if (i >= 0)
         m_entries.removeAt(i);
     m_entries.prepend({t, QDateTime::currentDateTimeUtc()});
-    save();
+    return save();
 }
 
 // the edited entry i now equals another one: merge by dropping i
@@ -69,33 +70,33 @@ void TagRegistry::dropIfDuplicate(int i)
         }
 }
 
-void TagRegistry::rename(const Tag &from, const QString &word)
+bool TagRegistry::rename(const Tag &from, const QString &word)
 {
     const int i = indexOf(from);
     if (i < 0)
-        return;
+        return true;
     m_entries[i].tag.word = word;
     dropIfDuplicate(i);
-    save();
+    return save();
 }
 
-void TagRegistry::recolour(const Tag &from, int colour)
+bool TagRegistry::recolour(const Tag &from, int colour)
 {
     const int i = indexOf(from);
     if (i < 0 || colour < 0 || colour >= TagColours::Count)
-        return;
+        return true;
     m_entries[i].tag.colour = colour;
     dropIfDuplicate(i);
-    save();
+    return save();
 }
 
-void TagRegistry::remove(const Tag &t)
+bool TagRegistry::remove(const Tag &t)
 {
     const int i = indexOf(t);
     if (i < 0)
-        return;
+        return true;
     m_entries.removeAt(i);
-    save();
+    return save();
 }
 
 void TagRegistry::load()
@@ -114,7 +115,7 @@ void TagRegistry::load()
 }
 
 // ponytail: whole file rewritten on each change; the list is tens of entries
-void TagRegistry::save()
+bool TagRegistry::save()
 {
     QJsonArray arr;
     for (const Entry &e : m_entries)
@@ -123,9 +124,16 @@ void TagRegistry::save()
                                {u"used"_s, e.used.toString(Qt::ISODate)}});
     QDir().mkpath(QFileInfo(m_file).absolutePath());
     QSaveFile f(m_file);
-    if (f.open(QIODevice::WriteOnly)) {
-        f.write(QJsonDocument(QJsonObject{{u"version"_s, 1}, {u"tags"_s, arr}}).toJson());
-        f.commit();
-    }
+    if (!f.open(QIODevice::WriteOnly))
+        return false;
+    f.write(QJsonDocument(QJsonObject{{u"version"_s, 1}, {u"tags"_s, arr}}).toJson());
+    if (!f.commit())
+        return false;
     Q_EMIT changed();
+    return true;
+}
+
+QString TagRegistry::saveErrorText() const
+{
+    return i18n("The tag list could not be saved to %1.", m_file);
 }

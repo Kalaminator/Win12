@@ -99,6 +99,21 @@ private Q_SLOTS:
         r.remove(Tag{6, QStringLiteral("b")});
         QCOMPARE(spy.count(), 4);
     }
+    void unwritableSaysSoAndStaysQuiet()
+    {
+        QFile blocker(dir.path() + QStringLiteral("/blocker"));
+        QVERIFY(blocker.open(QIODevice::WriteOnly)); // a file where the registry's folder should be
+        TagRegistry r(blocker.fileName() + QStringLiteral("/tags.json"));
+        QSignalSpy spy(&r, &TagRegistry::changed);
+        const Tag t{4, QStringLiteral("a")};
+        QVERIFY(!r.touch(t));
+        QVERIFY(!r.rename(t, QStringLiteral("b")));
+        QCOMPARE(spy.count(), 0);
+        QVERIFY(r.saveErrorText().contains(blocker.fileName()));
+        TagRegistry ok(path());
+        QVERIFY(ok.touch(t));
+        QVERIFY(ok.rename(Tag{9, QStringLiteral("absent")}, QStringLiteral("x"))); // nothing to do is no failure
+    }
 };
 
 QTEST_MAIN(TagRegistryTest)

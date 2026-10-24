@@ -806,8 +806,11 @@ void ExplorerActions::addTag(const KFileItemList &items, const Tag &tag)
             m_showError(text);
         else
             KMessageBox::error(m_window, text);
-    } else {
-        m_registry.touch(tag);
+    } else if (!m_registry.touch(tag)) {
+        if (m_showError)
+            m_showError(m_registry.saveErrorText());
+        else
+            KMessageBox::error(m_window, m_registry.saveErrorText());
     }
     if (m_view) // earlier items may be tagged even after an error
         m_view->model()->invalidateTags(urls);

@@ -13,10 +13,12 @@ public:
     static QString defaultPath();
 
     QList<Tag> tags() const; // most recently used first, Win12 tags only
-    void touch(const Tag &); // insert or move to front, save
-    void rename(const Tag &from, const QString &word); // registry only
-    void recolour(const Tag &from, int colour);
-    void remove(const Tag &);
+    // Edits save at once and return false when tags.json could not be written (changed() only on success)
+    bool touch(const Tag &); // insert or move to front, save
+    bool rename(const Tag &from, const QString &word); // registry only
+    bool recolour(const Tag &from, int colour);
+    bool remove(const Tag &);
+    QString saveErrorText() const;
     bool contains(const Tag &) const;
 
 Q_SIGNALS:
@@ -30,7 +32,7 @@ private:
     int indexOf(const Tag &) const;
     void dropIfDuplicate(int i);
     void load();
-    void save();
+    bool save();
     QString m_file;
     QList<Entry> m_entries;
 };

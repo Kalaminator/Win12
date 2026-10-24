@@ -166,22 +166,25 @@ void ManageTagsDialog::searchDone(bool ok, const QString &error, bool isWalk)
     }
     if (--m_pending > 0)
         return;
+    bool saved = true;
     if (!m_failed) { // a failed run leaves the registry alone so the user can retry
         if (!m_to)
-            m_registry->remove(m_from);
+            saved = m_registry->remove(m_from);
         else {
             Tag cur = m_from;
             if (m_to->word != cur.word) {
-                m_registry->rename(cur, m_to->word);
+                saved = m_registry->rename(cur, m_to->word);
                 cur.word = m_to->word;
             }
             if (m_to->colour != cur.colour)
-                m_registry->recolour(cur, m_to->colour);
+                saved = m_registry->recolour(cur, m_to->colour) && saved;
         }
     }
     QString text = m_failed ? i18n("Some files could not be changed: %1", m_error) : i18np("%1 file changed", "%1 files changed", m_done.size());
     if (!m_balooError.isEmpty())
         text += QLatin1Char(' ') + i18n("Indexed locations could not be searched: %1", m_balooError);
+    if (!saved)
+        text += QLatin1Char(' ') + m_registry->saveErrorText();
     m_status->setText(text);
     setBusy(false);
     Q_EMIT applied(m_done.size());

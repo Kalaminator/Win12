@@ -3,6 +3,7 @@
 #include "tagstore.h"
 #include <QDialogButtonBox>
 #include <QDir>
+#include <QLabel>
 #include <QPushButton>
 #include <QSignalSpy>
 #include <QStandardPaths>
@@ -136,6 +137,23 @@ private Q_SLOTS:
         d.applyTo(T("Red/A"), T("Blue/B"));
         QVERIFY(spy.wait(5000));
         QCOMPARE(tagsOf(a), QList<Tag>{T("Blue/B")});
+    }
+    void registrySaveFailureIsShown()
+    {
+        QFile blocker(cfg.filePath(QStringLiteral("blocker")));
+        QVERIFY(blocker.open(QIODevice::WriteOnly));
+        TagRegistry reg(blocker.fileName() + QStringLiteral("/tags.json")); // cannot be written
+        TagStore store;
+        reg.touch(T("Red/u"));
+        ManageTagsDialog d(&reg, &store, QUrl::fromLocalFile(dir.path()), nullptr);
+        d.setEngineForTests(TagSearch::Engine::Walk);
+        QSignalSpy spy(&d, &ManageTagsDialog::applied);
+        d.applyTo(T("Red/u"), T("Red/v"));
+        QVERIFY(spy.wait(5000));
+        bool shown = false;
+        for (const QLabel *l : d.findChildren<QLabel *>())
+            shown |= l->text().contains(reg.saveErrorText());
+        QVERIFY(shown);
     }
     void tagsChangedOncePerBatch()
     {
