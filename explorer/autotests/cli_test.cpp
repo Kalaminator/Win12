@@ -24,6 +24,15 @@ private Q_SLOTS:
         QCOMPARE(o.rule, QStringLiteral("Old"));
         QCOMPARE(o.urls, QList<QUrl>{QUrl(QStringLiteral("file:///tmp/x"))});
     }
+    void dialogOptions()
+    {
+        CliOptions a = parseCli({QStringLiteral("--select-by-rule"), QStringLiteral("smb://nas/x")}, QStringLiteral("/"));
+        QVERIFY(a.selectByRule && !a.renameMany);
+        QCOMPARE(a.urls, QList<QUrl>{QUrl(QStringLiteral("smb://nas/x"))});
+        CliOptions b = parseCli({QStringLiteral("--rename-many"), QStringLiteral("/tmp/a"), QStringLiteral("/tmp/b")}, QStringLiteral("/"));
+        QVERIFY(b.renameMany && !b.selectByRule);
+        QCOMPARE(b.urls.size(), 2);
+    }
 };
 
 QTEST_GUILESS_MAIN(CliTest)

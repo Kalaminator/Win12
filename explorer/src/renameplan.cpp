@@ -8,7 +8,7 @@ namespace
 int dotPos(const QString &name)
 {
     int i = name.lastIndexOf(QLatin1Char('.'));
-    return i > 0 ? i : -1;
+    return i > 0 && i < name.size() - 1 ? i : -1;
 }
 QString baseOf(const QString &name)
 {

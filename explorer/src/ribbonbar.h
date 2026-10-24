@@ -1,5 +1,7 @@
 #pragma once
+#include <QColor>
 #include <QHash>
+#include <QPointer>
 #include <QList>
 #include <QStringList>
 #include <QWidget>
@@ -17,13 +19,17 @@ class RibbonBar : public QWidget
 {
     Q_OBJECT
 public:
+    static constexpr int TabStripHeight = 32;
     explicit RibbonBar(ExplorerActions *actions, QWidget *parent = nullptr);
     bool isCollapsed() const { return m_collapsed; }
     void setCollapsed(bool); // body hidden, tab strip stays; clicking a tab while collapsed expands again
+    QWidget *takeTabStrip(); // hands the strip over (the caller reparents it); the ribbon keeps only the body
+    QWidget *tabStrip() const { return m_strip; }
+    void setTabStripColours(const QColor &bg, const QColor &fg);
     QAction *collapseAction() const { return m_collapse; }
     QMenu *fileMenu() const { return m_fileMenu; }
     int currentTab() const { return m_current; }
-    void setCurrentTab(int); // index into the non-File tabs: 0 Home, 1 Share, 2 View, 3 Advanced
+    void setCurrentTab(int); // index into the non-File tabs: 0 Home, 1 View, 2 Advanced
     QList<QToolButton *> buttonsFor(const QString &actionId) const { return m_buttons.values(actionId); }
     QStringList visibleGroupTitles(int tab) const { return m_titles.value(tab); }
 
@@ -32,7 +38,8 @@ Q_SIGNALS:
 
 private:
     friend class RibbonTabStrip;
-    RibbonTabStrip *m_strip;
+    QPointer<QWidget> m_strip;
+    QPointer<QToolButton> m_stripCollapse;
     QStackedWidget *m_body;
     QAction *m_collapse;
     QMenu *m_fileMenu;

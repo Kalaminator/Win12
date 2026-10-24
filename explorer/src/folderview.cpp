@@ -238,6 +238,8 @@ private:
 
     int stripHeight(const QStyleOptionViewItem &o, const QModelIndex &index) const
     {
+        if (index.data(FolderModel::GroupLabelRole).toString().isEmpty())
+            return 0;
         return m_settings->groupRole != GroupRole::None && index.siblingAtColumn(0).data(FolderModel::GroupFirstRole).toBool()
             ? o.fontMetrics.height() * 2
             : 0;
@@ -714,7 +716,8 @@ KFileItemList FolderView::selectedItems() const
 {
     KFileItemList items;
     QSet<QUrl> seen; // grouped by tag, one file can fill several rows
-    const QModelIndexList rows = m_selection->selectedRows();
+    QModelIndexList rows = m_selection->selectedRows();
+    std::sort(rows.begin(), rows.end(), [](const QModelIndex &a, const QModelIndex &b) { return a.row() < b.row(); }); // view order
     for (const QModelIndex &index : rows) {
         const KFileItem item = m_model->itemFor(index);
         if (!seen.contains(item.url())) {

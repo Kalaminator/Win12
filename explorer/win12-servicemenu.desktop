@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Service
+MimeType=inode/directory;all/allfiles;
+X-KDE-Submenu=Win12
+Icon=system-file-manager
+Actions=a-select-by-rule;b-rename-many;
+
+[Desktop Action a-select-by-rule]
+Name=Select by rule…
+Icon=edit-select-all
+Exec=win12-explorer --select-by-rule %U
+
+[Desktop Action b-rename-many]
+Name=Rename many…
+Icon=edit-rename
+Exec=win12-explorer --rename-many %U

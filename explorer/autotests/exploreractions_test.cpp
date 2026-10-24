@@ -18,6 +18,9 @@
 #include <KIO/FileUndoManager>
 #include "renamemanydialog.h"
 #include "newtagdialog.h"
+#include "tagpicker.h"
+#include <QWidgetAction>
+#include <QLabel>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QLineEdit>
@@ -27,6 +30,8 @@
 #include "selectbyruledialog.h"
 #include <KFileMetaData/UserMetaData>
 #include <QStandardPaths>
+#include <KPluginMetaData>
+using namespace Qt::StringLiterals;
 
 namespace {
 void writeFile(const QString &path, const QByteArray &data)
@@ -41,13 +46,26 @@ KFileItem itemFor(const QString &path)
     return KFileItem(QUrl::fromLocalFile(path));
 }
 
-QList<QAction *> win12Entries(QMenu *menu)
+QStringList allTexts(QMenu *menu)
 {
-    QList<QAction *> found;
-    for (QAction *a : menu->actions())
-        if (a->text() == QLatin1String("Win12"))
-            found << a;
-    return found;
+    QStringList t;
+    for (QAction *a : menu->actions()) {
+        t << a->text().section(QLatin1Char('\t'), 0, 0); // drop the shortcut column
+        if (a->menu())
+            t << allTexts(a->menu());
+    }
+    return t;
+}
+
+QString servicesDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QStringLiteral("/kio/servicemenus");
+}
+
+void removeTestServiceMenus()
+{
+    QFile::remove(servicesDir() + QStringLiteral("/win12-servicemenu.desktop"));
+    QFile::remove(servicesDir() + QStringLiteral("/other-app.desktop"));
 }
 }
 
@@ -73,6 +91,7 @@ class ExplorerActionsTest : public QObject
 
 private Q_SLOTS:
     void initTestCase() { QStandardPaths::setTestModeEnabled(true); }
+    void cleanupTestCase() { removeTestServiceMenus(); }
     void addTagWritesXattrAndRegistry()
     {
         if (tagsUnsupported())
@@ -113,16 +132,53 @@ private Q_SLOTS:
         a.addTag({KFileItem(u)}, T("Red/old")); // touches Red/old again: now most recent
         std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
         const QList<QAction *> acts = m->actions();
-        QCOMPARE(acts[0]->text(), QStringLiteral("old"));
-        QCOMPARE(acts[1]->text(), QStringLiteral("new"));
-        QVERIFY(acts[0]->isCheckable() && acts[0]->isChecked());
-        QVERIFY(!acts[1]->isChecked());
-        QVERIFY(acts[2]->isSeparator());
-        QCOMPARE(acts.size(), 5); // New tag…, Manage tags…
-        acts[1]->trigger(); // toggles on
+        QVERIFY(acts[0]->isSeparator());
+        QCOMPARE(acts[0]->text(), QStringLiteral("Your tags"));
+        QCOMPARE(acts[1]->text(), QStringLiteral("old"));
+        QCOMPARE(acts[2]->text(), QStringLiteral("new"));
+        QVERIFY(acts[1]->isCheckable() && acts[1]->isChecked());
+        QVERIFY(!acts[2]->isChecked());
+        QVERIFY(acts[3]->isSeparator());
+        QCOMPARE(acts[3]->text(), QStringLiteral("New tag"));
+        QVERIFY(qobject_cast<QWidgetAction *>(acts[4]));
+        QCOMPARE(acts.size(), 6); // + Manage tags…
+        acts[2]->trigger(); // toggles on
         QCOMPARE(TagStore::read(u).size(), 2);
-        acts[0]->trigger(); // toggles off
+        acts[1]->trigger(); // toggles off
         QCOMPARE(TagStore::read(u), QList<Tag>{T("Gold/new")});
+    }
+    void tagsMenuPanelAddsTagOnColourClick()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        const QUrl u = tagFile(QStringLiteral("panel"));
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
+        TagPicker *picker = nullptr;
+        for (QAction *act : m->actions())
+            if (auto *wa = qobject_cast<QWidgetAction *>(act))
+                picker = wa->defaultWidget()->findChild<TagPicker *>();
+        QVERIFY(picker);
+        QTest::keyClicks(picker->wordEdit(), QStringLiteral("w"));
+        picker->colourButton(3)->click();
+        QCOMPARE(TagStore::read(u), QList<Tag>({Tag{3, QStringLiteral("w")}}));
+        QVERIFY(a.registry().contains(Tag{3, QStringLiteral("w")}));
+    }
+    void tagsMenuHasNoNewTagDialogEntry()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(tagFile(QStringLiteral("nodlg")))}));
+        for (QAction *act : m->actions())
+            QVERIFY(!act->text().startsWith(QStringLiteral("New tag…")));
+    }
+    void tagPickerRejectsCommaAndSlash()
+    {
+        TagPicker p;
+        QTest::keyClicks(p.wordEdit(), QStringLiteral("a,b/c\"") );
+        QCOMPARE(p.wordEdit()->text(), QStringLiteral("abc"));
     }
     void tagsMenuOnUnsupportedDriveIsOneDisabledEntry()
     {
@@ -144,17 +200,20 @@ private Q_SLOTS:
             a.addTag({KFileItem(u)}, T(t));
         std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
         int enabledChecked = 0, disabledUnchecked = 0;
-        QAction *newTag = nullptr;
+        TagPicker *picker = nullptr;
+        QLabel *label = nullptr;
         for (QAction *act : m->actions()) {
             if (act->isCheckable())
                 (act->isChecked() ? enabledChecked : disabledUnchecked) += act->isEnabled() == act->isChecked();
-            if (act->text().startsWith(QLatin1String("New tag")))
-                newTag = act;
+            if (auto *wa = qobject_cast<QWidgetAction *>(act)) {
+                picker = wa->defaultWidget()->findChild<TagPicker *>();
+                label = wa->defaultWidget()->findChild<QLabel *>();
+            }
         }
         QCOMPARE(enabledChecked, 3);
         QCOMPARE(disabledUnchecked, 1);
-        QVERIFY(newTag && !newTag->isEnabled());
-        QVERIFY(newTag->text().contains(QLatin1String("max 3 tags")));
+        QVERIFY(picker && !picker->isEnabled());
+        QVERIFY(label && label->text() == QStringLiteral("max 3 tags"));
     }
     void removeMenuUnsupportedSaysSo()
     {
@@ -230,15 +289,6 @@ private Q_SLOTS:
         d.setTag(T("Red/w"));
         QVERIFY(ok->isEnabled());
         QCOMPARE(d.tag(), T("Red/w"));
-    }
-    void newTagDialogRejectsCommaAndSlash()
-    {
-        // user.xdg.tags is a comma list and '/' splits colour from word: neither may reach a word
-        NewTagDialog d(nullptr);
-        d.setTag(T("Red/"));
-        auto *edit = d.findChild<QLineEdit *>();
-        QTest::keyClicks(edit, QStringLiteral("a,b/c"));
-        QCOMPARE(d.tag(), T("Red/abc"));
     }
     void everySpecIdHasAnAction()
     {
@@ -397,7 +447,105 @@ private Q_SLOTS:
         QCOMPARE(m->actions().size(), 1);
         QVERIFY(!m->actions()[0]->isEnabled());
     }
-    void contextMenuHasMyRulesWhenSaved()
+    void contextMenuOnFolderHasDolphinEntries()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        const QUrl sub = QUrl::fromLocalFile(dir.filePath(QStringLiteral("sub")));
+        ExplorerActions a(nullptr);
+        QSignalSpy win(&a, &ExplorerActions::openInNewWindowRequested);
+        QSignalSpy split(&a, &ExplorerActions::openInSplitRequested);
+        std::unique_ptr<QMenu> m(a.contextMenu({KFileItem(sub)}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        for (const char *s : {"Open in New Window", "Open in Split View", "Copy Location", "Open Terminal Here"})
+            QCOMPARE(t.count(QString::fromLatin1(s)), 1);
+        for (QAction *x : m->actions()) {
+            if (x->text() == QStringLiteral("Open in New Window") || x->text() == QStringLiteral("Open in Split View"))
+                x->trigger();
+        }
+        QCOMPARE(win.count(), 1);
+        QCOMPARE(win.first().first().toUrl(), sub);
+        QCOMPARE(split.count(), 1);
+        QCOMPARE(split.first().first().toUrl(), sub);
+    }
+    void contextMenuOnFileHasNoWindowEntries()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({itemFor(dir.filePath(QStringLiteral("a.txt")))}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("Open in New Window")));
+        QVERIFY(!t.contains(QStringLiteral("Open in Split View")));
+        QCOMPARE(t.count(QStringLiteral("Copy Location")), 1);
+        QCOMPARE(t.count(QStringLiteral("Open Terminal Here")), 1);
+    }
+    void contextMenuMixedSelectionHasNoWindowEntries()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItem d = itemFor(dir.filePath(QStringLiteral("sub")));
+        const KFileItem f = itemFor(dir.filePath(QStringLiteral("a.txt")));
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({d, f}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("Open in New Window")));
+        QVERIFY(!t.contains(QStringLiteral("Open in Split View")));
+        for (QAction *x : m->actions())
+            if (x->text().section(QLatin1Char('\t'), 0, 0) == QStringLiteral("Copy Location"))
+                x->trigger();
+        const QString clip = QApplication::clipboard()->text();
+        QVERIFY(clip.contains(d.localPath()));
+        QVERIFY(clip.contains(f.localPath()));
+    }
+    void backgroundMenuHasCreateNew()
+    {
+        QTemporaryDir dir;
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({}, QUrl::fromLocalFile(dir.path())));
+        int creates = 0;
+        for (QAction *x : m->actions())
+            if (x->text() == QStringLiteral("Create New")) {
+                ++creates;
+                QCOMPARE(x->menu(), a.action(QStringLiteral("home_new_item"))->menu());
+            }
+        QCOMPARE(creates, 1);
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("New folder")));
+        QVERIFY(!t.contains(QStringLiteral("New item")));
+        QCOMPARE(t.count(QStringLiteral("Open Terminal Here")), 1);
+    }
+    void dolphinShortcuts()
+    {
+        ExplorerActions a(nullptr);
+        QCOMPARE(a.action(QStringLiteral("home_copy_path"))->shortcut(), QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
+        QCOMPARE(a.action(QStringLiteral("file_terminal"))->shortcut(), QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4));
+        // the menu's own entries only show the keys; a second registered shortcut would be ambiguous
+        std::unique_ptr<QMenu> m(a.contextMenu({}, QUrl::fromLocalFile(QDir::tempPath())));
+        for (QAction *x : m->actions())
+            QVERIFY2(x->shortcut().isEmpty() || x->menu(), qPrintable(x->text()));
+    }
+    void contextMenuTextsAreUnique()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions a(nullptr);
+        const QList<KFileItemList> lists = {{itemFor(dir.filePath(QStringLiteral("sub")))}, {itemFor(dir.filePath(QStringLiteral("a.txt")))}, {}};
+        for (const KFileItemList &l : lists) {
+            std::unique_ptr<QMenu> m(a.contextMenu(l, folder));
+            QStringList seen;
+            for (QAction *x : m->actions()) {
+                if (x->isSeparator())
+                    continue;
+                QVERIFY2(!seen.contains(x->text()), qPrintable(x->text()));
+                seen << x->text();
+            }
+        }
+    }
+    void contextMenuHasNoWin12Submenu()
     {
         QTemporaryDir dir;
         writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
@@ -405,27 +553,13 @@ private Q_SLOTS:
         const QUrl folder = QUrl::fromLocalFile(dir.path());
         ExplorerActions a(nullptr);
         clearLibrary(a);
-        const auto hasRules = [&] {
-            std::unique_ptr<QMenu> m(a.contextMenu(items, folder));
-            for (QAction *w : win12Entries(m.get()))
-                for (QAction *x : w->menu()->actions())
-                    if (x->text() == QStringLiteral("My rules"))
-                        return true;
-            return false;
-        };
-        QVERIFY(!hasRules());
         QVERIFY(a.library().save({QStringLiteral("A"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
-        QVERIFY(hasRules());
-        { // empty space: still there; and the submenu dies with the context menu
-            std::unique_ptr<QMenu> m(a.contextMenu({}, folder));
-            QPointer<QMenu> rules;
-            for (QAction *w : win12Entries(m.get()))
-                for (QAction *x : w->menu()->actions())
-                    if (x->text() == QStringLiteral("My rules"))
-                        rules = x->menu();
-            QVERIFY(rules);
-            m.reset();
-            QVERIFY(!rules);
+        for (const KFileItemList &list : {items, KFileItemList()}) {
+            std::unique_ptr<QMenu> m(a.contextMenu(list, folder));
+            for (QAction *x : m->actions()) {
+                QVERIFY(x->text() != QStringLiteral("Win12"));
+                QVERIFY(x->text() != QStringLiteral("My rules"));
+            }
         }
         { // a Rename rule with nothing selected says so
             QVERIFY(a.library().save({QStringLiteral("R"), QStringLiteral("=1"), SavedRule::Kind::Rename}, nullptr));
@@ -438,6 +572,54 @@ private Q_SLOTS:
             QVERIFY(!msg.isEmpty());
         }
         clearLibrary(a);
+    }
+    void contextMenuExcludesWin12ServiceMenus()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        qInfo() << "servicemenus dir:" << servicesDir();
+        QVERIFY(QDir().mkpath(servicesDir()));
+        const QString win12 = servicesDir() + QStringLiteral("/win12-servicemenu.desktop");
+        const QString other = servicesDir() + QStringLiteral("/other-app.desktop");
+        removeTestServiceMenus();
+        QVERIFY(QFile::copy(QFINDTESTDATA("../win12-servicemenu.desktop"), win12));
+        writeFile(other, "[Desktop Entry]\nType=Service\nMimeType=all/allfiles;inode/directory;\nActions=zzz-other;\n\n"
+                         "[Desktop Action zzz-other]\nName=Other app entry\nExec=true\n");
+        const auto perms = QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::ReadGroup
+            | QFileDevice::ExeGroup | QFileDevice::ReadOther | QFileDevice::ExeOther;
+        QVERIFY(QFile::setPermissions(win12, perms));
+        QVERIFY(QFile::setPermissions(other, perms));
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu(items, folder));
+        const QStringList t = allTexts(m.get());
+        removeTestServiceMenus();
+        QVERIFY2(t.contains(QStringLiteral("Other app entry")), qPrintable(t.join(QLatin1Char('|'))));
+        QVERIFY(!t.contains(QStringLiteral("Select by rule…")));
+        QVERIFY(!t.contains(QStringLiteral("Rename many…")));
+    }
+    void contextMenuHidesForbiddenPlugins()
+    {
+        if (!KPluginMetaData::findPluginById(QStringLiteral("kf6/kfileitemaction"), QStringLiteral("compressfileitemaction")).isValid())
+            QSKIP("Ark's compressfileitemaction is not installed");
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral("a.zip")), QByteArray("PK\x05\x06", 4) + QByteArray(18, '\0'));
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions a(nullptr);
+        {
+            std::unique_ptr<QMenu> m(a.contextMenu({itemFor(dir.filePath(QStringLiteral("a.txt")))}, folder));
+            const QStringList t = allTexts(m.get());
+            QVERIFY2(t.contains(QStringLiteral("Compress")), qPrintable(t.join(QLatin1Char('|'))));
+            for (const QString &bad : {u"Assign Tags"_s, u"Activities"_s, u"Folder Colour"_s, u"Change Folder Icon"_s})
+                QVERIFY2(!t.contains(bad), qPrintable(bad));
+        }
+        {
+            std::unique_ptr<QMenu> m(a.contextMenu({itemFor(dir.filePath(QStringLiteral("a.zip")))}, folder));
+            const QStringList t = allTexts(m.get());
+            QVERIFY2(t.contains(QStringLiteral("Extract")), qPrintable(t.join(QLatin1Char('|'))));
+        }
     }
     void openScriptLoadsText()
     {
@@ -456,63 +638,29 @@ private Q_SLOTS:
         QCOMPARE(got, QStringLiteral("x = 1"));
     }
 
-    void contextMenuHasWin12OnlyWhenFilled()
+    void renameManyClashesWithHiddenFile()
     {
-        QTemporaryDir dir;
+        QTemporaryDir dir, configDir;
         writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
-        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
-        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        writeFile(dir.filePath(QStringLiteral(".b.txt")), "b");
+        ViewSettingsStore store(KSharedConfig::openConfig(configDir.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
         ExplorerActions actions(nullptr);
-
-        std::unique_ptr<QMenu> plain(actions.contextMenu(items, folder));
-        QCOMPARE(win12Entries(plain.get()).size(), 1); // always has "Select by rule…"
-        QCOMPARE(win12Entries(plain.get()).first()->menu()->actions().size(), 2); // Select by rule + Rename many
-
-        connect(&actions, &ExplorerActions::fillWin12Menu, this, [](QMenu *m, const KFileItemList &) {
-            m->addAction(QStringLiteral("Tag"));
-        });
-        std::unique_ptr<QMenu> filled(actions.contextMenu(items, folder));
-        const QList<QAction *> win12 = win12Entries(filled.get());
-        QCOMPARE(win12.size(), 1);
-        QVERIFY(win12.first()->menu());
-        QCOMPARE(win12.first()->menu()->actions().size(), 3);
-    }
-
-    void win12MenuHasSelectByRule()
-    {
-        QTemporaryDir dir;
-        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
-        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
-        const QUrl folder = QUrl::fromLocalFile(dir.path());
-        ExplorerActions actions(nullptr);
-        for (const KFileItemList &list : {items, KFileItemList()}) {
-            std::unique_ptr<QMenu> menu(actions.contextMenu(list, folder));
-            const QList<QAction *> win12 = win12Entries(menu.get());
-            QCOMPARE(win12.size(), 1);
-            QStringList texts;
-            for (QAction *a : win12.first()->menu()->actions())
-                texts << a->text();
-            QVERIFY2(texts.contains(QStringLiteral("Select by rule…")), qPrintable(texts.join(QLatin1Char('|'))));
-        }
-    }
-
-    void win12MenuHasRenameMany()
-    {
-        QTemporaryDir dir;
-        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
-        const KFileItemList items = {itemFor(dir.filePath(QStringLiteral("a.txt")))};
-        const QUrl folder = QUrl::fromLocalFile(dir.path());
-        ExplorerActions actions(nullptr);
-        const auto has = [&](const KFileItemList &list) {
-            std::unique_ptr<QMenu> menu(actions.contextMenu(list, folder));
-            const QList<QAction *> acts = win12Entries(menu.get()).first()->menu()->actions();
-            for (QAction *a : acts)
-                if (a->text() == QStringLiteral("Rename many…"))
-                    return true;
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        actions.setActiveView(&view);
+        PlannedRename::Status status = PlannedRename::Rename;
+        actions.setExecRenameDialog([&](RenameManyDialog &d) {
+            RenameBlock t;
+            t.kind = RenameBlock::Text;
+            t.text = QStringLiteral(".b");
+            d.setBlocks({t});
+            status = d.plan().first().status;
             return false;
-        };
-        QVERIFY(has(items));
-        QVERIFY(!has(KFileItemList()));
+        });
+        actions.renameMany({itemFor(dir.filePath(QStringLiteral("a.txt")))});
+        QCOMPARE(status, PlannedRename::ClashExisting);
     }
 
     void renameManyRunsPlanAndUndoRestores()

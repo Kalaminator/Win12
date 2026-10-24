@@ -125,6 +125,62 @@ private Q_SLOTS:
         QVERIFY(sel->isEnabled());
         QVERIFY(d->findChild<QPushButton *>(QStringLiteral("btnTrash"))->isEnabled());
     }
+    void lookInFrozenAtFind()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make());
+        runFind(*d);
+        const QUrl searched = d->lookIn();
+        auto *t = d->findChild<QTreeWidget *>(QStringLiteral("results"));
+        for (int i = 0; i < t->topLevelItemCount(); ++i)
+            if (t->topLevelItem(i)->text(0).contains(QLatin1Char('/')))
+                t->topLevelItem(i)->setCheckState(0, Qt::Unchecked);
+        d->findChild<KUrlRequester *>()->setUrl(QUrl::fromLocalFile(QStringLiteral("/nowhere")));
+        QCOMPARE(d->lookIn(), searched);
+        for (int i = 0; i < t->topLevelItemCount(); ++i)
+            if (!t->topLevelItem(i)->text(0).contains(QLatin1Char('/'))) { // re-evaluate the gating
+                t->topLevelItem(i)->setCheckState(0, Qt::Unchecked);
+                t->topLevelItem(i)->setCheckState(0, Qt::Checked);
+            }
+        QVERIFY(d->findChild<QPushButton *>(QStringLiteral("btnSelect"))->isEnabled());
+    }
+    void enterInResultsTogglesTick()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Trash));
+        d->show();
+        runFind(*d);
+        auto *tree = d->findChild<QTreeWidget *>(QStringLiteral("results"));
+        tree->setFocus();
+        tree->setCurrentItem(tree->topLevelItem(0));
+        QTest::keyClick(tree, Qt::Key_Return);
+        QCOMPARE(tree->topLevelItem(0)->checkState(0), Qt::Unchecked);
+        QCOMPARE(d->result(), int(QDialog::Rejected));
+        QVERIFY(d->isVisible());
+        QTest::keyClick(tree, Qt::Key_Return);
+        QCOMPARE(tree->topLevelItem(0)->checkState(0), Qt::Checked);
+    }
+    void sizeColumnSortsBySize()
+    {
+        QTemporaryDir sd;
+        for (auto [n, sz] : {std::pair{"s5.dat", 5}, {"s2000.dat", 2000}, {"s300.dat", 300}}) {
+            QFile f(sd.filePath(QString::fromLatin1(n)));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+            f.write(QByteArray(sz, 'x'));
+        }
+        SelectByRuleDialog d(QUrl::fromLocalFile(sd.path()), SelectByRuleDialog::Action::Select, nullptr);
+        d.setRules({{Field::Extension, Test::Equals, QStringLiteral("dat")}});
+        runFind(d);
+        auto *tree = d.findChild<QTreeWidget *>(QStringLiteral("results"));
+        int col = -1;
+        for (int i = 0; i < tree->columnCount(); ++i)
+            if (tree->headerItem()->text(i) == QLatin1String("Size"))
+                col = i;
+        QVERIFY(col >= 0);
+        tree->sortItems(col, Qt::AscendingOrder);
+        QStringList order;
+        for (int i = 0; i < tree->topLevelItemCount(); ++i)
+            order << tree->topLevelItem(i)->text(0);
+        QCOMPARE(order, (QStringList{QStringLiteral("s5.dat"), QStringLiteral("s300.dat"), QStringLiteral("s2000.dat")}));
+    }
     void enterNeverReachesActionButton()
     {
         std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Trash));

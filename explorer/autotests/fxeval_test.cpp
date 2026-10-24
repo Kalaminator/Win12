@@ -83,6 +83,12 @@ private Q_SLOTS:
         QCOMPARE(ev(u"MODIFIED"_s), FxValue::date(QDateTime(QDate(2026, 8, 2), QTime(14, 5))));
     }
 
+    void hugeNumbersClamp()
+    {
+        QCOMPARE(ev(u"LEFT(\"abc\", 99999999999999999999)"_s), T(u"abc"_s));
+        QCOMPARE(ev(u"MID(\"abc\", 99999999999999999999, 1)"_s), T(u""_s));
+        QCOMPARE(ev(u"DATE(99999999999999999999, 1, 1)"_s), E(FxError::Num));
+    }
     void textFunctions()
     {
         QCOMPARE(ev(u"LEFT(NAME,3)"_s), T(u"hol"_s));

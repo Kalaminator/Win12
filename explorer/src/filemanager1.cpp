@@ -40,8 +40,11 @@ void FileManager1::releaseName()
 
 static void openFolders(const QStringList &uris)
 {
-    auto *w = new ExplorerWindow(FileManager1::foldersFor(uris).keys());
-    w->show();
+    const QList<QUrl> folders = FileManager1::foldersFor(uris).keys();
+    for (const QUrl &folder : folders)
+        (new ExplorerWindow(folder))->show();
+    if (folders.isEmpty())
+        (new ExplorerWindow)->show();
 }
 
 void FileManager1::ShowFolders(const QStringList &uris, const QString &)
@@ -53,7 +56,7 @@ void FileManager1::ShowItems(const QStringList &uris, const QString &)
 {
     const auto m = foldersFor(uris);
     for (auto it = m.cbegin(); it != m.cend(); ++it) {
-        auto *w = new ExplorerWindow({it.key()});
+        auto *w = new ExplorerWindow(it.key());
         w->show();
         w->selectItems(it.value());
     }
@@ -64,7 +67,7 @@ void FileManager1::ShowItemProperties(const QStringList &uris, const QString &)
     QList<QUrl> urls;
     for (const QString &s : uris)
         urls << QUrl::fromUserInput(s);
-    auto *w = new ExplorerWindow({KIO::upUrl(urls.value(0))});
+    auto *w = new ExplorerWindow(KIO::upUrl(urls.value(0)));
     w->show();
     w->showProperties(urls);
 }

@@ -33,6 +33,7 @@ public:
     explicit ExplorerActions(QWidget *windowParent);
     QAction *action(const QString &id) const; // nullptr for unknown ids
     void setActiveView(FolderView *); // the view the actions operate on
+    static const QStringList kHiddenPlugins; // KIO file-item plugins that must not show (Assign Tags, folder colour, Activities)
     QMenu *contextMenu(const KFileItemList &items, const QUrl &folder); // caller owns
     QMenu *newItemMenu() const; // KNewFileMenu's menu; its folder follows setActiveView
     QMenu *historyMenu() const; // filled by ExplorerWindow
@@ -81,10 +82,11 @@ Q_SIGNALS:
     void columnsToggled(const QString &id, bool on);
     void paneToggled(const QString &pane, bool on); // "nav" | "preview" | "details"
     void splitToggled(bool);
+    void openInNewWindowRequested(const QUrl &);
+    void openInSplitRequested(const QUrl &);
     void showToggled(const QString &what, bool on); // "checkboxes" | "extensions" | "hidden"
     void selectUrlsRequested(const QList<QUrl> &); // Select by rule, Action::Select
     void manageTagsRequested();
-    void fillWin12Menu(QMenu *, const KFileItemList &); // seam for phases 2-4
 
 private:
     QAction *add(const QString &id, const QString &text, const QString &icon);

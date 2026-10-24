@@ -2,8 +2,7 @@
 #include "tag.h"
 #include <QDialog>
 
-class QButtonGroup;
-class QLineEdit;
+class TagPicker;
 
 // New tag: a word (may be empty) and one of the 48 colours; OK stays disabled until a colour is picked.
 class NewTagDialog : public QDialog
@@ -15,6 +14,5 @@ public:
     void setTag(const Tag &);
 
 private:
-    QLineEdit *m_word;
-    QButtonGroup *m_colours;
+    TagPicker *m_picker;
 };

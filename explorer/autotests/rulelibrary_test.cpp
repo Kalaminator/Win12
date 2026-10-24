@@ -1,4 +1,7 @@
 #include "rulelibrary.h"
+#include <KDesktopFile>
+#include <KDesktopFileAction>
+#include <KConfigGroup>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -6,6 +9,7 @@
 #include <QStandardPaths>
 #include <QTest>
 
+using namespace Qt::StringLiterals;
 using K = SavedRule::Kind;
 
 class RuleLibraryTest : public QObject
@@ -32,9 +36,53 @@ private Q_SLOTS:
         QFile f(fi.filePath());
         QVERIFY(f.open(QIODevice::ReadOnly));
         const QString t = QString::fromUtf8(f.readAll());
-        QVERIFY(t.contains(QString::fromUtf8("X-KDE-Submenu=Win12 ▸ My rules")));
-        QVERIFY(t.contains(QStringLiteral("Actions=rule0;")));
-        QVERIFY(t.contains(QStringLiteral("Exec=win12-explorer --rule \"Old CED files\" %F")));
+        QVERIFY(t.contains(QString::fromUtf8("X-KDE-Submenu=Win12")));
+        QVERIFY(t.contains(QStringLiteral("Actions=rule000;")));
+        QVERIFY(t.contains(QStringLiteral("Exec=win12-explorer --rule \"Old CED files\" %U")));
+    }
+    void serviceActionKeysMatchFiles()
+    {
+        RuleLibrary l;
+        QVERIFY(l.save({QStringLiteral("A"), QStringLiteral("=1"), K::Select}, nullptr));
+        QVERIFY(l.save({QStringLiteral("B"), QStringLiteral("=1"), K::Select}, nullptr));
+        const QStringList keys = l.serviceActionKeys();
+        QCOMPARE(keys, (QStringList{u"a-select-by-rule"_s, u"b-rename-many"_s, u"rule000"_s, u"rule001"_s}));
+        const KDesktopFile df(QFINDTESTDATA("../win12-servicemenu.desktop"));
+        QVERIFY(!df.actions().isEmpty());
+        for (const KDesktopFileAction &act : df.actions())
+            QVERIFY2(keys.contains(act.actionsKey()), qPrintable(act.actionsKey()));
+        QVERIFY(l.serviceMenuText().contains(QStringLiteral("[Desktop Action rule001]")));
+    }
+    void serviceMenuEscapesPercent()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("100% done"), QStringLiteral("1"), K::Script}, &err));
+        QVERIFY(l.serviceMenuText().contains(QStringLiteral("--rule \"100%% done\"")));
+    }
+    void serviceMenuWrittenOnLoad()
+    {
+        QFile::remove(RuleLibrary::serviceMenuPath());
+        QDir().mkpath(QFileInfo(RuleLibrary::path()).absolutePath());
+        QFile f(RuleLibrary::path());
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write(R"j({"version":1,"rules":[{"name":"Old","kind":"select","text":"=AND(1)"}]})j");
+        f.close();
+        RuleLibrary l;
+        QCOMPARE(l.all().size(), 1);
+        QVERIFY(QFile::exists(RuleLibrary::serviceMenuPath()));
+    }
+    void staticMenuSharesSubmenu()
+    {
+        KDesktopFile f(QFINDTESTDATA("../win12-servicemenu.desktop"));
+        QCOMPARE(f.desktopGroup().readEntry("X-KDE-Submenu"), QString(RuleLibrary::kSubmenu));
+        const QStringList a = f.readActions();
+        QCOMPARE(a.size(), 2);
+        QVERIFY(f.actionGroup(a[0]).readEntry("Exec").endsWith(QStringLiteral("--select-by-rule %U")));
+        QVERIFY(f.actionGroup(a[1]).readEntry("Exec").endsWith(QStringLiteral("--rename-many %U")));
+        const QStringList mt = f.desktopGroup().readXdgListEntry("MimeType");
+        QVERIFY(mt.contains(QStringLiteral("inode/directory")));
+        QVERIFY(mt.contains(QStringLiteral("all/allfiles")));
     }
     void serviceMenuRemovedWhenEmpty()
     {
@@ -51,10 +99,10 @@ private Q_SLOTS:
         QString err;
         QVERIFY(l.save({QStringLiteral("a\"b"), QStringLiteral("1"), K::Script}, &err));
         // file text doubles the backslash of the quoting-level \" (desktop-entry unescape runs first)
-        QVERIFY(l.serviceMenuText().contains(QStringLiteral("Exec=win12-explorer --rule \"a\\\\\"b\" %F")));
+        QVERIFY(l.serviceMenuText().contains(QStringLiteral("Exec=win12-explorer --rule \"a\\\\\"b\" %U")));
         QVERIFY(l.remove(QStringLiteral("a\"b"), K::Script, &err));
         QVERIFY(l.save({QStringLiteral("p$`\\%q\nr"), QStringLiteral("1"), K::Script}, &err));
-        QVERIFY(l.serviceMenuText().contains(QStringLiteral("Exec=win12-explorer --rule \"p\\\\$\\\\`\\\\\\\\%%qr\" %F")));
+        QVERIFY(l.serviceMenuText().contains(QStringLiteral("Exec=win12-explorer --rule \"p\\\\$\\\\`\\\\\\\\%%qr\" %U")));
         QVERIFY(l.serviceMenuText().contains(QStringLiteral("Name=p$`\\\\%qr\n")));
     }
     void saveThenAllRoundTrips()
@@ -84,7 +132,7 @@ private Q_SLOTS:
         QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("new"), K::Select}, &err));
         QCOMPARE(l.all().size(), 1);
         QCOMPARE(l.all()[0].text, QStringLiteral("new"));
-        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("o"), K::Rename}, &err));
+        QVERIFY(l.save({QStringLiteral("y"), QStringLiteral("o"), K::Rename}, &err));
         QCOMPARE(l.all().size(), 2);
     }
     void removeByNameAndKind()
@@ -92,7 +140,7 @@ private Q_SLOTS:
         RuleLibrary l;
         QString err;
         l.save({QStringLiteral("x"), QStringLiteral("a"), K::Select}, &err);
-        l.save({QStringLiteral("x"), QStringLiteral("b"), K::Rename}, &err);
+        l.save({QStringLiteral("y"), QStringLiteral("b"), K::Rename}, &err);
         QVERIFY(l.remove(QStringLiteral("x"), K::Select, &err));
         QCOMPARE(l.all().size(), 1);
         QCOMPARE(l.all()[0].kind, K::Rename);
@@ -140,6 +188,33 @@ private Q_SLOTS:
         QCOMPARE(spy.count(), 1);
         QVERIFY(l.remove(QStringLiteral("x"), K::Select, &err));
         QCOMPARE(spy.count(), 2);
+    }
+    void saveRefusesNameOfOtherKind()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(!l.save({QStringLiteral("x"), QStringLiteral("2"), K::Script}, &err));
+        QVERIFY(err.contains(QStringLiteral("x")));
+        QCOMPARE(l.all().size(), 1);
+    }
+    void saveReplacesSameKind()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("2"), K::Select}, &err));
+        QCOMPARE(l.all().size(), 1);
+        QCOMPARE(l.all().first().text, QStringLiteral("2"));
+    }
+    void findByName()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(l.find(QStringLiteral("x")).has_value());
+        QCOMPARE(l.find(QStringLiteral("x"))->kind, K::Select);
+        QVERIFY(!l.find(QStringLiteral("nope")).has_value());
     }
 };
 

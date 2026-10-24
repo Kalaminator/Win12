@@ -5,6 +5,13 @@
 #include "ribbonspec.h"
 #include "selectbyruledialog.h"
 #include "tagribbon.h"
+#include "tagpicker.h"
+#include <QApplication>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTimer>
+#include <QWidgetAction>
 #include <KSharedConfig>
 #include <KConfigGroup>
 #include <QPainter>
@@ -146,6 +153,8 @@ ExplorerActions::ExplorerActions(QWidget *windowParent)
         {"home_select_all", QKeySequence(Qt::CTRL | Qt::Key_A)},
         {"home_new_folder", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_N)},
         {"home_properties", QKeySequence(Qt::ALT | Qt::Key_Return)},
+        {"home_copy_path", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C)},
+        {"file_terminal", QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4)},
         {"view_hidden", QKeySequence(Qt::CTRL | Qt::Key_H)},
         {"view_split", QKeySequence(Qt::Key_F4)},
         {"view_nav_pane", QKeySequence(Qt::Key_F11)},
@@ -820,14 +829,16 @@ void ExplorerActions::renameManyImpl(const KFileItemList &items, const QString &
     for (const KFileItem &i : items) {
         ritems << RenameItem{i.url(), i.name(), i.time(KFileItem::ModificationTime), i};
         const QString dir = i.url().adjusted(QUrl::RemoveFilename).toLocalFile();
-        if (!dir.isEmpty() && !dirs.contains(dir)) {
-            dirs << dir;
-            if (m_view && folder().isLocalFile() && QDir::cleanPath(dir) == QDir::cleanPath(folder().toLocalFile())) {
-                // the active view's folder: names come from its model, no disk access
+        if (dir.isEmpty()) { // remote: QDir cannot read it, the view model is the best we have
+            if (m_view && !dirs.contains(QString())) {
+                dirs << QString();
                 for (const KFileItem &v : m_view->itemsInViewOrder(false))
                     existing << v.name();
-                continue;
             }
+            continue;
+        }
+        if (!dirs.contains(dir)) {
+            dirs << dir;
             // ponytail: other folders (rule matches in subfolders) are read once each, KIO just listed them (warm cache)
             const QStringList names = QDir(dir).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
             existing.unite(QSet<QString>(names.begin(), names.end()));
@@ -956,6 +967,8 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
         full = full && win12TagCount(have.last()) >= MaxTags;
     }
     const QList<Tag> known = m_registry.tags();
+    if (!known.isEmpty())
+        menu->addSection(i18n("Your tags"));
     for (const Tag &t : known.mid(0, 8)) {
         QAction *a = menu->addAction(TagRibbon::icon(t), t.display());
         a->setCheckable(true);
@@ -971,12 +984,24 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
                 removeTag(items, t);
         });
     }
-    menu->addSeparator();
-    QAction *newTagAction = menu->addAction(QIcon::fromTheme(QStringLiteral("tag-new")), i18n("New tag…"), this, [this, items] { newTag(items); });
+    menu->addSection(i18n("New tag"));
+    auto *host = new QWidget(menu);
+    auto *row = new QHBoxLayout(host);
+    auto *picker = new TagPicker(host);
+    row->addWidget(picker);
     if (full) {
-        newTagAction->setEnabled(false);
-        newTagAction->setText(i18n("New tag… (max 3 tags)"));
+        picker->setEnabled(false);
+        row->addWidget(new QLabel(i18n("max 3 tags"), host));
     }
+    connect(picker, &TagPicker::colourPicked, this, [this, items](const Tag &t) {
+        addTag(items, t);
+        while (auto *p = qobject_cast<QMenu *>(QApplication::activePopupWidget()))
+            p->hide();
+    });
+    connect(menu, &QMenu::aboutToShow, picker, [w = picker->wordEdit()] { QTimer::singleShot(0, w, qOverload<>(&QWidget::setFocus)); });
+    auto *wa = new QWidgetAction(menu);
+    wa->setDefaultWidget(host);
+    menu->addAction(wa);
     menu->addAction(QIcon::fromTheme(QStringLiteral("tag-properties")), i18n("Manage tags…"), this, [this] { Q_EMIT manageTagsRequested(); });
 }
 
@@ -1003,6 +1028,8 @@ void ExplorerActions::fillRemoveMenu(QMenu *menu, const KFileItemList &items)
     });
 }
 
+const QStringList ExplorerActions::kHiddenPlugins = {QStringLiteral("tagsfileitemaction"), QStringLiteral("setfoldericonitemaction"), QStringLiteral("kactivitymanagerd_fileitem_linking_plugin")};
+
 QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &folder)
 {
     auto *menu = new QMenu(m_window);
@@ -1014,24 +1041,30 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         return a;
     };
     const bool canPaste = folder.isValid() && clipboardHasUrls();
-    const auto addWin12 = [&] {
-        auto *win12 = new QMenu(i18n("Win12"), menu);
-        win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
-        if (!items.isEmpty())
-            win12->addAction(i18n("Rename many…"), this, [this, items] { renameMany(items); });
-        if (!m_library.all().isEmpty())
-            win12->addMenu(myRulesMenu(items, win12)); // owned by win12, dies with the context menu
-        Q_EMIT fillWin12Menu(win12, items);
-        if (win12->isEmpty())
-            delete win12;
-        else
-            menu->addMenu(win12);
+    // text only: a second registered shortcut would be ambiguous with home_copy_path / file_terminal
+    const auto keyColumn = [](const QKeySequence &k) { return u'\t' + k.toString(QKeySequence::NativeText); };
+    // Dolphin's own "Copy Location" / "Open Terminal Here"; shortcuts are shown, the real ones live on home_copy_path / file_terminal.
+    const auto locationAndTerminal = [&](const KFileItemList &sel, const QUrl &termUrl) {
+        QAction *c = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), i18n("Copy Location") + keyColumn(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C)));
+        connect(c, &QAction::triggered, this, [this, sel, folder] {
+            copyPaths(sel.isEmpty() ? KFileItemList{KFileItem(folder)} : sel);
+        });
+        QAction *t = menu->addAction(QIcon::fromTheme(QStringLiteral("utilities-terminal")), i18n("Open Terminal Here") + keyColumn(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4)));
+        t->setEnabled(termUrl.isLocalFile());
+        connect(t, &QAction::triggered, this, [this, termUrl] { openTerminal(termUrl); });
     };
 
     if (!items.isEmpty()) {
         QAction *open = menu->addAction(QIcon::fromTheme(QStringLiteral("document-open")), i18n("Open"));
         connect(open, &QAction::triggered, this, [this, items] { this->open(items); });
         menu->setDefaultAction(open);
+        if (items.size() == 1 && items.first().isDir()) {
+            const QUrl dirUrl = items.first().url();
+            QAction *nw = menu->addAction(QIcon::fromTheme(QStringLiteral("window-new")), i18n("Open in New Window"));
+            connect(nw, &QAction::triggered, this, [this, dirUrl] { Q_EMIT openInNewWindowRequested(dirUrl); });
+            QAction *sp = menu->addAction(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18n("Open in Split View"));
+            connect(sp, &QAction::triggered, this, [this, dirUrl] { Q_EMIT openInSplitRequested(dirUrl); });
+        }
         auto *fia = new KFileItemActions(menu);
         fia->setParentWidget(m_window);
         fia->setItemListProperties(KFileItemListProperties(items));
@@ -1040,13 +1073,14 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         entry(QStringLiteral("home_cut"), [this, items] { copyToClipboard(items, true); });
         entry(QStringLiteral("home_copy"), [this, items] { copyToClipboard(items, false); });
         entry(QStringLiteral("home_paste_shortcut"), [this, folder] { pasteShortcut(folder); }, canPaste);
+        locationAndTerminal(items, items.size() == 1 && items.first().isDir() ? items.first().url() : folder);
         menu->addSeparator();
-        fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services);
+        fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services | KFileItemActions::MenuActionSource::Plugins, {},
+                          m_library.serviceActionKeys() + kHiddenPlugins);
         menu->addSeparator();
         auto *tags = tagsMenu(items);
         tags->setParent(menu, tags->windowFlags()); // dies with the context menu
         menu->addMenu(tags);
-        addWin12();
         menu->addSeparator();
         entry(QStringLiteral("home_delete_trash"), [this, items] { trash(items); });
         entry(QStringLiteral("home_delete_permanent"), [this, items] { deletePermanently(items); });
@@ -1073,17 +1107,16 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         if (m_view && m_view->url() == folder)
             m_view->refresh();
     });
+    locationAndTerminal({}, folder);
     menu->addSeparator();
     entry(QStringLiteral("home_paste"), [this, folder] { paste(folder); }, canPaste);
     entry(QStringLiteral("home_paste_shortcut"), [this, folder] { pasteShortcut(folder); }, canPaste);
     // KNewFileMenu works in the active view's folder; anywhere else these stay disabled rather than create in the wrong place.
     const bool inActiveFolder = m_view && m_view->url() == folder;
-    entry(QStringLiteral("home_new_folder"), [this] { m_newFileMenu->createDirectory(); }, inActiveFolder);
-    QAction *newItem = action(QStringLiteral("home_new_item"));
-    if (inActiveFolder)
-        menu->addAction(newItem);
-    menu->addSeparator();
-    addWin12();
+    QAction *create = menu->addMenu(m_newFileMenu->menu());
+    create->setText(i18n("Create New"));
+    create->setIcon(QIcon::fromTheme(QStringLiteral("document-new")));
+    create->setEnabled(inActiveFolder);
     menu->addSeparator();
     entry(QStringLiteral("home_properties"), [this, folder] { properties({}, folder); }, folder.isValid());
     return menu;

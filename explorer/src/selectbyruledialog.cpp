@@ -23,6 +23,27 @@
 
 Q_DECLARE_METATYPE(KFileItemList)
 
+// Size cells sort by the byte count kept in UserRole+1, not by their "2000 B" text
+namespace
+{
+class SizeItem : public QTreeWidgetItem
+{
+public:
+    explicit SizeItem(QTreeWidget *t, const KFileItem &it)
+        : QTreeWidgetItem(t)
+    {
+        setData(2, Qt::UserRole + 1, it.isDir() ? 0 : qint64(it.size()));
+    }
+    bool operator<(const QTreeWidgetItem &o) const override
+    {
+        const int c = treeWidget() ? treeWidget()->sortColumn() : 0;
+        if (c == 2)
+            return data(2, Qt::UserRole + 1).toLongLong() < o.data(2, Qt::UserRole + 1).toLongLong();
+        return QTreeWidgetItem::operator<(o);
+    }
+};
+}
+
 static const QList<Field> kFields = {Field::Name, Field::Extension, Field::Size, Field::Modified, Field::Created, Field::Kind, Field::Tag};
 
 SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction, QWidget *parent)
@@ -141,11 +162,7 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
     connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
         if (!m_library)
             return;
-        bool ok = false;
-        const QString name = QInputDialog::getText(this, i18n("Save formula"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        QString err;
-        if (ok && !name.isEmpty() && !m_library->save({name, text, SavedRule::Kind::Select}, &err))
-            KMessageBox::error(this, err);
+        saveRuleInteractively(*m_library, SavedRule::Kind::Select, text, this);
     });
     connect(&m_run, &FormulaRun::results, this, [this](const QList<FxRowResult> &rows) {
         const QSignalBlocker block(m_tree);
@@ -153,7 +170,7 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
         const bool sorting = m_tree->isSortingEnabled();
         m_tree->setSortingEnabled(false);
         for (const FxRowResult &r : rows) {
-            auto *row = new QTreeWidgetItem(m_tree);
+            auto *row = new SizeItem(m_tree, r.item);
             const QString rel = QDir(base).relativeFilePath(r.item.url().toLocalFile());
             row->setText(0, rel);
             row->setIcon(0, QIcon::fromTheme(r.item.iconName()));
@@ -189,7 +206,7 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
         const QSignalBlocker block(m_tree);
         const QString base = QDir::cleanPath(this->lookIn().toLocalFile());
         for (const KFileItem &it : items) {
-            auto *row = new QTreeWidgetItem(m_tree);
+            auto *row = new SizeItem(m_tree, it);
             const QString rel = QDir(base).relativeFilePath(it.url().toLocalFile());
             row->setText(0, rel);
             row->setIcon(0, QIcon::fromTheme(it.iconName()));
@@ -224,6 +241,13 @@ void SelectByRuleDialog::keyPressEvent(QKeyEvent *e)
     if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !qobject_cast<QPushButton *>(focusWidget())
         && !(focusWidget() && m_tree->isAncestorOf(focusWidget()))) {
         find();
+        e->accept();
+        return;
+    }
+    // Enter inside the results ticks/unticks the row; it never reaches the default (possibly destructive) button
+    if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && focusWidget() && m_tree->isAncestorOf(focusWidget())) {
+        if (QTreeWidgetItem *it = m_tree->currentItem())
+            it->setCheckState(0, it->checkState(0) == Qt::Checked ? Qt::Unchecked : Qt::Checked);
         e->accept();
         return;
     }
@@ -392,11 +416,13 @@ void SelectByRuleDialog::recompile()
 
 QUrl SelectByRuleDialog::lookIn() const
 {
-    return m_url->url().isEmpty() ? m_lookIn : m_url->url();
+    return m_lookIn;
 }
 
 void SelectByRuleDialog::find()
 {
+    if (!m_url->url().isEmpty())
+        m_lookIn = m_url->url();
     if (m_mode == Mode::Formula) {
         m_search.stop();
         m_tree->clear();

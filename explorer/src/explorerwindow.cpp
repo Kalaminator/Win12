@@ -7,6 +7,8 @@
 #include "tagsearch.h"
 #include "ribbonbar.h"
 #include "ribbonspec.h"
+#include "titlebar.h"
+#include "windowshadow.h"
 #include <KConfigGroup>
 #include <KDirLister>
 #include <KFilePlacesModel>
@@ -16,6 +18,7 @@
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KIO/PreviewJob>
+#include <KIO/StatJob>
 #include <KJobWidgets>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -25,28 +28,29 @@
 #include <KUrlNavigator>
 #include <QAbstractItemView>
 #include <QApplication>
+#include <QScrollBar>
 #include <QDir>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSplitter>
-#include <QStackedWidget>
 #include <QStatusBar>
-#include <QTabBar>
 #include <QTimer>
 #include <algorithm>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QWindow>
 
 using namespace Qt::StringLiterals;
 
-// ---------------------------------------------------------------- TabPage
+// ---------------------------------------------------------------- FolderPage
 
-TabPage::TabPage(ViewSettingsStore *store, const QUrl &url, QWidget *parent)
+FolderPage::FolderPage(ViewSettingsStore *store, const QUrl &url, QWidget *parent)
     : QWidget(parent)
     , m_store(store)
     , m_splitter(new QSplitter(Qt::Horizontal, this))
@@ -74,7 +78,7 @@ struct PaneMark : QWidget {
 };
 }
 
-FolderView *TabPage::addView(const QUrl &url)
+FolderView *FolderPage::addView(const QUrl &url)
 {
     auto *box = new QWidget(m_splitter);
     auto *layout = new QVBoxLayout(box);
@@ -96,7 +100,7 @@ FolderView *TabPage::addView(const QUrl &url)
     return view;
 }
 
-void TabPage::setSplit(bool on)
+void FolderPage::setSplit(bool on)
 {
     if (on == isSplit())
         return;
@@ -115,14 +119,14 @@ void TabPage::setSplit(bool on)
     updateMarks();
 }
 
-void TabPage::updateMarks()
+void FolderPage::updateMarks()
 {
     for (FolderView *view : {m_primary, m_secondary.data()})
         if (view)
             view->parentWidget()->findChild<QWidget *>(QStringLiteral("paneMark"), Qt::FindDirectChildrenOnly)->setVisible(isSplit() && view == m_active);
 }
 
-void TabPage::activate(FolderView *view)
+void FolderPage::activate(FolderView *view)
 {
     if (view == m_active || (view != m_primary && view != m_secondary))
         return;
@@ -132,17 +136,17 @@ void TabPage::activate(FolderView *view)
     Q_EMIT titleChanged(title());
 }
 
-QUrl TabPage::url() const
+QUrl FolderPage::url() const
 {
     return m_active->url();
 }
 
-QString TabPage::title() const
+QString FolderPage::title() const
 {
     return titleFor(url());
 }
 
-QString TabPage::titleFor(const QUrl &url)
+QString FolderPage::titleFor(const QUrl &url)
 {
     QString name = url.adjusted(QUrl::StripTrailingSlash).fileName();
     if (name.isEmpty())
@@ -216,29 +220,29 @@ void SidePane::refresh()
 
 // ---------------------------------------------------------------- ExplorerWindow
 
-ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
+static ExplorerWindow *s_last = nullptr; // newest living window
+
+ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
     : KMainWindow(parent)
     , m_config(KSharedConfig::openConfig())
     , m_store(m_config)
     , m_actions(new ExplorerActions(this))
 {
+    setWindowFlag(Qt::FramelessWindowHint); // the title bar is ours (TitleBar); KWin still snaps, tiles, shadows
+    s_last = this;
+    connect(this, &QObject::destroyed, [this] {
+        if (s_last == this)
+            s_last = nullptr;
+    });
     auto *central = new QWidget(this);
     auto *layout = new QVBoxLayout(central);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     m_ribbon = new RibbonBar(m_actions, central);
+    m_titleBar = new TitleBar(m_ribbon, KSharedConfig::openConfig(u"kdeglobals"_s), central); // relative name: KConfigWatcher needs it
+    layout->addWidget(m_titleBar);
     layout->addWidget(m_ribbon);
     buildAddressRow(central);
-
-    m_tabs = new QTabBar(central);
-    m_tabs->setTabsClosable(true);
-    m_tabs->setMovable(true);
-    m_tabs->setDocumentMode(true);
-    m_tabs->setExpanding(false);
-    m_tabs->setElideMode(Qt::ElideRight);
-    m_tabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // the empty strip takes double-clicks
-    m_tabs->installEventFilter(this);
-    layout->addWidget(m_tabs);
 
     auto *splitter = new QSplitter(Qt::Horizontal, central);
     auto *left = new QWidget(splitter);
@@ -267,7 +271,8 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
         v->showResults(i18n("Tagged: %1", words.join(u", "_s)), search);
         search->start(v->url(), picked, mode);
     });
-    m_stack = new QStackedWidget(splitter);
+    const QList<QUrl> urls = url.isValid() ? QList<QUrl>{url} : sessionUrlsToOpen(savedSession(m_config));
+    m_page = new FolderPage(&m_store, urls[0], splitter);
     m_side = new SidePane(splitter);
     m_side->hide();
     splitter->setStretchFactor(1, 1);
@@ -283,24 +288,11 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
             v->currentView()->setFocus(); // file keys (Delete, Ctrl+C...) act on the pane again
         }
     });
-    connect(m_places, &KFilePlacesView::tabRequested, this, [this](const QUrl &url) { openTab(url, false); });
+    connect(m_places, &KFilePlacesView::tabRequested, this, [this](const QUrl &url) { (new ExplorerWindow(url))->show(); });
     connect(m_places, &KFilePlacesView::urlsDropped, this, [this](const QUrl &dest, QDropEvent *e, QWidget *) {
         KIO::DropJob *job = KIO::drop(e, dest);
         KJobWidgets::setWindow(job, this);
         connect(job, &KIO::DropJob::copyJobStarted, job, [](KIO::CopyJob *copy) { KIO::FileUndoManager::self()->recordCopyJob(copy); });
-    });
-    connect(m_tabs, &QTabBar::currentChanged, this, [this](int index) {
-        m_stack->setCurrentIndex(index);
-        syncToActiveView();
-        if (FolderView *v = activeView())
-            v->currentView()->setFocus();
-    });
-    connect(m_tabs, &QTabBar::tabCloseRequested, this, &ExplorerWindow::closeTab);
-    connect(m_tabs, &QTabBar::tabMoved, this, [this](int from, int to) {
-        QWidget *page = m_stack->widget(from);
-        m_stack->removeWidget(page);
-        m_stack->insertWidget(to, page);
-        m_stack->setCurrentIndex(m_tabs->currentIndex());
     });
     connectActions();
 
@@ -310,15 +302,13 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
         KConfigGroup(m_config, u"MainWindow"_s).writeEntry("RibbonCollapsed", collapsed);
     });
 
-    QList<QUrl> toOpen = urls;
-    int active = 0;
-    if (toOpen.isEmpty()) {
-        toOpen = sessionUrlsToOpen(savedSession(m_config));
-        active = qBound(0, KConfigGroup(m_config, u"Session"_s).readEntry("Active", 0), int(toOpen.size()) - 1);
+    wireView(m_page->primary());
+    connect(m_page, &FolderPage::activeChanged, this, &ExplorerWindow::syncToActiveView);
+    if (urls.size() == 2) {
+        m_page->setSplit(true);
+        wireView(m_page->secondary());
+        m_page->secondary()->openUrl(urls[1]);
     }
-    for (const QUrl &url : std::as_const(toOpen))
-        openTab(url, false);
-    m_tabs->setCurrentIndex(active);
     syncToActiveView();
     if (FolderView *v = activeView()) {
         addRecentFolder(m_config, v->url()); // urlChanged ran before wireView for the start folder
@@ -327,6 +317,115 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
 
     resize(1100, 700);
     setAutoSaveSettings(u"MainWindow"_s);
+    syncFrame(); // after setAutoSaveSettings: a restored maximised state keeps its 0 margins
+    connect(m_titleBar, &TitleBar::coloursChanged, this, qOverload<>(&QWidget::update)); // the outline follows
+    qApp->installEventFilter(this); // child widgets cover the edges: the band is found app-wide
+    WindowShadow::install(this);
+}
+
+ExplorerWindow::~ExplorerWindow()
+{
+    qApp->removeEventFilter(this);
+    setResizeCursor({});
+}
+
+Qt::Edges ExplorerWindow::resizeEdgesAt(const QPoint &pos, const QSize &size, int border)
+{
+    Qt::Edges e;
+    if (pos.x() < border)
+        e |= Qt::LeftEdge;
+    else if (pos.x() >= size.width() - border)
+        e |= Qt::RightEdge;
+    if (pos.y() < border)
+        e |= Qt::TopEdge;
+    else if (pos.y() >= size.height() - border)
+        e |= Qt::BottomEdge;
+    return e;
+}
+
+Qt::Edges ExplorerWindow::edgesForPress(const QPoint &windowPos, bool overScrollBar) const
+{
+    if (isMaximized() || isFullScreen())
+        return {};
+    return resizeEdgesAt(windowPos, size(), overScrollBar ? ScrollBarBorder : ResizeBorder);
+}
+
+void ExplorerWindow::setResizeCursor(Qt::Edges edges)
+{
+    if (edges == m_cursorEdges)
+        return;
+    Qt::CursorShape shape = Qt::SizeVerCursor;
+    if (edges == (Qt::LeftEdge | Qt::TopEdge) || edges == (Qt::RightEdge | Qt::BottomEdge))
+        shape = Qt::SizeFDiagCursor;
+    else if (edges == (Qt::RightEdge | Qt::TopEdge) || edges == (Qt::LeftEdge | Qt::BottomEdge))
+        shape = Qt::SizeBDiagCursor;
+    else if (edges & (Qt::LeftEdge | Qt::RightEdge))
+        shape = Qt::SizeHorCursor;
+    if (!edges)
+        QGuiApplication::restoreOverrideCursor();
+    else if (!m_cursorEdges)
+        QGuiApplication::setOverrideCursor(shape);
+    else
+        QGuiApplication::changeOverrideCursor(shape);
+    m_cursorEdges = edges;
+}
+
+bool ExplorerWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    const QEvent::Type type = event->type();
+    if (type != QEvent::MouseMove && type != QEvent::MouseButtonPress)
+        return KMainWindow::eventFilter(watched, event);
+    if (watched->isWindowType()) // the QWidgetWindow sees each event first; the widget delivery does the work
+        return false;
+    auto *widget = qobject_cast<QWidget *>(watched);
+    auto *me = static_cast<QMouseEvent *>(event);
+    const bool ours = widget && widget->window() == this;
+    const Qt::Edges edges = ours ? edgesForPress(mapFromGlobal(me->globalPosition().toPoint()), qobject_cast<QScrollBar *>(widget)) : Qt::Edges();
+    if (type == QEvent::MouseMove) {
+        if (me->buttons() == Qt::NoButton || !ours) // a drag or rubber band keeps its cursor
+            setResizeCursor(edges);
+        return false;
+    }
+    if (edges && me->button() == Qt::LeftButton && windowHandle() && windowHandle()->startSystemResize(edges))
+        return true; // offscreen / no support: the press goes on to the widget
+    return false;
+}
+
+void ExplorerWindow::changeEvent(QEvent *e)
+{
+    KMainWindow::changeEvent(e);
+    if (!m_titleBar)
+        return;
+    if (e->type() == QEvent::WindowStateChange) {
+        syncFrame();
+        if (isMaximized() || isFullScreen())
+            setResizeCursor({});
+    } else if (e->type() == QEvent::ActivationChange) {
+        m_titleBar->setActive(isActiveWindow());
+        update(); // the outline follows the title colour
+    }
+}
+
+void ExplorerWindow::syncFrame()
+{
+    setContentsMargins(isMaximized() || isFullScreen() ? QMargins() : QMargins(1, 1, 1, 1)); // room for the outline
+    m_titleBar->updateMaximizeIcon();
+}
+
+void ExplorerWindow::leaveEvent(QEvent *e)
+{
+    setResizeCursor({});
+    KMainWindow::leaveEvent(e);
+}
+
+void ExplorerWindow::paintEvent(QPaintEvent *e)
+{
+    KMainWindow::paintEvent(e);
+    if (isMaximized() || isFullScreen() || !m_titleBar)
+        return;
+    QPainter p(this);
+    p.setPen(m_titleBar->background().darker(140));
+    p.drawRect(rect().adjusted(0, 0, -1, -1));
 }
 
 void ExplorerWindow::buildAddressRow(QWidget *central)
@@ -434,7 +533,7 @@ void ExplorerWindow::connectActions()
         QAction *a = m_actions->action(id);
         if (paneOnly.contains(id)) {
             a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-            m_stack->addAction(a);
+            m_page->addAction(a);
         } else {
             addAction(a);
         }
@@ -446,14 +545,10 @@ void ExplorerWindow::connectActions()
         addAction(a);
         connect(a, &QAction::triggered, this, fn);
     };
-    shortcut(QKeySequence(Qt::CTRL | Qt::Key_T), [this] { openTab(currentPage() ? currentPage()->url() : QUrl::fromLocalFile(QDir::homePath())); });
-    shortcut(QKeySequence(Qt::CTRL | Qt::Key_W), [this] { closeTab(m_tabs->currentIndex()); });
-    shortcut(QKeySequence(Qt::CTRL | Qt::Key_Tab), [this] { m_tabs->setCurrentIndex((m_tabs->currentIndex() + 1) % m_tabs->count()); });
-    shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab),
-             [this] { m_tabs->setCurrentIndex((m_tabs->currentIndex() + m_tabs->count() - 1) % m_tabs->count()); });
+    shortcut(QKeySequence(Qt::CTRL | Qt::Key_W), [this] { close(); });
 
     connect(m_actions, &ExplorerActions::newWindowRequested, this, [this] {
-        (new ExplorerWindow({activeView() ? activeView()->url() : QUrl::fromLocalFile(QDir::homePath())}))->show();
+        (new ExplorerWindow(activeView() ? activeView()->url() : QUrl::fromLocalFile(QDir::homePath())))->show();
     });
     connect(m_actions, &ExplorerActions::closeRequested, this, &QWidget::close);
     // optionsRequested / helpRequested: ExplorerActions already launched settings / help.
@@ -464,10 +559,7 @@ void ExplorerWindow::connectActions()
             s.sortOrder = order;
         });
     });
-    connect(m_actions, &ExplorerActions::selectUrlsRequested, this, [this](const QList<QUrl> &urls) {
-        if (FolderView *v = activeView())
-            v->selectUrls(urls);
-    });
+    connect(m_actions, &ExplorerActions::selectUrlsRequested, this, [this](const QList<QUrl> &urls) { selectItems(urls); });
     connect(m_actions, &ExplorerActions::groupRequested, this, [this](GroupRole role) { editSettings([role](ViewSettings &s) { s.groupRole = role; }); });
     connect(m_actions, &ExplorerActions::columnsToggled, this, [this](const QString &id, bool on) {
         editSettings([id, on](ViewSettings &s) {
@@ -488,13 +580,24 @@ void ExplorerWindow::connectActions()
     });
     connect(m_actions, &ExplorerActions::paneToggled, this, &ExplorerWindow::togglePane);
     connect(m_actions, &ExplorerActions::splitToggled, this, [this](bool on) {
-        TabPage *page = currentPage();
+        FolderPage *page = m_page;
         if (!page || page->isSplit() == on)
             return;
         page->setSplit(on);
         if (on)
             wireView(page->secondary());
         syncToActiveView();
+    });
+    connect(m_actions, &ExplorerActions::openInNewWindowRequested, this, [](const QUrl &url) { (new ExplorerWindow(url))->show(); });
+    connect(m_actions, &ExplorerActions::openInSplitRequested, this, [this](const QUrl &url) {
+        if (!m_page)
+            return;
+        if (!m_page->isSplit()) {
+            m_page->setSplit(true);
+            wireView(m_page->secondary());
+            syncToActiveView();
+        }
+        m_page->secondary()->openUrl(url);
     });
 }
 
@@ -505,7 +608,7 @@ void ExplorerWindow::wireView(FolderView *v)
             return;
         addRecentFolder(m_config, url);
         m_tagList->clearPicks(); // real navigation drops the tag filter
-        v->clearResults();       // also when the list had no picks (results from an earlier tab visit)
+        v->clearResults();       // also when the list had no picks 
         syncToActiveView();
     });
     connect(v, &FolderView::resultsTitleChanged, this, [this, v](const QString &title) {
@@ -522,7 +625,7 @@ void ExplorerWindow::wireView(FolderView *v)
         if (v == activeView())
             updateSidePane();
     });
-    connect(v, &FolderView::folderMiddleClicked, this, [this](const QUrl &url) { openTab(url, false); });
+    connect(v, &FolderView::folderMiddleClicked, this, [](const QUrl &url) { (new ExplorerWindow(url))->show(); });
     connect(v, &FolderView::fileActivated, this, [this](const KFileItem &item) {
         auto *job = new KIO::OpenUrlJob(item.url(), item.mimetype());
         job->setRunExecutables(false);
@@ -530,7 +633,7 @@ void ExplorerWindow::wireView(FolderView *v)
         job->start();
     });
     connect(v, &FolderView::contextMenuRequested, this, [this, v](const QPoint &pos, const KFileItemList &items) {
-        if (TabPage *page = currentPage())
+        if (FolderPage *page = m_page)
             page->activate(v); // the menu's View entries act on the active view
         QMenu *menu = m_actions->contextMenu(items, v->url());
         connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
@@ -542,48 +645,14 @@ void ExplorerWindow::wireView(FolderView *v)
     });
 }
 
-void ExplorerWindow::openTab(const QUrl &url, bool activate)
+FolderPage *ExplorerWindow::page() const
 {
-    auto *page = new TabPage(&m_store, url, m_stack);
-    wireView(page->primary());
-    connect(page, &TabPage::activeChanged, this, [this, page] {
-        if (page == currentPage())
-            syncToActiveView();
-    });
-    connect(page, &TabPage::titleChanged, this, [this, page](const QString &title) {
-        const int index = m_stack->indexOf(page);
-        m_tabs->setTabText(index, title);
-        m_tabs->setTabToolTip(index, page->url().toDisplayString(QUrl::PreferLocalFile));
-    });
-    m_stack->addWidget(page); // before addTab: the first tab emits currentChanged
-    const int index = m_tabs->addTab(page->title());
-    m_tabs->setTabToolTip(index, url.toDisplayString(QUrl::PreferLocalFile));
-    if (activate)
-        m_tabs->setCurrentIndex(index);
-}
-
-void ExplorerWindow::closeTab(int index)
-{
-    if (m_tabs->count() <= 1) {
-        close();
-        return;
-    }
-    QWidget *page = m_stack->widget(index);
-    if (!page)
-        return;
-    m_stack->removeWidget(page); // first, so currentChanged from removeTab finds the stack in step
-    m_tabs->removeTab(index); // emits currentChanged when the current tab changes
-    page->deleteLater();
-}
-
-TabPage *ExplorerWindow::currentPage() const
-{
-    return qobject_cast<TabPage *>(m_stack->currentWidget());
+    return m_page;
 }
 
 FolderView *ExplorerWindow::activeView() const
 {
-    TabPage *page = currentPage();
+    FolderPage *page = m_page;
     return page ? page->active() : nullptr;
 }
 
@@ -602,11 +671,66 @@ void ExplorerWindow::selectItems(const QList<QUrl> &urls)
         connect(lister, &KCoreDirLister::completed, v, [v, urls] { v->selectUrls(urls); }, Qt::SingleShotConnection);
 }
 
+QUrl ExplorerWindow::folderFor(const QList<QUrl> &urls)
+{
+    QUrl folder = urls.value(0);
+    if (folder.isEmpty())
+        return QUrl::fromLocalFile(QDir::homePath());
+    return folderFromStat(folder, folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir()); // remote: the parent guess
+}
+
+QUrl ExplorerWindow::folderFromStat(const QUrl &url, bool isDir)
+{
+    return isDir ? url : url.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
+}
+
+void ExplorerWindow::withFolderFor(const QList<QUrl> &urls, std::function<void(const QUrl &)> then)
+{
+    const QUrl first = urls.value(0);
+    if (first.isEmpty() || first.isLocalFile()) {
+        then(folderFor(urls));
+        return;
+    }
+    auto *job = KIO::stat(first, KIO::StatJob::SourceSide, KIO::StatBasic, KIO::HideProgressInfo);
+    connect(job, &KJob::result, this, [this, job, first, then] {
+        then(folderFromStat(first, !job->error() && job->statResult().isDir()));
+    });
+}
+
+void ExplorerWindow::selectByRuleOn(const QList<QUrl> &urls)
+{
+    withFolderFor(urls, [this](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        m_actions->selectByRule(SelectByRuleDialog::Action::Select);
+    });
+}
+
+void ExplorerWindow::renameManyOn(const QList<QUrl> &urls)
+{
+    KFileItemList items;
+    for (const QUrl &u : urls)
+        items << KFileItem(u);
+    if (items.isEmpty()) {
+        KMessageBox::information(this, i18n("Select the files to rename first"));
+        return;
+    }
+    withFolderFor(urls, [this, items](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        m_actions->renameMany(items);
+    });
+}
+
+ExplorerWindow *ExplorerWindow::last()
+{
+    return s_last;
+}
+
 void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
 {
-    const QList<SavedRule> all = m_actions->library().all();
-    const auto it = std::find_if(all.begin(), all.end(), [&](const SavedRule &r) { return r.name == name; });
-    if (it == all.end()) {
+    const auto it = m_actions->library().find(name);
+    if (!it) {
         KMessageBox::error(this, i18n("No saved rule named %1", name));
         return;
     }
@@ -621,18 +745,15 @@ void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
         m_actions->renameMany(items, it->text);
         return;
     }
-    QUrl folder = urls.value(0);
-    if (folder.isEmpty()) {
-        folder = QUrl::fromLocalFile(QDir::homePath());
-    } else if (!(folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir())) {
-        folder = folder.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
-    }
-    if (FolderView *v = activeView())
-        v->openUrl(folder);
-    if (it->kind == SavedRule::Kind::Select)
-        m_actions->selectByFormula(it->text);
-    else
-        m_actions->openScript(it->text);
+    const SavedRule rule = *it;
+    withFolderFor(urls, [this, rule](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        if (rule.kind == SavedRule::Kind::Select)
+            m_actions->selectByFormula(rule.text);
+        else
+            m_actions->openScript(rule.text);
+    });
 }
 
 void ExplorerWindow::showProperties(const QList<QUrl> &urls)
@@ -646,7 +767,7 @@ void ExplorerWindow::syncToActiveView()
     if (!v)
         return;
     m_actions->setActiveView(v);
-    m_tagList->clearPicks(true); // each tab keeps its own results; the list just starts clean
+    m_tagList->clearPicks(true); // the list just starts clean
     m_resultsTitle->setText(v->resultsTitle());
     m_resultsTitleAction->setVisible(!v->resultsTitle().isEmpty());
     const QUrl url = v->url();
@@ -655,8 +776,8 @@ void ExplorerWindow::syncToActiveView()
     m_places->setUrl(url);
     m_back->setEnabled(v->canGoBack());
     m_forward->setEnabled(v->canGoForward());
-    m_actions->action(u"view_split"_s)->setChecked(currentPage()->isSplit());
-    const QString title = currentPage()->title();
+    m_actions->action(u"view_split"_s)->setChecked(m_page->isSplit());
+    const QString title = m_page->title();
     setWindowTitle(i18n("%1 - Win12 Explorer", title));
     m_search->clear(); // a new folder or view drops the filter
     m_search->setPlaceholderText(i18n("Search %1", title));
@@ -733,34 +854,16 @@ void ExplorerWindow::fillRecentMenu()
         menu->addAction(i18n("No recent folders"))->setEnabled(false);
 }
 
-bool ExplorerWindow::eventFilter(QObject *watched, QEvent *event)
-{
-    if (watched == m_tabs) {
-        if (event->type() == QEvent::MouseButtonRelease) {
-            auto *me = static_cast<QMouseEvent *>(event);
-            if (me->button() == Qt::MiddleButton && m_tabs->tabAt(me->position().toPoint()) >= 0) {
-                closeTab(m_tabs->tabAt(me->position().toPoint()));
-                return true;
-            }
-        } else if (event->type() == QEvent::MouseButtonDblClick) {
-            auto *me = static_cast<QMouseEvent *>(event);
-            if (me->button() == Qt::LeftButton && m_tabs->tabAt(me->position().toPoint()) < 0) {
-                openTab(QUrl::fromLocalFile(QDir::homePath()));
-                return true;
-            }
-        }
-    }
-    return KMainWindow::eventFilter(watched, event);
-}
-
 bool ExplorerWindow::queryClose()
 {
-    QStringList tabs;
-    for (int i = 0; i < m_tabs->count(); ++i)
-        tabs << static_cast<TabPage *>(m_stack->widget(i))->url().toString();
     KConfigGroup session(m_config, u"Session"_s);
-    session.writeEntry("Tabs", tabs);
-    session.writeEntry("Active", m_tabs->currentIndex());
+    session.writeEntry("Url", m_page->primary()->url().toString());
+    if (m_page->isSplit())
+        session.writeEntry("SecondUrl", m_page->secondary()->url().toString());
+    else
+        session.deleteEntry("SecondUrl");
+    session.deleteEntry("Tabs");
+    session.deleteEntry("Active");
     m_config->sync();
     return true;
 }
@@ -768,9 +871,12 @@ bool ExplorerWindow::queryClose()
 QList<QUrl> ExplorerWindow::savedSession(const KSharedConfig::Ptr &config)
 {
     QList<QUrl> urls;
-    const QStringList tabs = KConfigGroup(config, u"Session"_s).readEntry("Tabs", QStringList());
-    for (const QString &tab : tabs)
-        urls << QUrl(tab);
+    const KConfigGroup session(config, u"Session"_s);
+    if (!session.hasKey("Url"))
+        return urls;
+    urls << QUrl(session.readEntry("Url", QString()));
+    if (session.hasKey("SecondUrl"))
+        urls << QUrl(session.readEntry("SecondUrl", QString()));
     return urls;
 }
 

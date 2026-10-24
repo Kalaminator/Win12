@@ -17,18 +17,17 @@ class QAction;
 class QLabel;
 class QLineEdit;
 class QSplitter;
-class QStackedWidget;
-class QTabBar;
 class QToolButton;
 class RibbonBar;
+class TitleBar;
 namespace KIO { class PreviewJob; }
 
-// One tab: a QSplitter with one or two FolderViews; the one that last had focus is active().
-class TabPage : public QWidget
+// The window's page: a QSplitter with one or two FolderViews; the one that last had focus is active().
+class FolderPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TabPage(ViewSettingsStore *store, const QUrl &url, QWidget *parent = nullptr);
+    explicit FolderPage(ViewSettingsStore *store, const QUrl &url, QWidget *parent = nullptr);
     FolderView *active() const { return m_active; }
     FolderView *primary() const { return m_primary; }
     FolderView *secondary() const { return m_secondary; } // nullptr when not split
@@ -78,23 +77,38 @@ class ExplorerWindow : public KMainWindow
 {
     Q_OBJECT
 public:
-    explicit ExplorerWindow(const QList<QUrl> &urls = {}, QWidget *parent = nullptr); // empty: the saved session
-    void openTab(const QUrl &, bool activate = true);
-    void closeTab(int); // closing the last tab closes the window
-    TabPage *currentPage() const;
+    explicit ExplorerWindow(const QUrl &url = {}, QWidget *parent = nullptr); // empty: the saved session
+    ~ExplorerWindow() override;
+    static constexpr int ResizeBorder = 6; // frameless: the band at the window edges that resizes
+    static Qt::Edges resizeEdgesAt(const QPoint &pos, const QSize &size, int border = ResizeBorder); // corners: two edges
+    static constexpr int ScrollBarBorder = 2; // over a scroll bar the band is thin so its right part still drags
+    Qt::Edges edgesForPress(const QPoint &windowPos, bool overScrollBar = false) const; // none while maximised or full screen
+    TitleBar *titleBar() const { return m_titleBar; }
+    FolderPage *page() const;
     FolderView *activeView() const;
     void runSavedRule(const QString &name, const QList<QUrl> &urls); // Dolphin's Win12 > My rules; unknown name: error box
-    void selectItems(const QList<QUrl> &); // opens the parent folder in the current tab, then selects
+    static QUrl folderFor(const QList<QUrl> &urls); // urls[0] when a local folder, else its parent; empty: Home
+    static QUrl folderFromStat(const QUrl &url, bool isDir); // the url itself for a folder, else its parent
+    void withFolderFor(const QList<QUrl> &urls, std::function<void(const QUrl &)> then); // remote urls are stat-ed async; then runs once the folder is known
+    void selectByRuleOn(const QList<QUrl> &urls); // Dolphin's Win12 > Select by rule
+    void renameManyOn(const QList<QUrl> &urls); // Dolphin's Win12 > Rename many
+    static ExplorerWindow *last(); // newest living window, or null
+    ExplorerActions *explorerActions() const { return m_actions; } // not actions(): QWidget has one
+    void selectItems(const QList<QUrl> &); // opens the parent folder in the page, then selects
     void showProperties(const QList<QUrl> &);
 
-    static QList<QUrl> savedSession(const KSharedConfig::Ptr &); // [Session] Tabs
+    static QList<QUrl> savedSession(const KSharedConfig::Ptr &); // [Session] Url (+ SecondUrl when split); no Url: {}
     static QList<QUrl> sessionUrlsToOpen(const QList<QUrl> &saved); // drops missing local folders; empty: Home
     static QStringList recentFolders(const KSharedConfig::Ptr &); // [Recent] Urls, newest first, max 20
     static void addRecentFolder(const KSharedConfig::Ptr &, const QUrl &);
 
 protected:
-    bool queryClose() override; // writes [Session] from the open tabs
-    bool eventFilter(QObject *, QEvent *) override;
+    bool queryClose() override; // writes [Session] from the page
+    bool eventFilter(QObject *watched, QEvent *event) override; // app-wide: resize band cursor and press
+    void changeEvent(QEvent *) override;
+    void leaveEvent(QEvent *) override;
+    void syncFrame(); // margins, outline and maximize icon from the real window state
+    void paintEvent(QPaintEvent *) override; // the 1 px outline in place of KWin's frame
 
 private:
     void buildAddressRow(QWidget *central);
@@ -112,12 +126,14 @@ private:
     ViewSettingsStore m_store;
     ExplorerActions *m_actions;
     RibbonBar *m_ribbon;
+    TitleBar *m_titleBar = nullptr;
+    Qt::Edges m_cursorEdges; // edges whose resize cursor is overridden, none: not overridden
+    void setResizeCursor(Qt::Edges);
     QAction *m_back;
     QAction *m_forward;
     KUrlNavigator *m_navigator;
     QLineEdit *m_search;
-    QTabBar *m_tabs;
-    QStackedWidget *m_stack;
+    FolderPage *m_page;
     KFilePlacesView *m_places;
     TagList *m_tagList;
     QLabel *m_resultsTitle;

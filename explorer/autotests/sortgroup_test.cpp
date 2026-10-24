@@ -40,6 +40,12 @@ private Q_SLOTS:
         QFETCH(QString, label);
         QCOMPARE(groupInfo(mk(QStringLiteral("f"), 1, now.addDays(days)), GroupRole::Modified, now).label, label);
     }
+    void futureDateIsToday()
+    {
+        const auto g = groupInfo(mk(QStringLiteral("f"), 1, now.addDays(3)), GroupRole::Modified, now);
+        QCOMPARE(g.label, QStringLiteral("Today"));
+        QCOMPARE(g.order, 0);
+    }
     void sizeBuckets_data()
     {
         QTest::addColumn<quint64>("size");
@@ -109,6 +115,7 @@ private Q_SLOTS:
             const auto g = tagGroups({}, r);
             QCOMPARE(g.size(), 1);
             QCOMPARE(g.first().order, 1000);
+            QVERIFY(g.first().label.isEmpty());
             QVERIFY(g.first().order > TagColours::Count);
         }
     }

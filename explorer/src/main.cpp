@@ -8,37 +8,41 @@
 #include <QApplication>
 #include <QDir>
 
-static ExplorerWindow *s_last = nullptr; // last opened window, cleared on destroy
-
 static void openWindow(const QStringList &args, const QString &cwd)
 {
     const CliOptions o = parseCli(args, cwd);
     ExplorerWindow *w = nullptr;
-    if (!o.rule.isEmpty()) {
+    if (!o.rule.isEmpty() || o.selectByRule || o.renameMany) {
         // ponytail: always a plain new window in this process, never the last window
-        w = new ExplorerWindow({o.urls.isEmpty() ? QUrl::fromLocalFile(QDir::homePath()) : o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash)});
+        w = new ExplorerWindow(ExplorerWindow::folderFor(o.urls));
         w->show();
         w->raise();
-        w->runSavedRule(o.rule, o.urls);
+        if (!o.rule.isEmpty())
+            w->runSavedRule(o.rule, o.urls);
+        else if (o.selectByRule)
+            w->selectByRuleOn(o.urls);
+        else
+            w->renameManyOn(o.urls);
         return;
     }
     if (o.select && !o.urls.isEmpty()) {
-        if (s_last && !o.newWindow) {
-            w = s_last;
+        if (ExplorerWindow::last() && !o.newWindow) {
+            w = ExplorerWindow::last();
         } else {
-            w = new ExplorerWindow({o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash)});
+            w = new ExplorerWindow(o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash));
             w->show();
         }
         w->selectItems(o.urls);
     } else if (o.daemon && o.urls.isEmpty()) {
         return; // no window
     } else {
-        w = new ExplorerWindow(o.urls); // no urls = the saved session
-        w->show();
-    }
-    if (w != s_last) {
-        s_last = w;
-        QObject::connect(w, &QObject::destroyed, [] { s_last = nullptr; });
+        // no urls = the saved session; several urls = one window each
+        for (int i = 0; i < qMax(1, int(o.urls.size())); ++i) {
+            ExplorerWindow *n = new ExplorerWindow(o.urls.value(i));
+            n->show();
+            if (i == 0)
+                w = n;
+        }
     }
     w->raise();
 }

@@ -114,6 +114,14 @@ private Q_SLOTS:
     {
         QCOMPARE(run({{Field::Size, Test::BiggerThan, QStringLiteral("2 MB")}}), L({"big.bin"}));
     }
+    void parseSizeRejectsOverflow()
+    {
+        bool ok = true;
+        parseSize(QStringLiteral("99999999 TB"), &ok);
+        QVERIFY(!ok);
+        parseSize(QStringLiteral("8191 TB"), &ok);
+        QVERIFY(ok);
+    }
     void parseSizeRejectsGarbage()
     {
         bool ok = true;

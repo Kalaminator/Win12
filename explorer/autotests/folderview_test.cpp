@@ -146,6 +146,20 @@ private Q_SLOTS:
         QCOMPARE(names(m_view->itemsInViewOrder(true)), QStringList({QStringLiteral("b.txt"), QStringLiteral("a.txt")}));
     }
 
+    void selectedItemsInRowOrder()
+    {
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        ViewSettings s = m_view->settings();
+        s.sortRole = SortRole::Name;
+        s.sortOrder = Qt::AscendingOrder;
+        m_view->applySettings(s);
+        m_view->selectUrls({fileUrl(QStringLiteral("b.txt")), fileUrl(QStringLiteral("a.txt"))});
+        QStringList names;
+        for (const KFileItem &i : m_view->selectedItems())
+            names << i.name();
+        QCOMPARE(names, QStringList({QStringLiteral("a.txt"), QStringLiteral("b.txt")}));
+    }
+
     void selectionHelpers()
     {
         QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
@@ -538,6 +552,24 @@ private Q_SLOTS:
             urls << i.url();
         std::sort(urls.begin(), urls.end());
         QCOMPARE(urls, (QList<QUrl>{tagUrl(QStringLiteral("a")), tagUrl(QStringLiteral("b"))}));
+    }
+    void untaggedFirstRowHasNoHeaderStrip()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/x")}}, {QStringLiteral("b"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        groupByTag(GroupRole::TagName);
+        QAbstractItemView *v = m_view->currentView();
+        QStyleOptionViewItem o;
+        o.widget = v;
+        o.font = m_view->font();
+        o.fontMetrics = QFontMetrics(o.font);
+        const QModelIndex tagged = indexOf(QStringLiteral("a"));
+        const QModelIndex plain = indexOf(QStringLiteral("b"));
+        QVERIFY(tagged.isValid() && plain.isValid());
+        QVERIFY(tagged.data(FolderModel::GroupFirstRole).toBool());
+        QVERIFY(plain.data(FolderModel::GroupFirstRole).toBool());
+        QVERIFY(v->itemDelegate()->sizeHint(o, tagged).height() > v->itemDelegate()->sizeHint(o, plain).height());
     }
     void groupByTagShowsHeaders()
     {

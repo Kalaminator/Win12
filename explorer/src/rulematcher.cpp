@@ -3,6 +3,7 @@
 #include <KLocalizedString>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <limits>
 
 QList<Test> testsFor(Field f)
 {
@@ -62,7 +63,10 @@ qint64 parseSize(const QString &text, bool *ok)
     qint64 n = 0;
     if (good) {
         const int shift = QStringLiteral("B KB MB GB TB").split(QLatin1Char(' ')).indexOf(m.captured(2).toUpper().isEmpty() ? QStringLiteral("B") : m.captured(2).toUpper());
-        n = m.captured(1).toLongLong(&good) << (10 * shift);
+        n = m.captured(1).toLongLong(&good);
+        if (good && n > (std::numeric_limits<qint64>::max() >> (10 * shift)))
+            good = false;
+        n <<= (10 * shift);
     }
     if (ok)
         *ok = good;
