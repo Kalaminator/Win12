@@ -30,7 +30,7 @@ public:
     void setFormula(const QString &);
     QString formula() const;
     void setLibrary(RuleLibrary *l) { m_library = l; } // Save as... -> Kind::Rename
-    QUrl base() const; // the first item's folder; FormulaRun's base
+    QUrl base() const; // common ancestor folder of all items (the first item's folder when they share one); FormulaRun's base
 
 Q_SIGNALS:
     void evaluated(); // a formula run finished (ok or not)

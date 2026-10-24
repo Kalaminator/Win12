@@ -124,6 +124,27 @@ private Q_SLOTS:
         d.setFormula(QStringLiteral("NAME & \"x\""));
         QVERIFY(!okEnabled(d));
     }
+    void typingMakesPlanStaleAtOnce()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        d.setMode(RenameManyDialog::Mode::Formula);
+        QSignalSpy done(&d, &RenameManyDialog::evaluated);
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        QVERIFY(okEnabled(d));
+        d.findChild<QLineEdit *>(QStringLiteral("formulaEdit"))->setText(QStringLiteral("NAME & \"y\""));
+        QVERIFY(!okEnabled(d)); // before the 300 ms debounce
+    }
+    void setFormulaSameTextTwiceIsNotStuck()
+    {
+        RenameManyDialog d(items(), {}, nullptr);
+        QSignalSpy done(&d, &RenameManyDialog::evaluated);
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        d.setFormula(QStringLiteral("NAME & \"x\""));
+        QVERIFY(done.wait(5000));
+        QVERIFY(okEnabled(d));
+    }
     void enterInTextFieldDoesNotAccept()
     {
         RenameManyDialog d(items(), existing(), nullptr);

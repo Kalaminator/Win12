@@ -76,6 +76,15 @@ RenameManyDialog::RenameManyDialog(const QList<RenameItem> &items, const QSet<QS
     connect(m_modeBlocks, &QToolButton::clicked, this, [this] { setMode(Mode::Blocks); });
     connect(m_modeFormula, &QToolButton::clicked, this, [this] { setMode(Mode::Formula); });
     connect(m_fx, &FormulaEdit::formulaChanged, this, &RenameManyDialog::formulaChanged);
+    // every keystroke makes the shown plan stale at once; the debounced formulaChanged starts the new run
+    if (auto *le = m_fx->findChild<QLineEdit *>(QStringLiteral("formulaEdit")))
+        connect(le, &QLineEdit::textChanged, this, [this] {
+            m_run.stop();
+            m_values.clear();
+            m_runError.clear();
+            m_running = true;
+            refresh();
+        });
     connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
         if (!m_library)
             return;
@@ -265,8 +274,10 @@ void RenameManyDialog::setFormula(const QString &t)
 {
     if (m_mode != Mode::Formula)
         setMode(Mode::Formula);
-    m_running = true; // the edit debounces 300 ms; OK stays off until the run is done
-    m_fx->setText(t);
+    const bool same = m_fx->text() == t;
+    m_fx->setText(t); // a change marks the plan stale and the debounce starts the run
+    if (same)
+        formulaChanged(m_fx->expr().has_value()); // no change signal will come
     refresh();
 }
 
@@ -354,7 +365,7 @@ void RenameManyDialog::refresh()
     m_tree->clear();
     int n = 0;
     for (const auto &r : p) {
-        auto *row = new QTreeWidgetItem(m_tree, {r.oldName, m_mode == Mode::Formula && m_running ? QStringLiteral("…") : r.newName, r.note});
+        auto *row = new QTreeWidgetItem(m_tree, {r.oldName, m_mode == Mode::Formula && m_running ? QStringLiteral("…") : r.newName, r.note.isEmpty() ? m_runError : r.note});
         QString msg;
         switch (r.status) {
         case PlannedRename::Rename:
