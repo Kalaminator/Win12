@@ -255,6 +255,12 @@ private Q_SLOTS:
         QCOMPARE(seen, QStringLiteral("=ISFILE()"));
         delete w;
     }
+    void folderFromStatPicksFolderOrParent()
+    {
+        const QUrl x(QStringLiteral("smb://nas/share/x"));
+        QCOMPARE(ExplorerWindow::folderFromStat(x, true), x);
+        QCOMPARE(ExplorerWindow::folderFromStat(x, false), QUrl(QStringLiteral("smb://nas/share")));
+    }
     void lastWindowTracksNewest()
     {
         ExplorerWindow *a = shownWindow();

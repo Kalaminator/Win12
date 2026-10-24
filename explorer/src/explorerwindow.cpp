@@ -16,6 +16,7 @@
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KIO/PreviewJob>
+#include <KIO/StatJob>
 #include <KJobWidgets>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -614,16 +615,34 @@ QUrl ExplorerWindow::folderFor(const QList<QUrl> &urls)
     QUrl folder = urls.value(0);
     if (folder.isEmpty())
         return QUrl::fromLocalFile(QDir::homePath());
-    if (!(folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir()))
-        folder = folder.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
-    return folder;
+    return folderFromStat(folder, folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir()); // remote: the parent guess
+}
+
+QUrl ExplorerWindow::folderFromStat(const QUrl &url, bool isDir)
+{
+    return isDir ? url : url.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
+}
+
+void ExplorerWindow::withFolderFor(const QList<QUrl> &urls, std::function<void(const QUrl &)> then)
+{
+    const QUrl first = urls.value(0);
+    if (first.isEmpty() || first.isLocalFile()) {
+        then(folderFor(urls));
+        return;
+    }
+    auto *job = KIO::stat(first, KIO::StatJob::SourceSide, KIO::StatBasic, KIO::HideProgressInfo);
+    connect(job, &KJob::result, this, [this, job, first, then] {
+        then(folderFromStat(first, !job->error() && job->statResult().isDir()));
+    });
 }
 
 void ExplorerWindow::selectByRuleOn(const QList<QUrl> &urls)
 {
-    if (FolderView *v = activeView())
-        v->openUrl(folderFor(urls));
-    m_actions->selectByRule(SelectByRuleDialog::Action::Select);
+    withFolderFor(urls, [this](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        m_actions->selectByRule(SelectByRuleDialog::Action::Select);
+    });
 }
 
 void ExplorerWindow::renameManyOn(const QList<QUrl> &urls)
@@ -635,9 +654,11 @@ void ExplorerWindow::renameManyOn(const QList<QUrl> &urls)
         KMessageBox::information(this, i18n("Select the files to rename first"));
         return;
     }
-    if (FolderView *v = activeView())
-        v->openUrl(folderFor(urls));
-    m_actions->renameMany(items);
+    withFolderFor(urls, [this, items](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        m_actions->renameMany(items);
+    });
 }
 
 ExplorerWindow *ExplorerWindow::last()
@@ -664,12 +685,15 @@ void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
         m_actions->renameMany(items, it->text);
         return;
     }
-    if (FolderView *v = activeView())
-        v->openUrl(folderFor(urls));
-    if (it->kind == SavedRule::Kind::Select)
-        m_actions->selectByFormula(it->text);
-    else
-        m_actions->openScript(it->text);
+    const SavedRule rule = *it;
+    withFolderFor(urls, [this, rule](const QUrl &folder) {
+        if (FolderView *v = activeView())
+            v->openUrl(folder);
+        if (rule.kind == SavedRule::Kind::Select)
+            m_actions->selectByFormula(rule.text);
+        else
+            m_actions->openScript(rule.text);
+    });
 }
 
 void ExplorerWindow::showProperties(const QList<QUrl> &urls)

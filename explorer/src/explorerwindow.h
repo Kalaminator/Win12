@@ -85,6 +85,8 @@ public:
     FolderView *activeView() const;
     void runSavedRule(const QString &name, const QList<QUrl> &urls); // Dolphin's Win12 > My rules; unknown name: error box
     static QUrl folderFor(const QList<QUrl> &urls); // urls[0] when a local folder, else its parent; empty: Home
+    static QUrl folderFromStat(const QUrl &url, bool isDir); // the url itself for a folder, else its parent
+    void withFolderFor(const QList<QUrl> &urls, std::function<void(const QUrl &)> then); // remote urls are stat-ed async; then runs once the folder is known
     void selectByRuleOn(const QList<QUrl> &urls); // Dolphin's Win12 > Select by rule
     void renameManyOn(const QList<QUrl> &urls); // Dolphin's Win12 > Rename many
     static ExplorerWindow *last(); // newest living window, or null
