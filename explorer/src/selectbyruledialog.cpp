@@ -19,7 +19,7 @@
 
 Q_DECLARE_METATYPE(KFileItemList)
 
-static const QList<Field> kFields = {Field::Name, Field::Extension, Field::Size, Field::Modified, Field::Created, Field::Kind};
+static const QList<Field> kFields = {Field::Name, Field::Extension, Field::Size, Field::Modified, Field::Created, Field::Kind, Field::Tag};
 
 SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction, QWidget *parent)
     : QDialog(parent)
@@ -100,7 +100,8 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
     };
     m_menuActs << addAct(Action::DeleteForever, i18n("Delete forever"), QStringLiteral("actDeleteForever"))
                << addAct(Action::Zip, i18n("Compress to zip…"), QStringLiteral("actZip"))
-               << addAct(Action::CopyPaths, i18n("Copy paths"), QStringLiteral("actCopyPaths"));
+               << addAct(Action::CopyPaths, i18n("Copy paths"), QStringLiteral("actCopyPaths"))
+               << addAct(Action::AddTag, i18n("Add tag…"), QStringLiteral("actAddTag"));
     more->setMenu(menu);
     btns->addWidget(more);
     btns->addStretch();

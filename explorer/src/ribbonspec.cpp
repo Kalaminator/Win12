@@ -86,7 +86,14 @@ const QList<Tab> &spec()
                 B("view_group", ki18n("Group by"), "object-group", S::Small, true),
                 B("view_columns", ki18n("Add columns"), "view-form-table", S::Small, true),
             }},
-            {i18n("Tags"), {}, 2},
+            {i18n("Tags"), {
+                B("tags_add", ki18n("Add tag"), "tag-new", S::Big, true),
+                B("tags_remove", ki18n("Remove tag"), "tag-delete", S::Small, true),
+                B("tags_manage", ki18n("Manage tags…"), "tag-properties"),
+                B("tags_group_name", ki18n("Group: tag name"), "object-group"),
+                B("tags_group_colour", ki18n("Group: tag colour"), "color-management"),
+                B("tags_flags", ki18n("Show tag flags"), "flag"),
+            }, 2},
             {i18n("Show/hide"), {
                 B("view_checkboxes", ki18n("Item check boxes"), "checkbox"),
                 B("view_extensions", ki18n("File name extensions"), "document-properties"),
@@ -109,6 +116,7 @@ const QList<Tab> &spec()
                 B("adv_copy_matches", ki18n("Copy matches to…"), "edit-copy"),
                 B("adv_move_matches", ki18n("Move matches to…"), "edit-cut"),
                 B("adv_rename_matches", ki18n("Rename matches…"), "edit-rename"),
+                B("adv_tag_matches", ki18n("Tag matches…"), "tag-new"),
                 B("adv_trash_matches", ki18n("Trash matches"), "user-trash", S::Big),
             }, 3},
             {i18n("Automate"), {}, 4},

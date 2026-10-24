@@ -278,6 +278,8 @@ ContainmentItem {
     onWantBlurChanged: syncWindowDeco()
     readonly property bool explorerDefault: cfg.explorerDefault
     onExplorerDefaultChanged: syncExplorerDefault()
+    readonly property bool explorerTagFlags: cfg.explorerTagFlags
+    onExplorerTagFlagsChanged: syncExplorerTagFlags()
     onWindowDecoChanged: readBrightness()
     // Brightness of the user's own colour scheme (the saved one while ours is applied), then both syncs.
     property bool userDark: false
@@ -597,6 +599,17 @@ ContainmentItem {
     function syncExplorerDefault() {
         if (!configReady || isMirror) return;
         explorerDefaultRunner.connectSource("win12-explorer-default " + (cfg.explorerDefault ? "on" : "off"));
+    }
+    // Dolphin overlay plugin and Win12 Explorer read this key; written only when the switch changes, never at start.
+    P5Support.DataSource {
+        id: explorerTagFlagsRunner
+        engine: "executable"
+        connectedSources: []
+        onNewData: (sourceName, data) => disconnectSource(sourceName)
+    }
+    function syncExplorerTagFlags() {
+        if (!configReady || isMirror) return;
+        explorerTagFlagsRunner.connectSource("kwriteconfig6 --file win12-explorerrc --group Tags --key showFlags --notify " + (cfg.explorerTagFlags ? "true" : "false"));
     }
     function syncExplorerLauncher(on) {
         const from = on ? "applications:org.kde.dolphin.desktop" : "applications:org.win12.explorer.desktop";

@@ -1,8 +1,14 @@
 #include "exploreractions.h"
+#include "managetagsdialog.h"
 #include <algorithm>
 #include "folderview.h"
 #include "ribbonspec.h"
 #include "selectbyruledialog.h"
+#include "tagribbon.h"
+#include <KSharedConfig>
+#include <KConfigGroup>
+#include <QPainter>
+#include <QPixmap>
 #include <KFileItemActions>
 #include <KFileItemListProperties>
 #include <KFilePlacesModel>
@@ -53,6 +59,7 @@ const QStringList selectionIds = {
     QStringLiteral("home_copy_to"), QStringLiteral("home_delete"), QStringLiteral("home_delete_trash"),
     QStringLiteral("home_delete_permanent"), QStringLiteral("home_rename"), QStringLiteral("home_open"), QStringLiteral("home_edit"),
     QStringLiteral("share_share"), QStringLiteral("share_email"), QStringLiteral("share_zip"),
+    QStringLiteral("tags_add"), QStringLiteral("tags_remove"),
 };
 const QStringList folderIds = {
     QStringLiteral("home_pin"), QStringLiteral("home_new_folder"), QStringLiteral("home_new_item"), QStringLiteral("home_properties"),
@@ -95,6 +102,7 @@ void startOpen(const QUrl &url, QWidget *window)
 ExplorerActions::ExplorerActions(QWidget *windowParent)
     : QObject(windowParent)
     , m_window(windowParent)
+    , m_registry(this)
     , m_newFileMenu(new KNewFileMenu(this))
     , m_shareMenu(new Purpose::Menu(windowParent))
 {
@@ -239,6 +247,9 @@ void ExplorerActions::syncViewState()
     action(QStringLiteral("view_checkboxes"))->setChecked(s.checkBoxes);
     action(QStringLiteral("view_extensions"))->setChecked(s.showExtensions);
     action(QStringLiteral("view_hidden"))->setChecked(s.hiddenFiles);
+    action(QStringLiteral("tags_group_name"))->setChecked(s.groupRole == GroupRole::TagName);
+    action(QStringLiteral("tags_group_colour"))->setChecked(s.groupRole == GroupRole::TagColour);
+    action(QStringLiteral("tags_flags"))->setChecked(FolderView::showFlags());
 }
 
 void ExplorerActions::buildViewMenus()
@@ -282,7 +293,8 @@ void ExplorerActions::buildViewMenus()
     QMenu *group = action(QStringLiteral("view_group"))->menu();
     const QList<std::pair<QString, GroupRole>> groupRoles = {{i18n("(None)"), GroupRole::None}, {i18n("Name"), GroupRole::Name},
                                                              {i18n("Date modified"), GroupRole::Modified}, {i18n("Type"), GroupRole::Type},
-                                                             {i18n("Size"), GroupRole::Size}};
+                                                             {i18n("Size"), GroupRole::Size},     {i18n("Tag name"), GroupRole::TagName},
+                                                             {i18n("Tag colour"), GroupRole::TagColour}};
     auto *groupGroup = new QActionGroup(group);
     for (const auto &[text, role] : groupRoles) {
         QAction *a = group->addAction(text);
@@ -330,6 +342,34 @@ void ExplorerActions::buildViewMenus()
     action(QStringLiteral("view_extensions"))->setChecked(true);
     action(QStringLiteral("view_split"))->setCheckable(true);
     connect(action(QStringLiteral("view_split")), &QAction::triggered, this, &ExplorerActions::splitToggled);
+
+    const QList<std::pair<const char *, GroupRole>> tagGroups = {{"tags_group_name", GroupRole::TagName}, {"tags_group_colour", GroupRole::TagColour}};
+    for (const auto &[id, role] : tagGroups) {
+        QAction *a = action(QString::fromLatin1(id));
+        a->setCheckable(true);
+        connect(a, &QAction::triggered, this, [this, role] { Q_EMIT groupRequested(role); });
+    }
+    QAction *flags = action(QStringLiteral("tags_flags"));
+    flags->setCheckable(true);
+    flags->setChecked(FolderView::showFlags());
+    connect(flags, &QAction::triggered, this, [](bool on) {
+        FolderView::setShowFlags(on);
+        KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).writeEntry("showFlags", on, KConfigGroup::Notify);
+        KSharedConfig::openConfig(QStringLiteral("win12-explorerrc"))->sync();
+    });
+    connect(action(QStringLiteral("tags_manage")), &QAction::triggered, this, &ExplorerActions::manageTagsRequested);
+    connect(this, &ExplorerActions::manageTagsRequested, this, [this] {
+        ManageTagsDialog dialog(&m_registry, &m_tagStore, m_view ? m_view->url() : QUrl::fromLocalFile(QDir::homePath()), m_window);
+        dialog.exec();
+    });
+    connect(&m_tagStore, &TagStore::tagsChanged, this, [this](const QList<QUrl> &urls) {
+        if (m_view)
+            m_view->model()->invalidateTags(urls);
+    });
+    QMenu *add = action(QStringLiteral("tags_add"))->menu();
+    connect(add, &QMenu::aboutToShow, this, [this, add] { fillTagsMenu(add, selection()); });
+    QMenu *remove = action(QStringLiteral("tags_remove"))->menu();
+    connect(remove, &QMenu::aboutToShow, this, [this, remove] { fillRemoveMenu(remove, selection()); });
 }
 
 void ExplorerActions::connectActions()
@@ -380,6 +420,7 @@ void ExplorerActions::connectActions()
     });
     on("adv_rename_undo", [this] { undoRenameBatch(); });
     on("adv_rename_matches", [this] { selectByRule(A::Rename); });
+    on("adv_tag_matches", [this] { selectByRule(A::AddTag); });
     on("adv_trash_matches", [this] { selectByRule(A::Trash); });
     on("home_move_to", [this] { transferTo(selection(), true); });
     on("home_copy_to", [this] { transferTo(selection(), false); });
@@ -584,7 +625,7 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
         return;
     using A = SelectByRuleDialog::Action;
     const A chosen = dialog.chosenAction();
-    if (chosen != A::Select && chosen != A::Rename && chosen != A::CopyPaths)
+    if (chosen != A::Select && chosen != A::Rename && chosen != A::CopyPaths && chosen != A::AddTag)
         items = withoutNested(items); // a ticked folder already carries what is inside it
     switch (chosen) {
     case A::Select: Q_EMIT selectUrlsRequested(items.urlList()); break;
@@ -595,6 +636,7 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
     case A::DeleteForever: deletePermanently(items); break;
     case A::Zip: zip(items); break;
     case A::CopyPaths: copyPaths(items); break;
+    case A::AddTag: newTag(items); break;
     }
 }
 
@@ -745,6 +787,120 @@ QString ExplorerActions::rename(const KFileItem &item, const QString &newName, Q
     return job->errorString();
 }
 
+void ExplorerActions::addTag(const KFileItemList &items, const Tag &tag)
+{
+    QList<QUrl> urls;
+    for (const KFileItem &i : items)
+        urls << i.url();
+    const TagStore::Error e = m_tagStore.add(urls, tag);
+    if (e != TagStore::Error::None) {
+        const QString text = TagStore::errorText(e);
+        if (m_showError)
+            m_showError(text);
+        else
+            KMessageBox::error(m_window, text);
+    } else if (!m_registry.touch(tag)) {
+        if (m_showError)
+            m_showError(m_registry.saveErrorText());
+        else
+            KMessageBox::error(m_window, m_registry.saveErrorText());
+    }
+    if (m_view) // earlier items may be tagged even after an error
+        m_view->model()->invalidateTags(urls);
+}
+
+void ExplorerActions::removeTag(const KFileItemList &items, const Tag &tag)
+{
+    QList<QUrl> urls;
+    for (const KFileItem &i : items)
+        urls << i.url();
+    const TagStore::Error e = m_tagStore.remove(urls, tag);
+    if (e != TagStore::Error::None) {
+        if (m_showError)
+            m_showError(TagStore::errorText(e));
+        else
+            KMessageBox::error(m_window, TagStore::errorText(e));
+    }
+    if (m_view)
+        m_view->model()->invalidateTags(urls);
+}
+
+void ExplorerActions::newTag(const KFileItemList &items)
+{
+    NewTagDialog dialog(m_window);
+    if (m_execNewTagDialog(dialog))
+        addTag(items, dialog.tag());
+}
+
+QMenu *ExplorerActions::tagsMenu(const KFileItemList &items)
+{
+    auto *menu = new QMenu(i18n("Tags"));
+    fillTagsMenu(menu, items);
+    return menu;
+}
+
+void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
+{
+    menu->clear();
+    const bool supported = !items.isEmpty() && std::all_of(items.begin(), items.end(), [](const KFileItem &i) { return TagStore::supported(i.url()); });
+    if (!supported) {
+        menu->addAction(TagStore::errorText(TagStore::Error::Unsupported))->setEnabled(false);
+        return;
+    }
+    QList<QList<Tag>> have;
+    bool full = true; // every item already at MaxTags: only removing is left
+    for (const KFileItem &i : items) {
+        have << TagStore::read(i.url());
+        full = full && win12TagCount(have.last()) >= MaxTags;
+    }
+    const QList<Tag> known = m_registry.tags();
+    for (const Tag &t : known.mid(0, 8)) {
+        QAction *a = menu->addAction(TagRibbon::icon(t), t.display());
+        a->setCheckable(true);
+        a->setChecked(std::all_of(have.begin(), have.end(), [&](const QList<Tag> &h) { return h.contains(t); }));
+        if (full && !a->isChecked()) {
+            a->setEnabled(false);
+            a->setToolTip(i18n("max 3 tags"));
+        }
+        connect(a, &QAction::triggered, this, [this, items, t](bool on) {
+            if (on)
+                addTag(items, t);
+            else
+                removeTag(items, t);
+        });
+    }
+    menu->addSeparator();
+    QAction *newTagAction = menu->addAction(QIcon::fromTheme(QStringLiteral("tag-new")), i18n("New tag…"), this, [this, items] { newTag(items); });
+    if (full) {
+        newTagAction->setEnabled(false);
+        newTagAction->setText(i18n("New tag… (max 3 tags)"));
+    }
+    menu->addAction(QIcon::fromTheme(QStringLiteral("tag-properties")), i18n("Manage tags…"), this, [this] { Q_EMIT manageTagsRequested(); });
+}
+
+void ExplorerActions::fillRemoveMenu(QMenu *menu, const KFileItemList &items)
+{
+    menu->clear();
+    if (!items.isEmpty() && !std::all_of(items.begin(), items.end(), [](const KFileItem &i) { return TagStore::supported(i.url()); })) {
+        menu->addAction(TagStore::errorText(TagStore::Error::Unsupported))->setEnabled(false);
+        return;
+    }
+    QList<Tag> present;
+    for (const KFileItem &i : items)
+        for (const Tag &t : TagStore::read(i.url()))
+            if (t.colour >= 0 && !present.contains(t))
+                present << t;
+    for (const Tag &t : present)
+        menu->addAction(TagRibbon::icon(t), t.display(), this, [this, items, t] { removeTag(items, t); });
+    if (present.isEmpty())
+        return;
+    menu->addSeparator();
+    menu->addAction(i18n("All tags"), this, [this, items, present] {
+        for (const Tag &t : present)
+            removeTag(items, t);
+    });
+}
+
 QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &folder)
 {
     auto *menu = new QMenu(m_window);
@@ -783,6 +939,9 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         menu->addSeparator();
         fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services);
         menu->addSeparator();
+        auto *tags = tagsMenu(items);
+        tags->setParent(menu, tags->windowFlags()); // dies with the context menu
+        menu->addMenu(tags);
         addWin12();
         menu->addSeparator();
         entry(QStringLiteral("home_delete_trash"), [this, items] { trash(items); });

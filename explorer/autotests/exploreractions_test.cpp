@@ -1,3 +1,4 @@
+#include <KFileMetaData/UserMetaData>
 #include "exploreractions.h"
 #include "folderview.h"
 #include "ribbonspec.h"
@@ -15,6 +16,14 @@
 #include <QClipboard>
 #include <KIO/FileUndoManager>
 #include "renamemanydialog.h"
+#include "newtagdialog.h"
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include <QLineEdit>
+#include <memory>
+#include "tagstore.h"
+#include <KFileMetaData/UserMetaData>
+#include <QStandardPaths>
 
 namespace {
 void writeFile(const QString &path, const QByteArray &data)
@@ -43,13 +52,198 @@ class ExplorerActionsTest : public QObject
 {
     Q_OBJECT
 
+    QTemporaryDir tagDir{QDir::homePath() + QStringLiteral("/.cache/tagactions-XXXXXX")};
+    QUrl tagFile(const QString &n)
+    {
+        const QString p = tagDir.filePath(n);
+        QFile f(p);
+        (void)f.open(QIODevice::WriteOnly);
+        return QUrl::fromLocalFile(p);
+    }
+    static Tag T(const char *s) { return Tag::decode(QString::fromLatin1(s)); }
+    bool tagsUnsupported() { return !tagDir.isValid() || !TagStore::supported(QUrl::fromLocalFile(tagDir.path())); }
+    static void clearRegistry(ExplorerActions &a)
+    {
+        for (const Tag &t : a.registry().tags())
+            a.registry().remove(t);
+    }
+
 private Q_SLOTS:
+    void initTestCase() { QStandardPaths::setTestModeEnabled(true); }
+    void addTagWritesXattrAndRegistry()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        const QUrl u = tagFile(QStringLiteral("a"));
+        a.addTag({KFileItem(u)}, T("Red/x"));
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("Red/x")});
+        QCOMPARE(a.registry().tags(), QList<Tag>{T("Red/x")});
+    }
+    void fourthTagShowsError()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        QStringList errors;
+        a.setShowError([&](const QString &t) { errors << t; });
+        const QUrl u = tagFile(QStringLiteral("b"));
+        for (const char *t : {"Red/1", "Gold/2", "Green/3"})
+            a.addTag({KFileItem(u)}, T(t));
+        QVERIFY(errors.isEmpty());
+        a.addTag({KFileItem(u)}, T("Blue/4"));
+        QCOMPARE(errors, QStringList{TagStore::errorText(TagStore::Error::TooMany)});
+        QCOMPARE(TagStore::read(u).size(), 3);
+        QVERIFY(!a.registry().contains(T("Blue/4")));
+    }
+    void tagsMenuListsRecentFirstAndChecks()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        a.registry().touch(T("Red/old"));
+        a.registry().touch(T("Gold/new"));
+        const QUrl u = tagFile(QStringLiteral("c"));
+        a.addTag({KFileItem(u)}, T("Red/old")); // touches Red/old again: now most recent
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
+        const QList<QAction *> acts = m->actions();
+        QCOMPARE(acts[0]->text(), QStringLiteral("old"));
+        QCOMPARE(acts[1]->text(), QStringLiteral("new"));
+        QVERIFY(acts[0]->isCheckable() && acts[0]->isChecked());
+        QVERIFY(!acts[1]->isChecked());
+        QVERIFY(acts[2]->isSeparator());
+        QCOMPARE(acts.size(), 5); // New tag…, Manage tags…
+        acts[1]->trigger(); // toggles on
+        QCOMPARE(TagStore::read(u).size(), 2);
+        acts[0]->trigger(); // toggles off
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("Gold/new")});
+    }
+    void tagsMenuOnUnsupportedDriveIsOneDisabledEntry()
+    {
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(QUrl(QStringLiteral("http://example.org/x")))}));
+        QCOMPARE(m->actions().size(), 1);
+        QVERIFY(!m->actions().first()->isEnabled());
+        QCOMPARE(m->actions().first()->text(), TagStore::errorText(TagStore::Error::Unsupported));
+    }
+    void tagsMenuGreysOutAtThree()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        a.registry().touch(T("Blue/other"));
+        const QUrl u = tagFile(QStringLiteral("full"));
+        for (const char *t : {"Red/1", "Gold/2", "Green/3"})
+            a.addTag({KFileItem(u)}, T(t));
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
+        int enabledChecked = 0, disabledUnchecked = 0;
+        QAction *newTag = nullptr;
+        for (QAction *act : m->actions()) {
+            if (act->isCheckable())
+                (act->isChecked() ? enabledChecked : disabledUnchecked) += act->isEnabled() == act->isChecked();
+            if (act->text().startsWith(QLatin1String("New tag")))
+                newTag = act;
+        }
+        QCOMPARE(enabledChecked, 3);
+        QCOMPARE(disabledUnchecked, 1);
+        QVERIFY(newTag && !newTag->isEnabled());
+        QVERIFY(newTag->text().contains(QLatin1String("max 3 tags")));
+    }
+    void removeMenuUnsupportedSaysSo()
+    {
+        ExplorerActions a(nullptr);
+        QMenu m;
+        a.fillRemoveMenu(&m, {KFileItem(QUrl(QStringLiteral("http://example.org/x")))});
+        QCOMPARE(m.actions().size(), 1);
+        QVERIFY(!m.actions().first()->isEnabled());
+        QCOMPARE(m.actions().first()->text(), TagStore::errorText(TagStore::Error::Unsupported));
+    }
+    void removeAllKeepsForeignTag()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        const QUrl u = tagFile(QStringLiteral("foreign"));
+        a.addTag({KFileItem(u)}, T("Red/x"));
+        KFileMetaData::UserMetaData md(u.toLocalFile());
+        QVERIFY(md.setTags(md.tags() << QStringLiteral("plainforeign")) == KFileMetaData::UserMetaData::NoError);
+        QVERIFY(TagStore::read(u).last().colour < 0);
+        QMenu m;
+        a.fillRemoveMenu(&m, {KFileItem(u)});
+        QCOMPARE(m.actions().size(), 3); // Red/x, separator, All tags
+        m.actions().last()->trigger();
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("plainforeign")});
+    }
+    void contextMenuHasTagsSubmenu()
+    {
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({KFileItem(QUrl::fromLocalFile(tagDir.filePath(QStringLiteral("x"))))}, QUrl::fromLocalFile(tagDir.path())));
+        int found = 0;
+        for (QAction *act : m->actions())
+            if (act->menu() && act->text() == QLatin1String("Tags"))
+                ++found;
+        QCOMPARE(found, 1);
+    }
+    void removeTagClearsIt()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        const QUrl u = tagFile(QStringLiteral("d"));
+        a.addTag({KFileItem(u)}, T("Red/x"));
+        a.addTag({KFileItem(u)}, T("Gold/y"));
+        a.removeTag({KFileItem(u)}, T("Red/x"));
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("Gold/y")});
+    }
+    void newTagDialogSeamAddsTag()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        a.setExecNewTagDialog([](NewTagDialog &d) {
+            d.setTag(Tag::decode(QStringLiteral("Green/seam")));
+            return true;
+        });
+        const QUrl u = tagFile(QStringLiteral("e"));
+        a.newTag({KFileItem(u)});
+        QCOMPARE(TagStore::read(u), QList<Tag>{T("Green/seam")});
+    }
+    void selectByRuleAddTagOpensNewTagDialog()
+    {
+        // ponytail: the dialog's own accept path is covered by selectbyruledialog_test; here only the dispatch
+        QVERIFY(Ribbon::actionIds().contains(QStringLiteral("adv_tag_matches")));
+        ExplorerActions a(nullptr);
+        QVERIFY(a.action(QStringLiteral("adv_tag_matches")));
+    }
+    void newTagDialogNeedsAColour()
+    {
+        NewTagDialog d(nullptr);
+        auto *ok = d.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Ok);
+        QVERIFY(!ok->isEnabled());
+        d.setTag(T("Red/w"));
+        QVERIFY(ok->isEnabled());
+        QCOMPARE(d.tag(), T("Red/w"));
+    }
+    void newTagDialogRejectsCommaAndSlash()
+    {
+        // user.xdg.tags is a comma list and '/' splits colour from word: neither may reach a word
+        NewTagDialog d(nullptr);
+        d.setTag(T("Red/"));
+        auto *edit = d.findChild<QLineEdit *>();
+        QTest::keyClicks(edit, QStringLiteral("a,b/c"));
+        QCOMPARE(d.tag(), T("Red/abc"));
+    }
     void everySpecIdHasAnAction()
     {
         ExplorerActions actions(nullptr);
         const QStringList menuIds = {QStringLiteral("home_history"), QStringLiteral("view_sort"), QStringLiteral("view_group"),
                                      QStringLiteral("view_columns"), QStringLiteral("home_new_item"), QStringLiteral("home_delete"),
-                                     QStringLiteral("home_open"), QStringLiteral("share_share")};
+                                     QStringLiteral("home_open"), QStringLiteral("share_share"), QStringLiteral("tags_add"),
+                                     QStringLiteral("tags_remove")};
         for (const QString &id : Ribbon::actionIds()) {
             QAction *a = actions.action(id);
             QVERIFY2(a, qPrintable(id));

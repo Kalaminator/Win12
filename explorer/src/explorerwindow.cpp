@@ -2,6 +2,9 @@
 #include "exploreractions.h"
 #include "foldermodel.h"
 #include "folderview.h"
+#include "taglist.h"
+#include "tagregistry.h"
+#include "tagsearch.h"
 #include "ribbonbar.h"
 #include "ribbonspec.h"
 #include <KConfigGroup>
@@ -237,9 +240,32 @@ ExplorerWindow::ExplorerWindow(const QList<QUrl> &urls, QWidget *parent)
     layout->addWidget(m_tabs);
 
     auto *splitter = new QSplitter(Qt::Horizontal, central);
-    m_places = new KFilePlacesView(splitter);
+    auto *left = new QWidget(splitter);
+    auto *leftBox = new QVBoxLayout(left);
+    leftBox->setContentsMargins(0, 0, 0, 0);
+    m_places = new KFilePlacesView(left);
     m_places->setModel(new KFilePlacesModel(m_places));
     m_places->setDropOnPlaceEnabled(true);
+    m_tagList = new TagList(&m_actions->registry(), left);
+    m_tagList->setVisible(!m_actions->registry().tags().isEmpty());
+    leftBox->addWidget(m_places, 1);
+    leftBox->addWidget(m_tagList);
+    connect(&m_actions->registry(), &TagRegistry::changed, this, [this] { m_tagList->setVisible(!m_actions->registry().tags().isEmpty()); });
+    connect(m_tagList, &TagList::filterChanged, this, [this](const QList<Tag> &picked, TagSearch::Mode mode) {
+        FolderView *v = activeView();
+        if (!v)
+            return;
+        if (picked.isEmpty()) {
+            v->clearResults();
+            return;
+        }
+        QStringList words;
+        for (const Tag &t : picked)
+            words << t.display();
+        auto *search = new TagSearch;
+        v->showResults(i18n("Tagged: %1", words.join(u", "_s)), search);
+        search->start(v->url(), picked, mode);
+    });
     m_stack = new QStackedWidget(splitter);
     m_side = new SidePane(splitter);
     m_side->hide();
@@ -331,6 +357,9 @@ void ExplorerWindow::buildAddressRow(QWidget *central)
     m_navigator->setUrlEditable(false);
     m_navigator->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     bar->addWidget(m_navigator);
+    m_resultsTitle = new QLabel(bar);
+    m_resultsTitleAction = bar->addWidget(m_resultsTitle);
+    m_resultsTitleAction->setVisible(false);
     connect(m_navigator, &KUrlNavigator::urlChanged, this, [this](const QUrl &url) {
         if (FolderView *v = activeView(); v && v->url() != url)
             v->openUrl(url);
@@ -474,7 +503,15 @@ void ExplorerWindow::wireView(FolderView *v)
         if (v != activeView())
             return;
         addRecentFolder(m_config, url);
+        m_tagList->clearPicks(); // real navigation drops the tag filter
+        v->clearResults();       // also when the list had no picks (results from an earlier tab visit)
         syncToActiveView();
+    });
+    connect(v, &FolderView::resultsTitleChanged, this, [this, v](const QString &title) {
+        if (v != activeView())
+            return;
+        m_resultsTitle->setText(title);
+        m_resultsTitleAction->setVisible(!title.isEmpty());
     });
     connect(v, &FolderView::countsChanged, this, [this, v] {
         if (v == activeView())
@@ -575,6 +612,9 @@ void ExplorerWindow::syncToActiveView()
     if (!v)
         return;
     m_actions->setActiveView(v);
+    m_tagList->clearPicks(true); // each tab keeps its own results; the list just starts clean
+    m_resultsTitle->setText(v->resultsTitle());
+    m_resultsTitleAction->setVisible(!v->resultsTitle().isEmpty());
     const QUrl url = v->url();
     if (m_navigator->locationUrl() != url)
         m_navigator->setLocationUrl(url);

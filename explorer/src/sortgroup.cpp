@@ -1,4 +1,5 @@
 #include "sortgroup.h"
+#include "tagstore.h"
 #include <KDirModel>
 #include <KLocalizedString>
 #include <QCollator>
@@ -63,6 +64,25 @@ static GroupInfo nameGroup(const KFileItem &item)
     return {4, i18n("Other")};
 }
 
+QList<GroupInfo> tagGroups(const QList<Tag> &tags, GroupRole role)
+{
+    if (tags.isEmpty())
+        return {{1000, i18n("No tag")}};
+    QList<GroupInfo> out;
+    for (const Tag &t : tags) {
+        GroupInfo g;
+        if (role == GroupRole::TagName)
+            g = t.isForeign() ? GroupInfo{999, t.word} : GroupInfo{0, t.display()};
+        else {
+            const int c = t.isForeign() ? TagColours::indexOfName(QStringLiteral("Overcast")) : t.colour;
+            g = {c, TagColours::name(c)};
+        }
+        if (!out.contains(g))
+            out.append(g);
+    }
+    return out;
+}
+
 GroupInfo groupInfo(const KFileItem &item, GroupRole role, const QDateTime &now)
 {
     switch (role) {
@@ -80,6 +100,9 @@ GroupInfo groupInfo(const KFileItem &item, GroupRole role, const QDateTime &now)
         const QString display = item.entry().stringValue(KIO::UDSEntry::UDS_DISPLAY_TYPE);
         return {1, display.isEmpty() ? item.currentMimeType().comment() : display};
     }
+    case GroupRole::TagName:
+    case GroupRole::TagColour:
+        return tagGroups(TagStore::read(item.url()), role).first();
     case GroupRole::None:
         break;
     }

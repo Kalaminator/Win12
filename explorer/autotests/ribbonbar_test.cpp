@@ -31,12 +31,12 @@ private Q_SLOTS:
         RibbonBar r(&a);
         QCOMPARE(r.visibleGroupTitles(0), (QStringList{u"Clipboard"_s, u"Organize"_s, u"New"_s, u"Open"_s, u"Select"_s}));
     }
-    void tagsGroupHiddenInPhase1()
+    void tagsGroupShowsBuiltButtons()
     {
         ExplorerActions a(nullptr);
         RibbonBar r(&a);
         QCOMPARE(r.visibleGroupTitles(2),
-                 (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Show/hide"_s, u"Split view"_s}));
+                 (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Tags"_s, u"Show/hide"_s, u"Split view"_s}));
     }
     void advancedShowsBuiltGroups()
     {

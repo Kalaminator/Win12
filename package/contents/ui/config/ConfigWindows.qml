@@ -31,6 +31,7 @@ KCM.SimpleKCM {
     property alias cfg_windowImageTint: winImageTint.checked
     property alias cfg_xpFirefoxTitlebar: ffBox.checked
     property alias cfg_explorerDefault: explorerBox.checked
+    property alias cfg_explorerTagFlags: tagFlagsBox.checked
     property bool explorerBuilt: true   // until the check answers
     P5Support.DataSource {
         engine: "executable"
@@ -144,6 +145,13 @@ KCM.SimpleKCM {
             text: i18n("Use Win12 Explorer as the file manager")
             QQC2.ToolTip.visible: hovered
             QQC2.ToolTip.text: i18n("Folders, \"Show in folder\" from other apps, the Start menu File Explorer item and the taskbar pin open Win12 Explorer. Off puts your previous file manager back.")
+        }
+        QQC2.CheckBox {
+            id: tagFlagsBox
+            enabled: page.explorerBuilt || checked
+            text: i18n("Show tag flags on icons")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.text: i18n("A small coloured flag on files and folders that have tags, in Dolphin and Win12 Explorer.")
         }
 
         Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Windows XP"); visible: kinds.windowKind === "xp" }

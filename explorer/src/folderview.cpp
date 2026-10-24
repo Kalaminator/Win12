@@ -1,5 +1,11 @@
 #include "folderview.h"
+#include "resultsmodel.h"
+#include "tagsearch.h"
+#include "tagribbon.h"
+#include "taggroupproxy.h"
+#include <KConfigGroup>
 #include <KDirLister>
+#include <KSharedConfig>
 #include <KIO/CopyJob>
 #include <KIO/DropJob>
 #include <KIO/FileUndoManager>
@@ -17,12 +23,14 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScopedValueRollback>
+#include <QSet>
 #include <QStackedWidget>
 #include <QStyledItemDelegate>
 #include <QTimer>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <optional>
 #include <functional>
 
 namespace {
@@ -99,6 +107,11 @@ public:
             s = QStyledItemDelegate::sizeHint(option, index);
             if (hasGutter(index))
                 s.rwidth() += CheckSize + 4;
+            if (const int n = int(tagsOf(index).size())) {
+                s.setHeight(qMax(s.height(), TagRibbon::Height + 4));
+                if (mode == ViewMode::List)
+                    s.rwidth() += ribbonRoom(n);
+            }
         }
         s.rheight() += stripHeight(option, index);
         return s;
@@ -117,10 +130,29 @@ public:
         const QRect check = checkRect(opt.rect, index);
         if (hasGutter(index))
             opt.rect.setLeft(opt.rect.left() + CheckSize + 4);
-        if (m_settings->mode == ViewMode::Tiles || m_settings->mode == ViewMode::Content)
+        const ViewMode mode = m_settings->mode;
+        const int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, w) + 1; // the style's text margin
+        if (mode == ViewMode::Tiles || mode == ViewMode::Content) {
             paintRich(p, opt, style, index);
-        else
+        } else if (mode == ViewMode::Details) {
+            const bool tagsColumn = index.column() == TagsColumns::TagsColumn;
+            if (tagsColumn)
+                opt.text.clear(); // the ribbons replace the "Red/Xiaomi, ..." text
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            if (const QList<Tag> tags = tagsColumn ? tagsOf(index) : QList<Tag>(); !tags.isEmpty()) // untagged rows never touch the slot width
+                paintRibbons(p, opt.rect.left() + margin, opt.rect, opt.rect, tags);
+        } else if (const QList<Tag> tags = tagsOf(index); tags.isEmpty()) {
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+        } else if (isIconMode(mode)) {
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            if (FolderView::showFlags())
+                TagRibbon::paintFlags(p, style->subElementRect(QStyle::SE_ItemViewItemDecoration, &opt, w), tags);
+        } else { // List, Small icons: the name elided to leave the ribbons room, the ribbons right after it
+            const QRect text = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
+            opt.text = opt.fontMetrics.elidedText(opt.text, opt.textElideMode, qMax(0, text.width() - 2 * margin - ribbonRoom(int(tags.size()))));
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            paintRibbons(p, text.left() + margin + opt.fontMetrics.horizontalAdvance(opt.text) + TagRibbon::Gap, opt.rect, opt.rect, tags);
+        }
         if (m_settings->checkBoxes && index.column() == 0 && (opt.state & (QStyle::State_MouseOver | QStyle::State_Selected))) {
             QStyleOptionButton cb;
             cb.rect = check;
@@ -180,6 +212,30 @@ protected:
     }
 
 private:
+    static QList<Tag> tagsOf(const QModelIndex &index) // served on the Tags column only
+    {
+        return index.siblingAtColumn(TagsColumns::TagsColumn).data(TagsColumns::TagsRole).value<QList<Tag>>();
+    }
+    // Room n ribbons take after a name: a gap and one slot each.
+    int ribbonRoom(int n) const
+    {
+        return n ? n * (TagRibbon::Gap + m_view->tagSlotWidth()) : 0;
+    }
+    // One tagSlotWidth() slot per tag from x, so every row's ribbons line up; centred on `line`, clipped to `clip`.
+    // Selected rows keep the tag colours: the white text stays readable on the highlight.
+    void paintRibbons(QPainter *p, int x, const QRect &line, const QRect &clip, const QList<Tag> &tags) const
+    {
+        const int slot = m_view->tagSlotWidth();
+        const QFontMetrics fm(TagRibbon::font(m_view->font()));
+        p->save();
+        p->setClipRect(clip, Qt::IntersectClip);
+        for (const Tag &t : tags) {
+            TagRibbon::paint(p, QRect(x, line.top(), slot, line.height()), t, fm);
+            x += slot + TagRibbon::Gap;
+        }
+        p->restore();
+    }
+
     int stripHeight(const QStyleOptionViewItem &o, const QModelIndex &index) const
     {
         return m_settings->groupRole != GroupRole::None && index.siblingAtColumn(0).data(FolderModel::GroupFirstRole).toBool()
@@ -239,16 +295,26 @@ private:
             p->setPen(c);
             p->drawText(box, Qt::AlignLeft | v, fm.elidedText(s, Qt::ElideRight, box.width()));
         };
+        const QList<Tag> tags = tagsOf(index);
+        // One line box: the name, elided to leave its ribbons room, then the ribbons (clipped to the box's columns).
+        const auto nameLine = [&](const QRect &box) {
+            const QString name = fm.elidedText(opt.text, Qt::ElideRight, qMax(0, box.width() - ribbonRoom(int(tags.size()))));
+            line(box, name, main, Qt::AlignVCenter);
+            if (!tags.isEmpty())
+                paintRibbons(p, box.left() + fm.horizontalAdvance(name) + TagRibbon::Gap, box,
+                             QRect(box.left(), opt.rect.top(), box.width(), opt.rect.height()), tags);
+        };
         p->save();
         if (m_settings->mode == ViewMode::Tiles) {
             const QStringList lines = size.isEmpty() ? QStringList{opt.text, type} : QStringList{opt.text, type, size};
             int y = text.top() + (text.height() - int(lines.size()) * lh) / 2;
-            for (int i = 0; i < lines.size(); ++i, y += lh)
-                line(QRect(text.left(), y, text.width(), lh), lines.at(i), i ? dim : main, Qt::AlignVCenter);
+            nameLine(QRect(text.left(), y, text.width(), lh));
+            for (int i = 1; i < lines.size(); ++i)
+                line(QRect(text.left(), y + i * lh, text.width(), lh), lines.at(i), dim, Qt::AlignVCenter);
         } else {
             const int third = text.width() / 3;
             const QRect name(text.left(), text.top(), third - 8, text.height() / 2);
-            line(name, opt.text, main, Qt::AlignBottom);
+            nameLine(QRect(name.left(), name.bottom() + 1 - lh, name.width(), lh));
             line(name.translated(0, name.height()), type, dim, Qt::AlignTop);
             const QString modified = QLocale().toString(item.time(KFileItem::ModificationTime), QLocale::ShortFormat);
             const QRect col(text.left() + third, text.top(), third - 8, text.height());
@@ -268,6 +334,7 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
     : QWidget(parent)
     , m_store(store)
     , m_folderModel(new FolderModel(this))
+    , m_results(new ResultsModel(this))
     , m_model(new TagsColumns(m_folderModel, this))
     , m_previews(new PreviewLoader(m_folderModel, this))
     , m_stack(new QStackedWidget(this))
@@ -324,6 +391,15 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
     }
     m_selection = m_list->selectionModel();
     m_tree->setSelectionModel(m_selection);
+    connect(m_model->groupProxy(), &QAbstractItemModel::modelAboutToBeReset, this, [this] {
+        m_keptSelection.clear();
+        for (const KFileItem &i : selectedItems())
+            m_keptSelection << i.url();
+    });
+    connect(m_model->groupProxy(), &QAbstractItemModel::modelReset, this, [this] {
+        if (!m_keptSelection.isEmpty())
+            selectUrls(std::exchange(m_keptSelection, {}));
+    });
     m_list->setSelectionRectVisible(true);
     m_list->setLayoutMode(QListView::Batched);
     m_tree->setRootIsDecorated(false);
@@ -378,11 +454,33 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
         emitCounts();
     });
     connect(m_folderModel->lister(), &KCoreDirLister::listingDirCompleted, m_previews, &PreviewLoader::requestVisible);
+    // tagSlotWidth() rescans lazily, at most once per change, never per paint.
+    const auto tagsDirty = [this] {
+        m_tagSlotDirty = true;
+    };
+    connect(m_model, &QAbstractItemModel::modelReset, this, tagsDirty);
+    // Inserts can only widen the slot: while it is clean, look at the new rows alone (a listing arrives in many batches).
+    connect(m_model, &QAbstractItemModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int last) {
+        if (m_tagSlotDirty)
+            return;
+        const QFontMetrics fm(TagRibbon::font(font()));
+        for (int r = first; r <= last; ++r)
+            for (const Tag &t : m_model->index(r, TagsColumns::TagsColumn, parent).data(TagsColumns::TagsRole).value<QList<Tag>>())
+                m_tagSlotWidth = qMax(m_tagSlotWidth, TagRibbon::width(t, fm));
+    });
+    connect(m_model, &QAbstractItemModel::rowsRemoved, this, tagsDirty);
+    connect(m_model, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &, const QModelIndex &, const QList<int> &roles) {
+        if (!roles.isEmpty() && !roles.contains(TagsColumns::TagsRole))
+            return; // previews and icons: no tag change
+        m_tagSlotDirty = true;
+        currentView()->viewport()->update(); // a new widest tag moves every row's slots, not only the changed row's
+    });
     apply(m_settings);
 }
 
 void FolderView::openUrl(const QUrl &url)
 {
+    clearResults(); // also for the folder searched: it is still listed underneath
     const QUrl u = url.adjusted(QUrl::StripTrailingSlash);
     if (u == m_url)
         return;
@@ -396,6 +494,7 @@ void FolderView::openUrl(const QUrl &url)
 
 void FolderView::navigate(const QUrl &url)
 {
+    clearResults();
     m_url = url;
     apply(m_store->load(url)); // before listing, so hidden files and sorting apply to the new rows
     m_folderModel->openUrl(url);
@@ -405,6 +504,65 @@ void FolderView::navigate(const QUrl &url)
 QUrl FolderView::url() const
 {
     return m_url;
+}
+
+static std::optional<bool> s_showFlags;
+
+bool FolderView::showFlags()
+{
+    if (!s_showFlags)
+        s_showFlags = KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).readEntry("showFlags", true);
+    return *s_showFlags;
+}
+
+void FolderView::setShowFlags(bool on)
+{
+    s_showFlags = on;
+    for (QWidget *w : QApplication::allWidgets()) // ponytail: rare toggle, a scan beats a view registry
+        if (auto *v = qobject_cast<FolderView *>(w))
+            v->currentView()->viewport()->update();
+}
+
+void FolderView::showResults(const QString &title, TagSearch *search)
+{
+    if (m_search && m_search != search) { // deleteLater: we may be inside one of its signals
+        m_search->stop();
+        m_search->deleteLater();
+    }
+    m_search = search;
+    search->setParent(this);
+    connect(search, &TagSearch::found, m_results, &ResultsModel::append); // rowsInserted -> countsChanged ("<n> items")
+    connect(search, &TagSearch::finished, this, [this, search, title](bool ok, const QString &error) {
+        if (ok || search != m_search)
+            return;
+        m_resultsTitle = i18n("%1 (%2)", title, error); // the window shows the title; an empty list alone says nothing
+        Q_EMIT resultsTitleChanged(m_resultsTitle);
+    });
+    m_results->clear();
+    m_folderModel->setResultsSource(m_results);
+    m_resultsTitle = title;
+    Q_EMIT resultsTitleChanged(title);
+}
+
+void FolderView::clearResults()
+{
+    if (!showingResults())
+        return;
+    if (m_search) {
+        m_search->stop();
+        m_search->deleteLater();
+    }
+    // The KDirModel kept listing url() (autoUpdate) underneath, so swapping it back is the folder listing.
+    m_folderModel->clearResultsSource();
+    m_results->clear();
+    m_previews->requestVisible(); // the swap reset dropped the previews; no listing will ask again
+    m_resultsTitle.clear();
+    Q_EMIT resultsTitleChanged(QString());
+}
+
+bool FolderView::showingResults() const
+{
+    return m_folderModel->resultsSource();
 }
 
 bool FolderView::goBack()
@@ -464,8 +622,11 @@ void FolderView::apply(const ViewSettings &s)
         lister->setShowHiddenFiles(s.hiddenFiles);
         lister->emitChanges();
     }
-    if (m_folderModel->groupRole() != s.groupRole)
-        m_folderModel->setGroupRole(s.groupRole);
+    // Tag groups put a file in several groups: TagGroupProxy groups, FolderModel only sorts.
+    const bool byTag = s.groupRole == GroupRole::TagName || s.groupRole == GroupRole::TagColour;
+    if (m_folderModel->groupRole() != (byTag ? GroupRole::None : s.groupRole))
+        m_folderModel->setGroupRole(byTag ? GroupRole::None : s.groupRole);
+    m_model->groupProxy()->setGroupRole(s.groupRole);
     const int sortColumn = SortGroup::sortColumnFor(s.sortRole);
     if (m_folderModel->sortColumn() != sortColumn || m_folderModel->sortOrder() != s.sortOrder)
         m_folderModel->setSorting(s.sortRole, s.sortOrder);
@@ -505,6 +666,20 @@ void FolderView::apply(const ViewSettings &s)
     currentView()->viewport()->update();
 }
 
+int FolderView::tagSlotWidth() const
+{
+    if (m_tagSlotDirty) {
+        // ponytail: one pass over all rows per change; TagsRole is cached per url, so only the first pass reads xattrs
+        const QFontMetrics fm(TagRibbon::font(font()));
+        m_tagSlotWidth = 0;
+        for (int r = 0; r < m_model->rowCount(); ++r)
+            for (const Tag &t : m_model->index(r, TagsColumns::TagsColumn).data(TagsColumns::TagsRole).value<QList<Tag>>())
+                m_tagSlotWidth = qMax(m_tagSlotWidth, TagRibbon::width(t, fm));
+        m_tagSlotDirty = false;
+    }
+    return m_tagSlotWidth;
+}
+
 void FolderView::applyColumns()
 {
     QHeaderView *h = m_tree->header();
@@ -538,19 +713,31 @@ void FolderView::zoom(int steps)
 KFileItemList FolderView::selectedItems() const
 {
     KFileItemList items;
+    QSet<QUrl> seen; // grouped by tag, one file can fill several rows
     const QModelIndexList rows = m_selection->selectedRows();
-    for (const QModelIndex &index : rows)
-        items << m_model->itemFor(index);
+    for (const QModelIndex &index : rows) {
+        const KFileItem item = m_model->itemFor(index);
+        if (!seen.contains(item.url())) {
+            seen.insert(item.url());
+            items << item;
+        }
+    }
     return items;
 }
 
 KFileItemList FolderView::itemsInViewOrder(bool selectedOnly) const
 {
     KFileItemList items;
+    QSet<QUrl> seen;
     const QAbstractItemModel *model = currentView()->model();
     for (int r = 0; r < model->rowCount(); ++r)
-        if (!selectedOnly || m_selection->isRowSelected(r))
-            items << m_model->itemFor(model->index(r, 0));
+        if (!selectedOnly || m_selection->isRowSelected(r)) {
+            const KFileItem item = m_model->itemFor(model->index(r, 0));
+            if (!seen.contains(item.url())) {
+                seen.insert(item.url());
+                items << item;
+            }
+        }
     return items;
 }
 
@@ -562,12 +749,12 @@ KFileItem FolderView::currentItem() const
 
 int FolderView::itemCount() const
 {
-    return m_model->rowCount();
+    return m_folderModel->rowCount(); // files, not view rows
 }
 
 int FolderView::selectedCount() const
 {
-    return int(m_selection->selectedRows().size());
+    return int(selectedItems().size());
 }
 
 void FolderView::selectAll()
@@ -596,7 +783,7 @@ void FolderView::selectUrls(const QList<QUrl> &urls)
     QItemSelection selection;
     QModelIndex first;
     for (const QUrl &url : urls) {
-        const QModelIndex index = m_model->mapFromSource(m_folderModel->indexFor(url));
+        const QModelIndex index = m_model->indexFor(url);
         if (!index.isValid())
             continue;
         selection.select(index, index);

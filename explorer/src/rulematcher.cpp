@@ -1,4 +1,5 @@
 #include "rulematcher.h"
+#include "tagstore.h"
 #include <KLocalizedString>
 #include <QFileInfo>
 #include <QRegularExpression>
@@ -16,6 +17,8 @@ QList<Test> testsFor(Field f)
         return {Test::OlderThan, Test::NewerThan};
     case Field::Kind:
         return {Test::Equals};
+    case Field::Tag:
+        return {Test::HasTag};
     }
     return {};
 }
@@ -29,6 +32,7 @@ QString fieldText(Field f)
     case Field::Modified: return i18n("modified");
     case Field::Created: return i18n("created");
     case Field::Kind: return i18n("kind");
+    case Field::Tag: return i18n("Tag");
     }
     return {};
 }
@@ -45,6 +49,7 @@ QString testText(Test t)
     case Test::NewerThan: return i18n("newer than");
     case Test::BiggerThan: return i18n("bigger than");
     case Test::SmallerThan: return i18n("smaller than");
+    case Test::HasTag: return i18n("has tag");
     }
     return {};
 }
@@ -100,6 +105,15 @@ std::optional<RuleMatcher> RuleMatcher::compile(const QList<Rule> &rules, QStrin
             if (!wantDir && v.trimmed().compare(QLatin1String("file"), Qt::CaseInsensitive) != 0)
                 return fail(i18n("Kind must be \"folder\" or \"file\""));
             fn = [wantDir](const KFileItem &i) { return i.isDir() == wantDir; };
+        } else if (r.field == Field::Tag) {
+            if (v.isEmpty())
+                return fail(i18n("Enter a value for the %1 rule", fieldText(r.field)));
+            fn = [v](const KFileItem &i) {
+                for (const Tag &t : TagStore::read(i.url()))
+                    if (t.display().compare(v, Qt::CaseInsensitive) == 0 || t.encode() == v)
+                        return true;
+                return false;
+            };
         } else if (r.field == Field::Size) {
             bool ok;
             const qint64 n = parseSize(v, &ok);

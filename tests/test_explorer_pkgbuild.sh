@@ -6,7 +6,7 @@ sed 's/@VER@/0.1.abcdef012345/' "$HERE/explorer/PKGBUILD" > "$T/PKGBUILD"
 cd "$T"
 bash -n PKGBUILD
 S=$(makepkg --printsrcinfo)
-for l in 'pkgname = win12-explorer' 'arch = x86_64' 'depends = kio' 'depends = kitemmodels' 'depends = purpose' \
+for l in 'pkgname = win12-explorer' 'arch = x86_64' 'depends = kio' 'depends = kitemmodels' 'depends = purpose' 'depends = baloo' 'depends = kfilemetadata' \
          'makedepends = extra-cmake-modules' 'makedepends = cmake'; do
   echo "$S" | grep -q "$l" || { echo "FAIL: srcinfo lacks '$l'"; exit 1; }
 done

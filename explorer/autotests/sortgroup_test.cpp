@@ -1,4 +1,5 @@
 #include "sortgroup.h"
+#include "tag.h"
 #include <KDirModel>
 #include <KIO/UDSEntry>
 #include <QMimeDatabase>
@@ -90,6 +91,32 @@ private Q_SLOTS:
         QVERIFY(groupLess({0, QStringLiteral("b")}, {1, QStringLiteral("a")}));
         QVERIFY(groupLess({1, QStringLiteral("a")}, {1, QStringLiteral("B")}));
         QVERIFY(!groupLess({1, QStringLiteral("b")}, {1, QStringLiteral("a")}));
+    }
+    void tagNameGroupsOnePerWord()
+    {
+        const auto g = tagGroups({Tag::decode(u"Red/Xiaomi"_s), Tag::decode(u"Blue/Xiaomi"_s)}, GroupRole::TagName);
+        QCOMPARE(g, (QList<GroupInfo>{{0, u"Xiaomi"_s}}));
+    }
+    void tagColourGroupsOnePerColour()
+    {
+        const auto g = tagGroups({Tag::decode(u"Red/Xiaomi"_s), Tag::decode(u"Red/Urgent"_s)}, GroupRole::TagColour);
+        QCOMPARE(g, (QList<GroupInfo>{{TagColours::indexOfName(u"Red"_s), u"Red"_s}}));
+        QCOMPARE(g.first().order, 9);
+    }
+    void noTagGroupLast()
+    {
+        for (GroupRole r : {GroupRole::TagName, GroupRole::TagColour}) {
+            const auto g = tagGroups({}, r);
+            QCOMPARE(g.size(), 1);
+            QCOMPARE(g.first().order, 1000);
+            QVERIFY(g.first().order > TagColours::Count);
+        }
+    }
+    void foreignTagGroup()
+    {
+        QCOMPARE(tagGroups({Tag::decode(u"work"_s)}, GroupRole::TagName), (QList<GroupInfo>{{999, u"work"_s}}));
+        QCOMPARE(tagGroups({Tag::decode(u"work"_s)}, GroupRole::TagColour),
+                 (QList<GroupInfo>{{TagColours::indexOfName(u"Overcast"_s), u"Overcast"_s}}));
     }
     void sortColumns()
     {

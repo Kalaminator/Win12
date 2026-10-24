@@ -8,6 +8,9 @@
 #include "renamemanydialog.h"
 #include "renameplan.h"
 #include <functional>
+#include "newtagdialog.h"
+#include "tagregistry.h"
+#include "tagstore.h"
 
 
 class FolderView;
@@ -47,6 +50,15 @@ public:
     void renameMany(const KFileItemList &items);
     void undoRenameBatch(); // reverses the last batch, only what really renamed
     void setExecRenameDialog(std::function<bool(RenameManyDialog &)> exec) { m_execRenameDialog = std::move(exec); } // test seam
+    // Tags: write the xattr, then touch the registry and repaint the rows; errors go through the showError seam.
+    void addTag(const KFileItemList &, const Tag &);
+    void removeTag(const KFileItemList &, const Tag &);
+    void newTag(const KFileItemList &); // NewTagDialog, then addTag
+    QMenu *tagsMenu(const KFileItemList &); // caller owns
+    void fillRemoveMenu(QMenu *, const KFileItemList &); // Win12 tags only, never foreign ones
+    TagRegistry &registry() { return m_registry; }
+    void setExecNewTagDialog(std::function<bool(NewTagDialog &)> exec) { m_execNewTagDialog = std::move(exec); } // test seam
+    void setShowError(std::function<void(const QString &)> show) { m_showError = std::move(show); } // test seam
     static QString rename(const KFileItem &item, const QString &newName, QWidget *parent);
 
 Q_SIGNALS:
@@ -62,6 +74,7 @@ Q_SIGNALS:
     void splitToggled(bool);
     void showToggled(const QString &what, bool on); // "checkboxes" | "extensions" | "hidden"
     void selectUrlsRequested(const QList<QUrl> &); // Select by rule, Action::Select
+    void manageTagsRequested();
     void fillWin12Menu(QMenu *, const KFileItemList &); // seam for phases 2-4
 
 private:
@@ -83,12 +96,17 @@ private:
     void launch(const QString &exe, const QStringList &args);
     void openTerminal(const QUrl &folder);
 
-    QWidget *m_window;
     QHash<QString, QAction *> m_actions;
     QPointer<FolderView> m_view;
     KNewFileMenu *m_newFileMenu;
     Purpose::Menu *m_shareMenu;
     std::function<QUrl(const QUrl &)> m_pickFolder;
     std::function<bool(RenameManyDialog &)> m_execRenameDialog = [](RenameManyDialog &d) { return d.exec() == QDialog::Accepted; };
+    void fillTagsMenu(QMenu *, const KFileItemList &);
+    QWidget *m_window;
+    TagStore m_tagStore;
+    TagRegistry m_registry;
+    std::function<bool(NewTagDialog &)> m_execNewTagDialog = [](NewTagDialog &d) { return d.exec() == QDialog::Accepted; };
+    std::function<void(const QString &)> m_showError;
     QList<PlannedRename> m_lastBatch; // the rows that actually renamed
 };
