@@ -80,6 +80,7 @@ explorer_add_test(formularun_test)
 explorer_add_test(scriptinterpreter_test)
 explorer_add_test(scriptrun_test)
 explorer_add_test(planrunner_test)
+explorer_add_test(scriptdialog_test)
 ecm_add_test(autotests/overlayplugin_test.cpp overlay/win12tagsoverlay.cpp TEST_NAME overlayplugin_test
     LINK_LIBRARIES win12tags KF6::KIOCore Qt6::Test)
 target_include_directories(overlayplugin_test PRIVATE overlay)
