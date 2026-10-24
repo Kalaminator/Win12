@@ -1,4 +1,5 @@
 #include "foldermodel.h"
+#include "resultsmodel.h"
 #include "taggroupproxy.h"
 #include <KDirLister>
 #include <KIO/PreviewJob>
@@ -13,14 +14,9 @@ FolderModel::FolderModel(QObject *parent)
 {
     lister()->setAutoUpdate(true);
     lister()->setDelayedMimeTypes(true);
-    // Connected before setSourceModel so the group cache is fixed before the proxy re-sorts.
-    connect(m_dirModel, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &tl, const QModelIndex &br) {
-        for (int r = tl.row(); r <= br.row(); ++r)
-            m_groups.remove(m_dirModel->index(r, 0, tl.parent()).internalPointer());
-    });
-    connect(m_dirModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, &FolderModel::clearGroups);
-    connect(m_dirModel, &QAbstractItemModel::modelAboutToBeReset, this, &FolderModel::clearGroups);
-    setSourceModel(m_dirModel);
+    m_collator.setNumericMode(true); // ponytail: results compare names like KDirSortFilterProxyModel's natural, case-insensitive default
+    m_collator.setCaseSensitivity(Qt::CaseInsensitive);
+    setSource(m_dirModel);
     setSorting(SortRole::Name, Qt::AscendingOrder);
 }
 
@@ -75,14 +71,54 @@ void FolderModel::setPreviewLoader(PreviewLoader *loader)
         });
 }
 
+static KFileItem fileItem(const QModelIndex &sourceIndex)
+{
+    return sourceIndex.data(KDirModel::FileItemRole).value<KFileItem>();
+}
+
+void FolderModel::setSource(QAbstractItemModel *source)
+{
+    if (source == sourceModel())
+        return;
+    for (const QMetaObject::Connection &c : std::as_const(m_sourceHooks))
+        disconnect(c);
+    // Connected before setSourceModel so the group cache is fixed before the proxy re-sorts.
+    m_sourceHooks = {
+        connect(source, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &tl, const QModelIndex &br) {
+            for (int r = tl.row(); r <= br.row(); ++r)
+                m_groups.remove(tl.siblingAtRow(r).siblingAtColumn(0).internalPointer());
+        }),
+        connect(source, &QAbstractItemModel::rowsAboutToBeRemoved, this, &FolderModel::clearGroups),
+        connect(source, &QAbstractItemModel::modelAboutToBeReset, this, &FolderModel::clearGroups),
+    };
+    clearGroups(); // the old source's node pointers
+    setSourceModel(source); // a reset: TagGroupProxy drops its tag cache, PreviewLoader its previews
+}
+
+void FolderModel::setResultsSource(ResultsModel *results)
+{
+    m_results = results; // before the swap: the re-sort that follows must already compare results
+    setSource(results ? static_cast<QAbstractItemModel *>(results) : m_dirModel);
+}
+
+void FolderModel::clearResultsSource()
+{
+    setResultsSource(nullptr);
+}
+
+ResultsModel *FolderModel::resultsSource() const
+{
+    return m_results;
+}
+
 KFileItem FolderModel::itemFor(const QModelIndex &proxyIndex) const
 {
-    return m_dirModel->itemForIndex(mapToSource(proxyIndex));
+    return fileItem(mapToSource(proxyIndex));
 }
 
 QModelIndex FolderModel::indexFor(const QUrl &url) const
 {
-    return mapFromSource(m_dirModel->indexForUrl(url));
+    return mapFromSource(m_results ? m_results->indexForUrl(url) : m_dirModel->indexForUrl(url));
 }
 
 QVariant FolderModel::data(const QModelIndex &index, int role) const
@@ -135,7 +171,7 @@ bool FolderModel::lessThan(const QModelIndex &left, const QModelIndex &right) co
     if (sortColumn() == KDirModel::Type) {
         // The base compares mimeComment(), which sniffs content and reads .desktop files per item;
         // use the same cheap label as the Type groups, then the base's name order (folders first).
-        const KFileItem a = m_dirModel->itemForIndex(left), b = m_dirModel->itemForIndex(right);
+        const KFileItem a = fileItem(left), b = fileItem(right);
         if (a.isDir() == b.isDir()) {
             const SortGroup::GroupInfo ta = SortGroup::groupInfo(a, GroupRole::Type, m_now);
             const SortGroup::GroupInfo tb = SortGroup::groupInfo(b, GroupRole::Type, m_now);
@@ -149,6 +185,29 @@ bool FolderModel::lessThan(const QModelIndex &left, const QModelIndex &right) co
     return KDirSortFilterProxyModel::lessThan(left, right); // folders first inside a group
 }
 
+bool FolderModel::subSortLessThan(const QModelIndex &left, const QModelIndex &right) const
+{
+    if (!m_results)
+        return KDirSortFilterProxyModel::subSortLessThan(left, right);
+    // The base static_casts its source to KDirModel; results sort here on the same keys.
+    // ponytail: no hidden-files-last, no child counts for folder sizes, no Permissions/Owner/Group keys (not offered as sort roles); those fall to the name
+    const KFileItem a = fileItem(left), b = fileItem(right);
+    if (sortFoldersFirst() && a.isDir() != b.isDir())
+        return a.isDir() == (sortOrder() == Qt::AscendingOrder); // folders stay on top when descending
+    int c = 0;
+    if (left.column() == KDirModel::Size && !a.isDir())
+        c = a.size() < b.size() ? -1 : a.size() > b.size();
+    else if (left.column() == KDirModel::ModifiedTime) {
+        const QDateTime ta = a.time(KFileItem::ModificationTime), tb = b.time(KFileItem::ModificationTime);
+        c = ta < tb ? -1 : tb < ta;
+    }
+    if (c == 0)
+        c = m_collator.compare(a.text(), b.text());
+    if (c == 0)
+        c = a.url().toString().compare(b.url().toString());
+    return c < 0;
+}
+
 SortGroup::GroupInfo FolderModel::groupOf(const QModelIndex &sourceIndex) const
 {
     const void *key = sourceIndex.internalPointer();
@@ -157,7 +216,7 @@ SortGroup::GroupInfo FolderModel::groupOf(const QModelIndex &sourceIndex) const
         return *it;
     if (m_groups.isEmpty())
         m_now = QDateTime::currentDateTime();
-    return *m_groups.insert(key, SortGroup::groupInfo(m_dirModel->itemForIndex(sourceIndex), m_groupRole, m_now));
+    return *m_groups.insert(key, SortGroup::groupInfo(fileItem(sourceIndex), m_groupRole, m_now));
 }
 
 QPixmap FolderModel::previewOf(const QModelIndex &proxyIndex) const

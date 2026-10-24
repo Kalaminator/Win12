@@ -1,5 +1,6 @@
 #include "folderview.h"
 #include "tagribbon.h"
+#include "tagsearch.h"
 #include "tagstore.h"
 #include <KDirLister>
 #include <QApplication>
@@ -521,6 +522,77 @@ private Q_SLOTS:
         groupByTag(GroupRole::Name);
         QCOMPARE(m->rowCount(), 1);
         QCOMPARE(m->folderModel()->groupRole(), GroupRole::Name);
+    }
+
+    // Opens the tagged folder and shows the Red/Xiaomi search over it, walked to the end.
+    bool showRedResults()
+    {
+        if (!writeTagged({{QStringLiteral("b"), {T("Red/Xiaomi")}},
+                          {QStringLiteral("a"), {T("Red/Xiaomi"), T("OrangeBright/Urgent")}},
+                          {QStringLiteral("c"), {}}}))
+            return false;
+        [&] { QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); })); }();
+        auto *search = new TagSearch;
+        QSignalSpy done(search, &TagSearch::finished);
+        QSignalSpy urls(m_view.get(), &FolderView::urlChanged);
+        QSignalSpy titles(m_view.get(), &FolderView::resultsTitleChanged);
+        m_view->showResults(QStringLiteral("Red"), search);
+        search->start(QUrl::fromLocalFile(m_tagDir->path()), {T("Red/Xiaomi")}, TagSearch::Mode::Any, TagSearch::Engine::Walk);
+        [&] { QVERIFY(done.wait(10000)); }();
+        [&] { QCOMPARE(urls.count(), 0); }();
+        [&] { QCOMPARE(titles.count(), 1); }();
+        [&] { QCOMPARE(titles.first().at(0).toString(), QStringLiteral("Red")); }();
+        return true;
+    }
+    QStringList namesInViewOrder() const
+    {
+        QStringList names;
+        for (const KFileItem &i : m_view->itemsInViewOrder(false))
+            names << i.name();
+        return names;
+    }
+    void showResultsListsFoundItems()
+    {
+        if (!showRedResults())
+            QSKIP("xattr tags not supported here");
+        QVERIFY(m_view->showingResults());
+        QCOMPARE(m_view->model()->rowCount(), 2);
+        QCOMPARE(m_view->itemCount(), 2);
+        QCOMPARE(m_view->url(), QUrl::fromLocalFile(m_tagDir->path()));
+        QCOMPARE(m_view->model()->index(0, TagsColumns::TagsColumn).data(TagsColumns::TagsRole).value<QList<Tag>>().isEmpty(), false);
+        QVERIFY(m_view->model()->indexFor(tagUrl(QStringLiteral("b"))).isValid());
+        QSignalSpy titles(m_view.get(), &FolderView::resultsTitleChanged);
+        m_view->clearResults();
+        QVERIFY(!m_view->showingResults());
+        QCOMPARE(titles.count(), 1);
+        QCOMPARE(titles.first().at(0).toString(), QString());
+        QCOMPARE(m_view->itemCount(), 3);
+    }
+    void openUrlClearsResults()
+    {
+        if (!showRedResults())
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        QVERIFY(!m_view->showingResults());
+        QCOMPARE(m_view->itemCount(), 3);
+        QCOMPARE(m_view->url(), dirUrl());
+    }
+    void sortByNameWorksOnResults()
+    {
+        if (!showRedResults())
+            QSKIP("xattr tags not supported here");
+        ViewSettings s = m_view->settings();
+        s.sortRole = SortRole::Name;
+        s.sortOrder = Qt::AscendingOrder;
+        m_view->applySettings(s);
+        QCOMPARE(namesInViewOrder(), (QStringList{QStringLiteral("a"), QStringLiteral("b")}));
+        s.sortOrder = Qt::DescendingOrder;
+        m_view->applySettings(s);
+        QCOMPARE(namesInViewOrder(), (QStringList{QStringLiteral("b"), QStringLiteral("a")}));
+        s.sortRole = SortRole::Type; // FolderModel's own Type compare, then the name order
+        s.sortOrder = Qt::AscendingOrder;
+        m_view->applySettings(s);
+        QCOMPARE(namesInViewOrder(), (QStringList{QStringLiteral("a"), QStringLiteral("b")}));
     }
 };
 

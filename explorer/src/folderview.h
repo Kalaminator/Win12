@@ -2,6 +2,7 @@
 #include "foldermodel.h"
 #include "viewsettings.h"
 #include <KFileItem>
+#include <QPointer>
 #include <QWidget>
 
 class QAbstractItemView;
@@ -10,6 +11,8 @@ class QItemSelectionModel;
 class QListView;
 class QStackedWidget;
 class QTreeView;
+class ResultsModel;
+class TagSearch;
 
 // The file pane: a QListView (icon/list/tiles/content) and a QTreeView (details) over one model and selection.
 class FolderView : public QWidget
@@ -17,7 +20,11 @@ class FolderView : public QWidget
     Q_OBJECT
 public:
     explicit FolderView(ViewSettingsStore *store, QWidget *parent = nullptr);
-    void openUrl(const QUrl &); // pushes history, loads store->load(url), applies it
+    void openUrl(const QUrl &); // clears results; pushes history, loads store->load(url), applies it
+    // Lists `search`'s finds instead of the folder (owns it from here); url() stays the folder searched, no urlChanged.
+    void showResults(const QString &title, TagSearch *search);
+    void clearResults(); // back to the folder listing
+    bool showingResults() const;
     QUrl url() const;
     bool goBack();
     bool goForward();
@@ -49,6 +56,7 @@ public:
 
 Q_SIGNALS:
     void urlChanged(const QUrl &);
+    void resultsTitleChanged(const QString &); // "" when cleared
     void selectionChanged();
     void countsChanged(int items, int selected);
     void fileActivated(const KFileItem &); // double-click/Enter on a non-folder
@@ -71,6 +79,8 @@ private:
 
     ViewSettingsStore *m_store;
     FolderModel *m_folderModel;
+    ResultsModel *m_results;
+    QPointer<TagSearch> m_search;
     TagsColumns *m_model;
     PreviewLoader *m_previews;
     QItemSelectionModel *m_selection;

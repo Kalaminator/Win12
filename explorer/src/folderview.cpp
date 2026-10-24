@@ -1,4 +1,6 @@
 #include "folderview.h"
+#include "resultsmodel.h"
+#include "tagsearch.h"
 #include "tagribbon.h"
 #include "taggroupproxy.h"
 #include <KDirLister>
@@ -328,6 +330,7 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
     : QWidget(parent)
     , m_store(store)
     , m_folderModel(new FolderModel(this))
+    , m_results(new ResultsModel(this))
     , m_model(new TagsColumns(m_folderModel, this))
     , m_previews(new PreviewLoader(m_folderModel, this))
     , m_stack(new QStackedWidget(this))
@@ -464,6 +467,7 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
 
 void FolderView::openUrl(const QUrl &url)
 {
+    clearResults(); // also for the folder searched: it is still listed underneath
     const QUrl u = url.adjusted(QUrl::StripTrailingSlash);
     if (u == m_url)
         return;
@@ -477,6 +481,7 @@ void FolderView::openUrl(const QUrl &url)
 
 void FolderView::navigate(const QUrl &url)
 {
+    clearResults();
     m_url = url;
     apply(m_store->load(url)); // before listing, so hidden files and sorting apply to the new rows
     m_folderModel->openUrl(url);
@@ -486,6 +491,40 @@ void FolderView::navigate(const QUrl &url)
 QUrl FolderView::url() const
 {
     return m_url;
+}
+
+void FolderView::showResults(const QString &title, TagSearch *search)
+{
+    if (m_search && m_search != search) { // deleteLater: we may be inside one of its signals
+        m_search->stop();
+        m_search->deleteLater();
+    }
+    m_search = search;
+    search->setParent(this);
+    connect(search, &TagSearch::found, m_results, &ResultsModel::append); // rowsInserted -> countsChanged ("<n> items")
+    m_results->clear();
+    m_folderModel->setResultsSource(m_results);
+    Q_EMIT resultsTitleChanged(title);
+}
+
+void FolderView::clearResults()
+{
+    if (!showingResults())
+        return;
+    if (m_search) {
+        m_search->stop();
+        m_search->deleteLater();
+    }
+    // The KDirModel kept listing url() (autoUpdate) underneath, so swapping it back is the folder listing.
+    m_folderModel->clearResultsSource();
+    m_results->clear();
+    m_previews->requestVisible(); // the swap reset dropped the previews; no listing will ask again
+    Q_EMIT resultsTitleChanged(QString());
+}
+
+bool FolderView::showingResults() const
+{
+    return m_folderModel->resultsSource();
 }
 
 bool FolderView::goBack()
