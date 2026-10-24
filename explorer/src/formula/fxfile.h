@@ -4,7 +4,11 @@
 #include <QList>
 #include <QString>
 #include <functional>
+#include <memory>
 #include <optional>
+
+class KFileItem;
+class QUrl;
 
 struct FxPhoto {
     int width = 0, height = 0;
@@ -36,3 +40,10 @@ private:
     std::optional<FxPhoto> m_photo;
     int extDot() const; // index of the name/ext '.', -1 when none
 };
+
+// One row for `item` below `base`. Local: tags from TagStore, photo (images only) through
+// KFileMetaData, both lazy; non-local: path is the display URL, no tags, no photo.
+// depth = '/' count of the path relative to base (0 for a direct child).
+std::shared_ptr<FxFile> fxFileFor(const KFileItem &item, const QUrl &base, int row, int rowInFolder);
+// item's path relative to base ("sub/b.txt"); the file name when it is not below base
+QString fxRelativePath(const QUrl &url, const QUrl &base);
