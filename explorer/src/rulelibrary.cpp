@@ -37,6 +37,8 @@ QString RuleLibrary::path()
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + u"/win12/rules.json"_s;
 }
 
+static void writeServiceMenu(const RuleLibrary &l, bool empty);
+
 void RuleLibrary::ensureLoaded() const
 {
     if (m_loaded)
@@ -69,6 +71,11 @@ void RuleLibrary::ensureLoaded() const
                 m_rules.append({name, o.value(u"text"_s).toString(), kind});
     }
     sortRules(m_rules);
+    // an existing library gets the current menu format without a save
+    QFile mf(serviceMenuPath());
+    const QString cur = mf.open(QIODevice::ReadOnly) ? QString::fromUtf8(mf.readAll()) : QString();
+    if (cur != serviceMenuText())
+        writeServiceMenu(*this, m_rules.isEmpty());
 }
 
 QList<SavedRule> RuleLibrary::all() const
@@ -122,14 +129,14 @@ QString RuleLibrary::serviceMenuText() const
     QString body;
     for (qsizetype i = 0; i < m_rules.size(); ++i) {
         const SavedRule &r = m_rules[i];
-        actions += u"rule%1;"_s.arg(i);
+        actions += u"rule%1;"_s.arg(i, 3, 10, QLatin1Char('0'));
         QString name = r.name;
         name.remove(u'\n').remove(u'\r');
         name.replace(u'\\', u"\\\\"_s);
-        body += u"[Desktop Action rule%1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %F\n"_s.arg(i).arg(
+        body += u"[Desktop Action rule%1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %U\n"_s.arg(i, 3, 10, QLatin1Char('0')).arg(
             name, r.kind == SavedRule::Kind::Script ? u"text-x-script"_s : u"accessories-calculator"_s, execQuoted(r.name));
     }
-    return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=%2\nActions=%1\n"_s.arg(actions, i18n("Win12 ▸ My rules")) + body;
+    return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=%2\nActions=%1\n"_s.arg(actions, QString(RuleLibrary::kSubmenu)) + body;
 }
 
 // Best effort: a failed menu file never fails a save. KF6 ignores non-executable local service menus, hence 0755.

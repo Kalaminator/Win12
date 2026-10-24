@@ -1,4 +1,5 @@
 #pragma once
+#include <QLatin1String>
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -17,6 +18,7 @@ class RuleLibrary : public QObject
     Q_OBJECT
 public:
     using QObject::QObject;
+    static constexpr QLatin1String kSubmenu{"Win12"}; // X-KDE-Submenu shared by the static and generated service menus
     static QString path(); // GenericDataLocation/win12/rules.json (next to tags.json)
     static QString serviceMenuPath(); // GenericDataLocation/kio/servicemenus/win12-my-rules.desktop
     QString serviceMenuText() const; // Dolphin's right-click Win12 > My rules; rewritten (0755) on every write, removed when empty
