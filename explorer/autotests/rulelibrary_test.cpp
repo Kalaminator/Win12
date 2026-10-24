@@ -117,7 +117,7 @@ private Q_SLOTS:
         QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("new"), K::Select}, &err));
         QCOMPARE(l.all().size(), 1);
         QCOMPARE(l.all()[0].text, QStringLiteral("new"));
-        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("o"), K::Rename}, &err));
+        QVERIFY(l.save({QStringLiteral("y"), QStringLiteral("o"), K::Rename}, &err));
         QCOMPARE(l.all().size(), 2);
     }
     void removeByNameAndKind()
@@ -125,7 +125,7 @@ private Q_SLOTS:
         RuleLibrary l;
         QString err;
         l.save({QStringLiteral("x"), QStringLiteral("a"), K::Select}, &err);
-        l.save({QStringLiteral("x"), QStringLiteral("b"), K::Rename}, &err);
+        l.save({QStringLiteral("y"), QStringLiteral("b"), K::Rename}, &err);
         QVERIFY(l.remove(QStringLiteral("x"), K::Select, &err));
         QCOMPARE(l.all().size(), 1);
         QCOMPARE(l.all()[0].kind, K::Rename);
@@ -173,6 +173,33 @@ private Q_SLOTS:
         QCOMPARE(spy.count(), 1);
         QVERIFY(l.remove(QStringLiteral("x"), K::Select, &err));
         QCOMPARE(spy.count(), 2);
+    }
+    void saveRefusesNameOfOtherKind()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(!l.save({QStringLiteral("x"), QStringLiteral("2"), K::Script}, &err));
+        QVERIFY(err.contains(QStringLiteral("x")));
+        QCOMPARE(l.all().size(), 1);
+    }
+    void saveReplacesSameKind()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("2"), K::Select}, &err));
+        QCOMPARE(l.all().size(), 1);
+        QCOMPARE(l.all().first().text, QStringLiteral("2"));
+    }
+    void findByName()
+    {
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("1"), K::Select}, &err));
+        QVERIFY(l.find(QStringLiteral("x")).has_value());
+        QCOMPARE(l.find(QStringLiteral("x"))->kind, K::Select);
+        QVERIFY(!l.find(QStringLiteral("nope")).has_value());
     }
 };
 

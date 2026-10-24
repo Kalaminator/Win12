@@ -1,5 +1,8 @@
 #include "rulelibrary.h"
 #include <KLocalizedString>
+#include <KMessageBox>
+#include <KStandardGuiItem>
+#include <QInputDialog>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -173,6 +176,15 @@ bool RuleLibrary::write(QString *error)
     return true;
 }
 
+std::optional<SavedRule> RuleLibrary::find(const QString &name) const
+{
+    ensureLoaded();
+    for (const SavedRule &r : m_rules)
+        if (r.name == name)
+            return r;
+    return std::nullopt;
+}
+
 bool RuleLibrary::save(const SavedRule &rule, QString *error)
 {
     if (rule.name.trimmed().isEmpty()) {
@@ -181,6 +193,13 @@ bool RuleLibrary::save(const SavedRule &rule, QString *error)
         return false;
     }
     ensureLoaded();
+    if (const auto other = find(rule.name); other && other->kind != rule.kind) {
+        if (error) {
+            const QString kt = other->kind == SavedRule::Kind::Select ? i18n("Select") : other->kind == SavedRule::Kind::Rename ? i18n("Rename") : i18n("Script");
+            *error = i18n("A %1 rule named %2 already exists; choose another name", kt, rule.name);
+        }
+        return false;
+    }
     const QList<SavedRule> before = m_rules;
     m_rules.removeIf([&](const SavedRule &r) { return r.kind == rule.kind && r.name == rule.name; });
     m_rules.append(rule);
@@ -199,5 +218,23 @@ bool RuleLibrary::remove(const QString &name, SavedRule::Kind kind, QString *err
     if (write(error))
         return true;
     m_rules = before;
+    return false;
+}
+
+bool saveRuleInteractively(RuleLibrary &lib, SavedRule::Kind kind, const QString &text, QWidget *parent)
+{
+    bool ok = false;
+    const QString name = QInputDialog::getText(parent, i18n("Save as"), i18n("Name"), QLineEdit::Normal, QString(), &ok).trimmed();
+    if (!ok || name.isEmpty())
+        return false;
+    const auto old = lib.find(name);
+    if (old && old->kind == kind
+        && KMessageBox::questionTwoActions(parent, i18n("Replace the saved rule %1?", name), i18n("Save as"), KStandardGuiItem::overwrite(), KStandardGuiItem::cancel())
+            != KMessageBox::PrimaryAction)
+        return false;
+    QString err;
+    if (lib.save({name, text, kind}, &err))
+        return true;
+    KMessageBox::error(parent, err);
     return false;
 }

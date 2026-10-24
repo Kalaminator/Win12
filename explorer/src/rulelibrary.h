@@ -3,6 +3,9 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <optional>
+
+class QWidget;
 
 // A saved formula (Select / Rename) or script, kept in win12/rules.json.
 struct SavedRule {
@@ -24,7 +27,8 @@ public:
     QString serviceMenuText() const; // Dolphin's right-click Win12 > My rules; rewritten (0755) on every write, removed when empty
     QList<SavedRule> all() const; // sorted by kind then name (case-insensitive); loaded lazily
     QList<SavedRule> ofKind(SavedRule::Kind) const;
-    bool save(const SavedRule &, QString *error); // replaces same name+kind
+    std::optional<SavedRule> find(const QString &name) const; // any kind; names are unique across kinds
+    bool save(const SavedRule &, QString *error); // replaces same name+kind; refuses a name used by another kind
     bool remove(const QString &name, SavedRule::Kind, QString *error);
     void reload();
 
@@ -37,3 +41,6 @@ private:
     mutable QList<SavedRule> m_rules;
     mutable bool m_loaded = false;
 };
+
+// The one Save as... flow: asks for a name, asks before replacing a same-named rule of this kind.
+bool saveRuleInteractively(RuleLibrary &lib, SavedRule::Kind kind, const QString &text, QWidget *parent);

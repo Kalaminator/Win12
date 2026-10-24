@@ -668,9 +668,8 @@ ExplorerWindow *ExplorerWindow::last()
 
 void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
 {
-    const QList<SavedRule> all = m_actions->library().all();
-    const auto it = std::find_if(all.begin(), all.end(), [&](const SavedRule &r) { return r.name == name; });
-    if (it == all.end()) {
+    const auto it = m_actions->library().find(name);
+    if (!it) {
         KMessageBox::error(this, i18n("No saved rule named %1", name));
         return;
     }

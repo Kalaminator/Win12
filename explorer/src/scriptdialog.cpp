@@ -64,11 +64,7 @@ ScriptDialog::ScriptDialog(const QUrl &baseFolder, TagStore *tags, RuleLibrary *
     connect(m_save, &QPushButton::clicked, this, [this] {
         if (!m_library)
             return;
-        bool ok = false;
-        const QString name = QInputDialog::getText(this, i18n("Save script"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        QString err;
-        if (ok && !name.isEmpty() && !m_library->save({name, script(), SavedRule::Kind::Script}, &err))
-            KMessageBox::error(this, err);
+        saveRuleInteractively(*m_library, SavedRule::Kind::Script, script(), this);
     });
     connect(&m_run, &ScriptRun::progress, this, [this](qint64 statements, int steps) {
         m_status->setText(i18n("Building plan… %1 statements, %2 steps", statements, steps));

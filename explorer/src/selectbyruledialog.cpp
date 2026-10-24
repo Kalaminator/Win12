@@ -141,11 +141,7 @@ SelectByRuleDialog::SelectByRuleDialog(const QUrl &lookIn, Action defaultAction,
     connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
         if (!m_library)
             return;
-        bool ok = false;
-        const QString name = QInputDialog::getText(this, i18n("Save formula"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        QString err;
-        if (ok && !name.isEmpty() && !m_library->save({name, text, SavedRule::Kind::Select}, &err))
-            KMessageBox::error(this, err);
+        saveRuleInteractively(*m_library, SavedRule::Kind::Select, text, this);
     });
     connect(&m_run, &FormulaRun::results, this, [this](const QList<FxRowResult> &rows) {
         const QSignalBlocker block(m_tree);

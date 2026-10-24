@@ -88,11 +88,7 @@ RenameManyDialog::RenameManyDialog(const QList<RenameItem> &items, const QSet<QS
     connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
         if (!m_library)
             return;
-        bool ok = false;
-        const QString name = QInputDialog::getText(this, i18n("Save formula"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        QString err;
-        if (ok && !name.isEmpty() && !m_library->save({name, text, SavedRule::Kind::Rename}, &err))
-            KMessageBox::error(this, err);
+        saveRuleInteractively(*m_library, SavedRule::Kind::Rename, text, this);
     });
     connect(&m_run, &FormulaRun::results, this, [this](const QList<FxRowResult> &rows) {
         for (const FxRowResult &r : rows)
