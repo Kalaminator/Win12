@@ -722,7 +722,7 @@ void ExplorerActions::renameMany(const KFileItemList &items)
     QSet<QString> existing;
     QSet<QString> dirs;
     for (const KFileItem &i : items) {
-        ritems << RenameItem{i.url(), i.name(), i.time(KFileItem::ModificationTime)};
+        ritems << RenameItem{i.url(), i.name(), i.time(KFileItem::ModificationTime), i};
         const QString dir = i.url().adjusted(QUrl::RemoveFilename).toLocalFile();
         if (!dir.isEmpty() && !dirs.contains(dir)) {
             dirs << dir;

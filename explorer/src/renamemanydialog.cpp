@@ -1,5 +1,9 @@
 #include "renamemanydialog.h"
+#include "formulaedit.h"
+#include "rulelibrary.h"
 #include <KLocalizedString>
+#include <KMessageBox>
+#include <QInputDialog>
 #include <QAbstractButton>
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -49,7 +53,52 @@ RenameManyDialog::RenameManyDialog(const QList<RenameItem> &items, const QSet<QS
     setWindowTitle(i18n("Rename many"));
     auto *lay = new QVBoxLayout(this);
 
-    auto *row = new QHBoxLayout;
+    auto *modes = new QHBoxLayout;
+    auto mkMode = [&](const QString &text, const QString &name) {
+        auto *b = new QToolButton;
+        b->setObjectName(name);
+        b->setText(text);
+        b->setCheckable(true);
+        b->setAutoExclusive(true);
+        modes->addWidget(b);
+        return b;
+    };
+    m_modeBlocks = mkMode(i18n("Blocks"), QStringLiteral("modeBlocks"));
+    m_modeFormula = mkMode(i18n("fx Formula"), QStringLiteral("modeFormula"));
+    m_modeBlocks->setChecked(true);
+    modes->addStretch();
+    lay->addLayout(modes);
+    m_fx = new FormulaEdit;
+    m_fx->hide();
+    lay->addWidget(m_fx);
+    for (const RenameItem &i : items)
+        m_fxItems << (i.item.isNull() ? KFileItem(i.url) : i.item);
+    connect(m_modeBlocks, &QToolButton::clicked, this, [this] { setMode(Mode::Blocks); });
+    connect(m_modeFormula, &QToolButton::clicked, this, [this] { setMode(Mode::Formula); });
+    connect(m_fx, &FormulaEdit::formulaChanged, this, &RenameManyDialog::formulaChanged);
+    connect(m_fx, &FormulaEdit::saveRequested, this, [this](const QString &text) {
+        if (!m_library)
+            return;
+        bool ok = false;
+        const QString name = QInputDialog::getText(this, i18n("Save formula"), i18n("Name:"), QLineEdit::Normal, QString(), &ok).trimmed();
+        QString err;
+        if (ok && !name.isEmpty() && !m_library->save({name, text, SavedRule::Kind::Rename}, &err))
+            KMessageBox::error(this, err);
+    });
+    connect(&m_run, &FormulaRun::results, this, [this](const QList<FxRowResult> &rows) {
+        for (const FxRowResult &r : rows)
+            m_values << r.value;
+    });
+    connect(&m_run, &FormulaRun::finished, this, [this](bool ok, const QString &err) {
+        m_running = false;
+        m_runError = ok ? QString() : err;
+        refresh();
+        Q_EMIT evaluated();
+    });
+
+    m_blocksRow = new QWidget;
+    auto *row = new QHBoxLayout(m_blocksRow);
+    row->setContentsMargins(0, 0, 0, 0);
     row->addWidget(new QLabel(i18n("New name =")));
     m_list = new QListWidget;
     m_list->setObjectName(QStringLiteral("blockList"));
@@ -90,7 +139,7 @@ RenameManyDialog::RenameManyDialog(const QList<RenameItem> &items, const QSet<QS
         refresh();
     });
     row->addWidget(del);
-    lay->addLayout(row);
+    lay->addWidget(m_blocksRow);
 
     // one editor, fields shown per the selected block's kind
     m_editor = new QWidget;
@@ -133,7 +182,7 @@ RenameManyDialog::RenameManyDialog(const QList<RenameItem> &items, const QSet<QS
     m_tree = new QTreeWidget;
     m_tree->setObjectName(QStringLiteral("previewTree"));
     m_tree->setRootIsDecorated(false);
-    m_tree->setHeaderLabels({i18n("Now"), i18n("After")});
+    m_tree->setHeaderLabels({i18n("Now"), i18n("After"), i18n("Why")});
     lay->addWidget(m_tree, 1);
 
     m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -174,13 +223,94 @@ QList<RenameBlock> RenameManyDialog::blocks() const
 
 QList<PlannedRename> RenameManyDialog::plan() const
 {
-    return RenamePlan::plan(blocks(), m_items, m_existing);
+    if (m_mode == Mode::Blocks)
+        return RenamePlan::plan(blocks(), m_items, m_existing);
+    QList<QString> names;
+    const bool ready = !m_running && m_fxValid && m_values.size() == m_items.size();
+    for (const FxValue &v : m_values)
+        names << (v.isError() ? QString() : v.toText());
+    if (!ready) { // nothing to rename until the run is done
+        QList<PlannedRename> out;
+        for (const RenameItem &it : m_items)
+            out.append({it.url, it.name, it.name, PlannedRename::Unchanged, {}});
+        return out;
+    }
+    QList<PlannedRename> out = RenamePlan::planNames(names, m_items, m_existing);
+    for (int i = 0; i < out.size(); ++i)
+        if (m_values[i].isError()) {
+            out[i].status = PlannedRename::Invalid;
+            out[i].note = m_values[i].toText();
+        }
+    return out;
+}
+
+QUrl RenameManyDialog::base() const
+{
+    // ponytail: the common ancestor folder of all items (the first item's folder when they share one), so ROWINFOLDER counts per folder
+    if (m_items.isEmpty())
+        return QUrl();
+    QUrl b = m_items.first().url.adjusted(QUrl::RemoveFilename);
+    for (const RenameItem &it : m_items)
+        while (!it.url.path().startsWith(b.path()) && b.path().size() > 1)
+            b = b.adjusted(QUrl::StripTrailingSlash | QUrl::RemoveFilename);
+    return b;
+}
+
+QString RenameManyDialog::formula() const
+{
+    return m_fx->text();
+}
+
+void RenameManyDialog::setFormula(const QString &t)
+{
+    if (m_mode != Mode::Formula)
+        setMode(Mode::Formula);
+    m_running = true; // the edit debounces 300 ms; OK stays off until the run is done
+    m_fx->setText(t);
+    refresh();
+}
+
+void RenameManyDialog::setMode(Mode m)
+{
+    if (m == m_mode)
+        return;
+    m_mode = m;
+    const bool f = m == Mode::Formula;
+    m_modeBlocks->setChecked(!f);
+    m_modeFormula->setChecked(f);
+    m_fx->setVisible(f);
+    m_blocksRow->setVisible(!f);
+    if (f) {
+        m_editor->hide();
+        if (!m_fx->text().isEmpty())
+            formulaChanged(m_fx->expr().has_value());
+    } else {
+        m_run.stop();
+        m_running = false;
+        showEditor();
+    }
+    refresh();
+}
+
+void RenameManyDialog::formulaChanged(bool valid)
+{
+    m_run.stop();
+    m_values.clear();
+    m_runError.clear();
+    m_fxValid = valid;
+    m_running = false;
+    const auto expr = valid ? m_fx->expr() : std::nullopt;
+    if (expr) {
+        m_running = true;
+        m_run.startOn(m_fxItems, base(), *expr);
+    }
+    refresh();
 }
 
 void RenameManyDialog::showEditor()
 {
     auto *it = m_list->currentItem();
-    m_editor->setVisible(it);
+    m_editor->setVisible(it && m_mode == Mode::Blocks);
     if (!it)
         return;
     const RenameBlock b = blockOf(it);
@@ -224,13 +354,14 @@ void RenameManyDialog::refresh()
     m_tree->clear();
     int n = 0;
     for (const auto &r : p) {
-        auto *row = new QTreeWidgetItem(m_tree, {r.oldName, r.newName});
+        auto *row = new QTreeWidgetItem(m_tree, {r.oldName, m_mode == Mode::Formula && m_running ? QStringLiteral("…") : r.newName, r.note});
         QString msg;
         switch (r.status) {
         case PlannedRename::Rename:
             ++n;
             break;
         case PlannedRename::Unchanged:
+        case PlannedRename::Invalid:
             row->setForeground(0, Qt::gray);
             row->setForeground(1, Qt::gray);
             break;
@@ -249,7 +380,7 @@ void RenameManyDialog::refresh()
     }
     auto *ok = m_buttons->button(QDialogButtonBox::Ok);
     ok->setText(i18n("Rename %1", n));
-    ok->setEnabled(n > 0);
+    ok->setEnabled(n > 0 && !m_running);
 }
 
 void RenameManyDialog::keyPressEvent(QKeyEvent *e)

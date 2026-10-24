@@ -1,5 +1,6 @@
 #pragma once
 #include "renameplan.h"
+#include "formularun.h"
 #include <QDialog>
 
 class QComboBox;
@@ -9,7 +10,10 @@ class QLineEdit;
 class QListWidget;
 class QSpinBox;
 class QTreeWidget;
+class QToolButton;
 class QWidget;
+class FormulaEdit;
+class RuleLibrary;
 
 class RenameManyDialog : public QDialog
 {
@@ -20,6 +24,17 @@ public:
     QList<RenameBlock> blocks() const; // in list order
     QList<PlannedRename> plan() const; // what Rename will do
 
+    enum class Mode { Blocks, Formula };
+    void setMode(Mode);
+    Mode mode() const { return m_mode; }
+    void setFormula(const QString &);
+    QString formula() const;
+    void setLibrary(RuleLibrary *l) { m_library = l; } // Save as... -> Kind::Rename
+    QUrl base() const; // the first item's folder; FormulaRun's base
+
+Q_SIGNALS:
+    void evaluated(); // a formula run finished (ok or not)
+
 protected:
     void keyPressEvent(QKeyEvent *) override;
 
@@ -28,6 +43,7 @@ private:
     void showEditor();
     void editorChanged();
     void refresh();
+    void formulaChanged(bool valid);
     static QString summary(const RenameBlock &);
 
     QList<RenameItem> m_items;
@@ -40,4 +56,15 @@ private:
     QLineEdit *m_text, *m_replace;
     QComboBox *m_case;
     bool m_loading = false;
+    Mode m_mode = Mode::Blocks;
+    FormulaEdit *m_fx;
+    QWidget *m_blocksRow;
+    QToolButton *m_modeBlocks, *m_modeFormula;
+    RuleLibrary *m_library = nullptr;
+    FormulaRun m_run;
+    KFileItemList m_fxItems;
+    bool m_running = false; // a run is active or the formula edit still debounces
+    bool m_fxValid = false;
+    QList<FxValue> m_values; // row order
+    QString m_runError;
 };

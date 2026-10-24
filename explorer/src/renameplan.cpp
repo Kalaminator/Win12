@@ -1,4 +1,5 @@
 #include "renameplan.h"
+#include <KLocalizedString>
 #include <QHash>
 
 namespace
@@ -60,32 +61,59 @@ QString RenamePlan::buildName(const QList<RenameBlock> &blocks, const RenameItem
     return s;
 }
 
-QList<PlannedRename> RenamePlan::plan(const QList<RenameBlock> &blocks, const QList<RenameItem> &items, const QSet<QString> &existing)
+QList<PlannedRename> RenamePlan::planNames(const QList<QString> &baseNames, const QList<RenameItem> &items, const QSet<QString> &existing)
 {
     QList<PlannedRename> out;
     QHash<QString, int> count;
     for (int i = 0; i < items.size(); ++i) {
         const RenameItem &it = items[i];
-        PlannedRename p{it.url, it.name, it.name, PlannedRename::Unchanged};
-        const QString base = buildName(blocks, it, i);
+        PlannedRename p{it.url, it.name, it.name, PlannedRename::Unchanged, {}};
+        const QString base = baseNames.value(i);
         const QString built = base + extOf(it.name);
         // never moves a file into another folder
-        if (!base.isEmpty() && !built.contains(QLatin1Char('/')) && built != QLatin1String(".") && built != QLatin1String("..")) {
+        if (base.isEmpty()) {
+            p.status = PlannedRename::Invalid;
+            p.note = i18n("Empty name");
+        } else if (built.contains(QLatin1Char('/'))) {
+            p.status = PlannedRename::Invalid;
+            p.note = i18n("Names cannot contain /");
+        } else if (built == QLatin1String(".") || built == QLatin1String("..")) {
+            p.status = PlannedRename::Invalid;
+            p.note = i18n("Invalid name");
+        } else {
             p.newName = built;
             if (p.newName == it.name)
                 p.status = PlannedRename::Unchanged;
-            else if (existing.contains(p.newName))
+            else if (existing.contains(p.newName)) {
                 p.status = PlannedRename::ClashExisting;
-            else {
+                p.note = i18n("Name exists");
+            } else {
                 p.status = PlannedRename::Rename;
                 ++count[p.newName];
             }
         }
         out << p;
     }
+    QSet<QString> seen; // both rows of a clash are skipped; the later one points up, the first down
     for (PlannedRename &p : out)
-        if (p.status == PlannedRename::Rename && count.value(p.newName) > 1)
+        if (p.status == PlannedRename::Rename && count.value(p.newName) > 1) {
             p.status = PlannedRename::ClashPlanned;
+            p.note = seen.contains(p.newName) ? i18n("Same name planned above") : i18n("Same name planned below");
+            seen << p.newName;
+        }
+    return out;
+}
+
+QList<PlannedRename> RenamePlan::plan(const QList<RenameBlock> &blocks, const QList<RenameItem> &items, const QSet<QString> &existing)
+{
+    QList<QString> names;
+    for (int i = 0; i < items.size(); ++i)
+        names << buildName(blocks, items[i], i);
+    QList<PlannedRename> out = planNames(names, items, existing);
+    // Blocks mode: an unusable name just leaves the row alone (the note says why)
+    for (PlannedRename &p : out)
+        if (p.status == PlannedRename::Invalid)
+            p.status = PlannedRename::Unchanged;
     return out;
 }
 

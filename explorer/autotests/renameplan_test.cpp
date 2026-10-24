@@ -125,6 +125,32 @@ private Q_SLOTS:
         p = RenamePlan::plan({B(RenameBlock::Text, S(".."))}, {I("a", m)}, {});
         QCOMPARE(p[0].status, PlannedRename::Unchanged);
     }
+    void planNamesAppendsExtension()
+    {
+        auto p = RenamePlan::planNames({S("01 - Holiday")}, {I("holiday.jpg")}, {});
+        QCOMPARE(p[0].newName, S("01 - Holiday.jpg"));
+        QCOMPARE(p[0].status, PlannedRename::Rename);
+    }
+    void planNamesDuplicateIsClash()
+    {
+        auto p = RenamePlan::planNames({S("x"), S("x")}, {I("a.jpg"), I("b.jpg")}, {});
+        QCOMPARE(p[1].status, PlannedRename::ClashPlanned);
+        QCOMPARE(p[1].note, S("Same name planned above"));
+    }
+    void planNamesBadNameGetsNote()
+    {
+        auto p = RenamePlan::planNames({QString(), S("a/b")}, {I("a.jpg"), I("b.jpg")}, {});
+        QCOMPARE(p[0].status, PlannedRename::Invalid);
+        QCOMPARE(p[0].note, S("Empty name"));
+        QCOMPARE(p[1].status, PlannedRename::Invalid);
+        QCOMPARE(p[1].note, S("Names cannot contain /"));
+    }
+    void planNamesExistingIsClash()
+    {
+        auto p = RenamePlan::planNames({S("x")}, {I("a.jpg")}, N({"x.jpg"}));
+        QCOMPARE(p[0].status, PlannedRename::ClashExisting);
+        QCOMPARE(p[0].note, S("Name exists"));
+    }
     void undoPlanReversesOnlyExecuted()
     {
         auto p = RenamePlan::plan({B(RenameBlock::Text, S("n"))}, {I("a.txt"), I("b.txt"), I("c.txt")}, N({"a.txt", "b.txt", "c.txt"}));
