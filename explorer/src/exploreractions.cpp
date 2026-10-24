@@ -153,6 +153,8 @@ ExplorerActions::ExplorerActions(QWidget *windowParent)
         {"home_select_all", QKeySequence(Qt::CTRL | Qt::Key_A)},
         {"home_new_folder", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_N)},
         {"home_properties", QKeySequence(Qt::ALT | Qt::Key_Return)},
+        {"home_copy_path", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C)},
+        {"file_terminal", QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4)},
         {"view_hidden", QKeySequence(Qt::CTRL | Qt::Key_H)},
         {"view_split", QKeySequence(Qt::Key_F4)},
         {"view_nav_pane", QKeySequence(Qt::Key_F11)},
@@ -1039,11 +1041,32 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         return a;
     };
     const bool canPaste = folder.isValid() && clipboardHasUrls();
+    // Dolphin's own "Copy Location" / "Open Terminal Here"; shortcuts are shown, the real ones live on home_copy_path / file_terminal.
+    const auto locationAndTerminal = [&](const KFileItemList &sel, const QUrl &termUrl) {
+        QAction *c = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), i18n("Copy Location"));
+        c->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
+        c->setShortcutVisibleInContextMenu(true);
+        connect(c, &QAction::triggered, this, [this, sel, folder] {
+            copyPaths(sel.isEmpty() ? KFileItemList{KFileItem(folder)} : sel);
+        });
+        QAction *t = menu->addAction(QIcon::fromTheme(QStringLiteral("utilities-terminal")), i18n("Open Terminal Here"));
+        t->setShortcut(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4));
+        t->setShortcutVisibleInContextMenu(true);
+        t->setEnabled(termUrl.isLocalFile());
+        connect(t, &QAction::triggered, this, [this, termUrl] { openTerminal(termUrl); });
+    };
 
     if (!items.isEmpty()) {
         QAction *open = menu->addAction(QIcon::fromTheme(QStringLiteral("document-open")), i18n("Open"));
         connect(open, &QAction::triggered, this, [this, items] { this->open(items); });
         menu->setDefaultAction(open);
+        if (items.size() == 1 && items.first().isDir()) {
+            const QUrl dirUrl = items.first().url();
+            QAction *nw = menu->addAction(QIcon::fromTheme(QStringLiteral("window-new")), i18n("Open in New Window"));
+            connect(nw, &QAction::triggered, this, [this, dirUrl] { Q_EMIT openInNewWindowRequested(dirUrl); });
+            QAction *sp = menu->addAction(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18n("Open in Split View"));
+            connect(sp, &QAction::triggered, this, [this, dirUrl] { Q_EMIT openInSplitRequested(dirUrl); });
+        }
         auto *fia = new KFileItemActions(menu);
         fia->setParentWidget(m_window);
         fia->setItemListProperties(KFileItemListProperties(items));
@@ -1052,6 +1075,7 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         entry(QStringLiteral("home_cut"), [this, items] { copyToClipboard(items, true); });
         entry(QStringLiteral("home_copy"), [this, items] { copyToClipboard(items, false); });
         entry(QStringLiteral("home_paste_shortcut"), [this, folder] { pasteShortcut(folder); }, canPaste);
+        locationAndTerminal(items, items.size() == 1 && items.first().isDir() ? items.first().url() : folder);
         menu->addSeparator();
         fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services | KFileItemActions::MenuActionSource::Plugins, {},
                           m_library.serviceActionKeys() + kHiddenPlugins);
@@ -1085,15 +1109,16 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         if (m_view && m_view->url() == folder)
             m_view->refresh();
     });
+    locationAndTerminal({}, folder);
     menu->addSeparator();
     entry(QStringLiteral("home_paste"), [this, folder] { paste(folder); }, canPaste);
     entry(QStringLiteral("home_paste_shortcut"), [this, folder] { pasteShortcut(folder); }, canPaste);
     // KNewFileMenu works in the active view's folder; anywhere else these stay disabled rather than create in the wrong place.
     const bool inActiveFolder = m_view && m_view->url() == folder;
-    entry(QStringLiteral("home_new_folder"), [this] { m_newFileMenu->createDirectory(); }, inActiveFolder);
-    QAction *newItem = action(QStringLiteral("home_new_item"));
-    if (inActiveFolder)
-        menu->addAction(newItem);
+    QAction *create = menu->addMenu(m_newFileMenu->menu());
+    create->setText(i18n("Create New"));
+    create->setIcon(QIcon::fromTheme(QStringLiteral("document-new")));
+    create->setEnabled(inActiveFolder);
     menu->addSeparator();
     entry(QStringLiteral("home_properties"), [this, folder] { properties({}, folder); }, folder.isValid());
     return menu;

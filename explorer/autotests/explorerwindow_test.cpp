@@ -123,6 +123,17 @@ private Q_SLOTS:
         QCOMPARE(ExplorerWindow::recentFolders(KSharedConfig::openConfig()).value(0), QUrl::fromLocalFile(dir.path()).toString());
     }
 
+    void openInSplitOpensSecondPane()
+    {
+        QTemporaryDir d2;
+        ExplorerWindow *w = shownWindow();
+        QVERIFY(!w->page()->isSplit());
+        const QUrl dir2 = QUrl::fromLocalFile(d2.path());
+        Q_EMIT w->explorerActions()->openInSplitRequested(dir2);
+        QVERIFY(w->page()->isSplit());
+        QTRY_COMPARE(w->page()->secondary()->url(), dir2);
+        delete w;
+    }
     void splitMarksTheActivePane()
     {
         ExplorerWindow *w = shownWindow();

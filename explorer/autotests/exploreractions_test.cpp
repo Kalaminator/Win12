@@ -447,6 +447,100 @@ private Q_SLOTS:
         QCOMPARE(m->actions().size(), 1);
         QVERIFY(!m->actions()[0]->isEnabled());
     }
+    void contextMenuOnFolderHasDolphinEntries()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        const QUrl sub = QUrl::fromLocalFile(dir.filePath(QStringLiteral("sub")));
+        ExplorerActions a(nullptr);
+        QSignalSpy win(&a, &ExplorerActions::openInNewWindowRequested);
+        QSignalSpy split(&a, &ExplorerActions::openInSplitRequested);
+        std::unique_ptr<QMenu> m(a.contextMenu({KFileItem(sub)}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        for (const char *s : {"Open in New Window", "Open in Split View", "Copy Location", "Open Terminal Here"})
+            QCOMPARE(t.count(QString::fromLatin1(s)), 1);
+        for (QAction *x : m->actions()) {
+            if (x->text() == QStringLiteral("Open in New Window") || x->text() == QStringLiteral("Open in Split View"))
+                x->trigger();
+        }
+        QCOMPARE(win.count(), 1);
+        QCOMPARE(win.first().first().toUrl(), sub);
+        QCOMPARE(split.count(), 1);
+        QCOMPARE(split.first().first().toUrl(), sub);
+    }
+    void contextMenuOnFileHasNoWindowEntries()
+    {
+        QTemporaryDir dir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({itemFor(dir.filePath(QStringLiteral("a.txt")))}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("Open in New Window")));
+        QVERIFY(!t.contains(QStringLiteral("Open in Split View")));
+        QCOMPARE(t.count(QStringLiteral("Copy Location")), 1);
+        QCOMPARE(t.count(QStringLiteral("Open Terminal Here")), 1);
+    }
+    void contextMenuMixedSelectionHasNoWindowEntries()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const KFileItem d = itemFor(dir.filePath(QStringLiteral("sub")));
+        const KFileItem f = itemFor(dir.filePath(QStringLiteral("a.txt")));
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({d, f}, QUrl::fromLocalFile(dir.path())));
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("Open in New Window")));
+        QVERIFY(!t.contains(QStringLiteral("Open in Split View")));
+        for (QAction *x : m->actions())
+            if (x->text() == QStringLiteral("Copy Location"))
+                x->trigger();
+        const QString clip = QApplication::clipboard()->text();
+        QVERIFY(clip.contains(d.localPath()));
+        QVERIFY(clip.contains(f.localPath()));
+    }
+    void backgroundMenuHasCreateNew()
+    {
+        QTemporaryDir dir;
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.contextMenu({}, QUrl::fromLocalFile(dir.path())));
+        int creates = 0;
+        for (QAction *x : m->actions())
+            if (x->text() == QStringLiteral("Create New")) {
+                ++creates;
+                QCOMPARE(x->menu(), a.action(QStringLiteral("home_new_item"))->menu());
+            }
+        QCOMPARE(creates, 1);
+        const QStringList t = allTexts(m.get());
+        QVERIFY(!t.contains(QStringLiteral("New folder")));
+        QVERIFY(!t.contains(QStringLiteral("New item")));
+        QCOMPARE(t.count(QStringLiteral("Open Terminal Here")), 1);
+    }
+    void dolphinShortcuts()
+    {
+        ExplorerActions a(nullptr);
+        QCOMPARE(a.action(QStringLiteral("home_copy_path"))->shortcut(), QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
+        QCOMPARE(a.action(QStringLiteral("file_terminal"))->shortcut(), QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_F4));
+    }
+    void contextMenuTextsAreUnique()
+    {
+        QTemporaryDir dir;
+        QDir(dir.path()).mkdir(QStringLiteral("sub"));
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        const QUrl folder = QUrl::fromLocalFile(dir.path());
+        ExplorerActions a(nullptr);
+        const QList<KFileItemList> lists = {{itemFor(dir.filePath(QStringLiteral("sub")))}, {itemFor(dir.filePath(QStringLiteral("a.txt")))}, {}};
+        for (const KFileItemList &l : lists) {
+            std::unique_ptr<QMenu> m(a.contextMenu(l, folder));
+            QStringList seen;
+            for (QAction *x : m->actions()) {
+                if (x->isSeparator())
+                    continue;
+                QVERIFY2(!seen.contains(x->text()), qPrintable(x->text()));
+                seen << x->text();
+            }
+        }
+    }
     void contextMenuHasNoWin12Submenu()
     {
         QTemporaryDir dir;

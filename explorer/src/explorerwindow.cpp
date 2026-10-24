@@ -471,6 +471,17 @@ void ExplorerWindow::connectActions()
             wireView(page->secondary());
         syncToActiveView();
     });
+    connect(m_actions, &ExplorerActions::openInNewWindowRequested, this, [](const QUrl &url) { (new ExplorerWindow(url))->show(); });
+    connect(m_actions, &ExplorerActions::openInSplitRequested, this, [this](const QUrl &url) {
+        if (!m_page)
+            return;
+        if (!m_page->isSplit()) {
+            m_page->setSplit(true);
+            wireView(m_page->secondary());
+            syncToActiveView();
+        }
+        m_page->secondary()->openUrl(url);
+    });
 }
 
 void ExplorerWindow::wireView(FolderView *v)

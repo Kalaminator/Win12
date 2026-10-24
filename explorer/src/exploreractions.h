@@ -82,6 +82,8 @@ Q_SIGNALS:
     void columnsToggled(const QString &id, bool on);
     void paneToggled(const QString &pane, bool on); // "nav" | "preview" | "details"
     void splitToggled(bool);
+    void openInNewWindowRequested(const QUrl &);
+    void openInSplitRequested(const QUrl &);
     void showToggled(const QString &what, bool on); // "checkboxes" | "extensions" | "hidden"
     void selectUrlsRequested(const QList<QUrl> &); // Select by rule, Action::Select
     void manageTagsRequested();
