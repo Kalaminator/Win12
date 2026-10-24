@@ -141,3 +141,4 @@ squaresAccent
 buttonMenuItems
 resetRequest
 explorerDefault
+explorerTagFlags

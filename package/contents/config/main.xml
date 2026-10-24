@@ -725,6 +725,10 @@
       <label>Use Win12 Explorer as the file manager: inode/directory default, FileManager1, Start menu item and taskbar pin (win12-explorer-default on/off saves and restores the old default)</label>
       <default>false</default>
     </entry>
+    <entry name="explorerTagFlags" type="Bool">
+      <label>Show tag flags on icons in Dolphin and Win12 Explorer (writes win12-explorerrc [Tags] showFlags)</label>
+      <default>true</default>
+    </entry>
     <entry name="favoritesPortedToKAstats" type="Bool">
       <default>false</default>
     </entry>
