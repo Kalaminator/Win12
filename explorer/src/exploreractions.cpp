@@ -647,7 +647,7 @@ void ExplorerActions::fillRulesMenu(QMenu *menu, const KFileItemList &items, boo
     const auto add = [&](K kind, const std::function<void(const QString &)> &fn) {
         for (const SavedRule &r : m_library.ofKind(kind)) {
             const QString text = r.text;
-            menu->addAction(r.name, this, [fn, text] { fn(text); });
+            menu->addAction(QString(r.name).replace(u'&', QStringLiteral("&&")), this, [fn, text] { fn(text); });
         }
     };
     if (selectRename) {
@@ -678,13 +678,6 @@ QMenu *ExplorerActions::myRulesMenu(const KFileItemList &items, QWidget *parent)
 {
     auto *menu = new QMenu(i18n("My rules"), parent ? parent : m_window);
     fillRulesMenu(menu, items, true, true);
-    return menu;
-}
-
-QMenu *ExplorerActions::myScriptsMenu()
-{
-    auto *menu = new QMenu(i18n("My scripts"), m_window);
-    fillRulesMenu(menu, {}, false, true);
     return menu;
 }
 

@@ -51,7 +51,6 @@ public:
     void renameMany(const KFileItemList &items, const QString &formula); // Formula mode preloaded
     void openScript(const QString &text = QString()); // ScriptDialog on folder(); non-empty: setScript + buildPlan()
     QMenu *myRulesMenu(const KFileItemList &items, QWidget *parent = nullptr); // caller owns
-    QMenu *myScriptsMenu(); // caller owns
     RuleLibrary &library() { return m_library; }
     void setExecScriptDialog(std::function<void(ScriptDialog &)> exec) { m_execScriptDialog = std::move(exec); } // test seam
     void setExecSelectDialog(std::function<bool(SelectByRuleDialog &)> exec) { m_execSelectDialog = std::move(exec); } // test seam

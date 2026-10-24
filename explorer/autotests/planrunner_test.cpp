@@ -157,6 +157,23 @@ private Q_SLOTS:
         QVERIFY(QFile::exists(p(u"k/3.txt"_s)));
         QVERIFY(!QFile::exists(p(u"k/out/2.txt"_s)));
     }
+    void undoOnlyReversesLastRun()
+    {
+        TagStore tags;
+        PlanRunner r(nullptr, &tags);
+        QSignalSpy fin(&r, &PlanRunner::finished);
+        QSignalSpy und(&r, &PlanRunner::undone);
+        r.run({to(PlanStep::Move, file(u"l/a.txt"_s), u(u"l/out"_s))});
+        QTRY_COMPARE(fin.count(), 1);
+        r.run({to(PlanStep::Move, file(u"l/b.txt"_s), u(u"l/out"_s))});
+        QTRY_COMPARE(fin.count(), 2);
+        r.undo();
+        QTRY_COMPARE(und.count(), 1);
+        QCOMPARE(und.at(0), (QVariantList{1, QString()}));
+        QVERIFY(QFile::exists(p(u"l/b.txt"_s)));
+        QVERIFY(QFile::exists(p(u"l/out/a.txt"_s)));
+        QVERIFY(!QFile::exists(p(u"l/a.txt"_s)));
+    }
     void undoReversesExecuted()
     {
         if (!tagsSupported())

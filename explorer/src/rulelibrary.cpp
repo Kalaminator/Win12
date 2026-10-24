@@ -129,7 +129,7 @@ QString RuleLibrary::serviceMenuText() const
         body += u"[Desktop Action rule%1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %F\n"_s.arg(i).arg(
             name, r.kind == SavedRule::Kind::Script ? u"text-x-script"_s : u"accessories-calculator"_s, execQuoted(r.name));
     }
-    return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=Win12 ▸ My rules\nActions=%1\n"_s.arg(actions) + body;
+    return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=%2\nActions=%1\n"_s.arg(actions, i18n("Win12 ▸ My rules")) + body;
 }
 
 // Best effort: a failed menu file never fails a save. KF6 ignores non-executable local service menus, hence 0755.

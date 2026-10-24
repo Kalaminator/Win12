@@ -24,6 +24,7 @@ void PlanRunner::run(const QList<PlanStep> &plan)
     if (m_running)
         return;
     m_queue.clear();
+    m_executed.clear(); // Undo plan reverses the latest run only
     for (const PlanStep &s : plan)
         if (!s.skipped)
             m_queue << s;

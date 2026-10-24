@@ -614,6 +614,10 @@ void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
         KFileItemList items;
         for (const QUrl &u : urls)
             items << KFileItem(u);
+        if (items.isEmpty()) {
+            KMessageBox::information(this, i18n("Select the files to rename first"));
+            return;
+        }
         m_actions->renameMany(items, it->text);
         return;
     }

@@ -374,9 +374,19 @@ private Q_SLOTS:
         QCOMPARE(acts[1]->text(), QStringLiteral("B"));
         QVERIFY(acts[2]->isSeparator());
         QCOMPARE(acts[3]->text(), QStringLiteral("C"));
-        std::unique_ptr<QMenu> s(a.myScriptsMenu());
+        QMenu *s = a.action(QStringLiteral("adv_my_scripts"))->menu(); // the ribbon button's menu
+        QMetaObject::invokeMethod(s, "aboutToShow");
         QCOMPARE(s->actions().size(), 1);
         QCOMPARE(s->actions()[0]->text(), QStringLiteral("C"));
+        clearLibrary(a);
+    }
+    void ruleNameAmpersandIsEscaped()
+    {
+        ExplorerActions a(nullptr);
+        clearLibrary(a);
+        QVERIFY(a.library().save({QStringLiteral("A&B"), QStringLiteral("=1"), SavedRule::Kind::Select}, nullptr));
+        std::unique_ptr<QMenu> m(a.myRulesMenu({}));
+        QCOMPARE(m->actions()[0]->text(), QStringLiteral("A&&B"));
         clearLibrary(a);
     }
     void myRulesMenuEmptyEntry()

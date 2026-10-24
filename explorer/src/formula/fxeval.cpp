@@ -421,6 +421,8 @@ struct Evaluator {
             QString p = s(0);
             if (p == u"~"_s || p.startsWith(u"~/"_s))
                 p = QDir::homePath() + p.mid(1);
+            if (ctx.baseFolder.isEmpty() && !QDir::isAbsolutePath(p))
+                return fail(FxError::NA); // no base folder: never resolve against the process cwd
             const QString abs = QDir::cleanPath(QDir(ctx.baseFolder).absoluteFilePath(p));
             auto it = ctx.countCache.find(abs);
             if (it == ctx.countCache.end())

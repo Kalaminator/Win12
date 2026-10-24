@@ -169,6 +169,14 @@ private Q_SLOTS:
         QCOMPARE(ev(u"ROWINFOLDER()"_s), N(2));
     }
 
+    void countInEmptyBaseRefusesRelative()
+    {
+        ctx.baseFolder.clear();
+        ctx.countIn = [](const QString &) { return 4; };
+        QCOMPARE(ev(u"COUNTIN(\"Trip\")"_s), E(FxError::NA));
+        QCOMPARE(ev(u"COUNTIN(\"/abs\")"_s), N(4));
+        QCOMPARE(ev(u"COUNTIN(\"~\")"_s), N(4));
+    }
     void countIn()
     {
         QStringList asked;
