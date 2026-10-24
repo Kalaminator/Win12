@@ -515,6 +515,31 @@ private Q_SLOTS:
         QVERIFY(!has(KFileItemList()));
     }
 
+    void renameManyClashesWithHiddenFile()
+    {
+        QTemporaryDir dir, configDir;
+        writeFile(dir.filePath(QStringLiteral("a.txt")), "a");
+        writeFile(dir.filePath(QStringLiteral(".b.txt")), "b");
+        ViewSettingsStore store(KSharedConfig::openConfig(configDir.filePath(QStringLiteral("rc")), KConfig::SimpleConfig));
+        FolderView view(&store);
+        ExplorerActions actions(nullptr);
+        QSignalSpy done(view.model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
+        view.openUrl(QUrl::fromLocalFile(dir.path()));
+        QVERIFY(done.count() > 0 || done.wait(5000));
+        actions.setActiveView(&view);
+        PlannedRename::Status status = PlannedRename::Rename;
+        actions.setExecRenameDialog([&](RenameManyDialog &d) {
+            RenameBlock t;
+            t.kind = RenameBlock::Text;
+            t.text = QStringLiteral(".b");
+            d.setBlocks({t});
+            status = d.plan().first().status;
+            return false;
+        });
+        actions.renameMany({itemFor(dir.filePath(QStringLiteral("a.txt")))});
+        QCOMPARE(status, PlannedRename::ClashExisting);
+    }
+
     void renameManyRunsPlanAndUndoRestores()
     {
         QTemporaryDir dir;

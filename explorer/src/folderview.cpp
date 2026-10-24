@@ -714,7 +714,8 @@ KFileItemList FolderView::selectedItems() const
 {
     KFileItemList items;
     QSet<QUrl> seen; // grouped by tag, one file can fill several rows
-    const QModelIndexList rows = m_selection->selectedRows();
+    QModelIndexList rows = m_selection->selectedRows();
+    std::sort(rows.begin(), rows.end(), [](const QModelIndex &a, const QModelIndex &b) { return a.row() < b.row(); }); // view order
     for (const QModelIndex &index : rows) {
         const KFileItem item = m_model->itemFor(index);
         if (!seen.contains(item.url())) {

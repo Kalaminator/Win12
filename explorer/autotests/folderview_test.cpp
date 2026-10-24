@@ -146,6 +146,20 @@ private Q_SLOTS:
         QCOMPARE(names(m_view->itemsInViewOrder(true)), QStringList({QStringLiteral("b.txt"), QStringLiteral("a.txt")}));
     }
 
+    void selectedItemsInRowOrder()
+    {
+        QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));
+        ViewSettings s = m_view->settings();
+        s.sortRole = SortRole::Name;
+        s.sortOrder = Qt::AscendingOrder;
+        m_view->applySettings(s);
+        m_view->selectUrls({fileUrl(QStringLiteral("b.txt")), fileUrl(QStringLiteral("a.txt"))});
+        QStringList names;
+        for (const KFileItem &i : m_view->selectedItems())
+            names << i.name();
+        QCOMPARE(names, QStringList({QStringLiteral("a.txt"), QStringLiteral("b.txt")}));
+    }
+
     void selectionHelpers()
     {
         QVERIFY(waitListed([&] { m_view->openUrl(dirUrl()); }));

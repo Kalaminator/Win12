@@ -820,14 +820,16 @@ void ExplorerActions::renameManyImpl(const KFileItemList &items, const QString &
     for (const KFileItem &i : items) {
         ritems << RenameItem{i.url(), i.name(), i.time(KFileItem::ModificationTime), i};
         const QString dir = i.url().adjusted(QUrl::RemoveFilename).toLocalFile();
-        if (!dir.isEmpty() && !dirs.contains(dir)) {
-            dirs << dir;
-            if (m_view && folder().isLocalFile() && QDir::cleanPath(dir) == QDir::cleanPath(folder().toLocalFile())) {
-                // the active view's folder: names come from its model, no disk access
+        if (dir.isEmpty()) { // remote: QDir cannot read it, the view model is the best we have
+            if (m_view && !dirs.contains(QString())) {
+                dirs << QString();
                 for (const KFileItem &v : m_view->itemsInViewOrder(false))
                     existing << v.name();
-                continue;
             }
+            continue;
+        }
+        if (!dirs.contains(dir)) {
+            dirs << dir;
             // ponytail: other folders (rule matches in subfolders) are read once each, KIO just listed them (warm cache)
             const QStringList names = QDir(dir).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
             existing.unite(QSet<QString>(names.begin(), names.end()));
