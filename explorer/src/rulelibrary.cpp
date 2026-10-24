@@ -93,6 +93,60 @@ void RuleLibrary::reload()
     Q_EMIT changed();
 }
 
+QString RuleLibrary::serviceMenuPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + u"/kio/servicemenus/win12-my-rules.desktop"_s;
+}
+
+// Exec argument: the desktop-entry spec unescapes the value first (\\ -> \), then applies quoting, so inside the double
+// quotes " ` $ \ are backslash-escaped and % is %%; the file text then doubles every backslash.
+static QString execQuoted(QString s)
+{
+    s.remove(u'\n').remove(u'\r');
+    QString q;
+    for (const QChar c : std::as_const(s)) {
+        if (c == u'"' || c == u'`' || c == u'$' || c == u'\\')
+            q += u'\\';
+        if (c == u'%')
+            q += u'%';
+        q += c;
+    }
+    q.replace(u'\\', u"\\\\"_s);
+    return u'"' + q + u'"';
+}
+
+QString RuleLibrary::serviceMenuText() const
+{
+    ensureLoaded();
+    QString actions;
+    QString body;
+    for (qsizetype i = 0; i < m_rules.size(); ++i) {
+        const SavedRule &r = m_rules[i];
+        actions += u"rule%1;"_s.arg(i);
+        QString name = r.name;
+        name.remove(u'\n').remove(u'\r');
+        name.replace(u'\\', u"\\\\"_s);
+        body += u"[Desktop Action rule%1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %F\n"_s.arg(i).arg(
+            name, r.kind == SavedRule::Kind::Script ? u"text-x-script"_s : u"accessories-calculator"_s, execQuoted(r.name));
+    }
+    return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=Win12 ▸ My rules\nActions=%1\n"_s.arg(actions) + body;
+}
+
+// Best effort: a failed menu file never fails a save. KF6 ignores non-executable local service menus, hence 0755.
+static void writeServiceMenu(const RuleLibrary &l, bool empty)
+{
+    const QString p = RuleLibrary::serviceMenuPath();
+    if (empty) {
+        QFile::remove(p);
+        return;
+    }
+    QDir().mkpath(QFileInfo(p).absolutePath());
+    QSaveFile f(p);
+    if (f.open(QIODevice::WriteOnly) && f.write(l.serviceMenuText().toUtf8()) >= 0 && f.commit())
+        QFile::setPermissions(p, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::ReadGroup
+                                  | QFileDevice::ExeGroup | QFileDevice::ReadOther | QFileDevice::ExeOther);
+}
+
 // Keeps m_rules sorted; the list is tens of entries, so the whole file is rewritten each time.
 bool RuleLibrary::write(QString *error)
 {
@@ -107,6 +161,7 @@ bool RuleLibrary::write(QString *error)
             *error = i18n("The saved rules could not be written to %1: %2", path(), f.errorString());
         return false;
     }
+    writeServiceMenu(*this, m_rules.isEmpty());
     Q_EMIT changed();
     return true;
 }

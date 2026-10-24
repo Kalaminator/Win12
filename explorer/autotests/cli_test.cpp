@@ -18,6 +18,12 @@ private Q_SLOTS:
                  QList<QUrl>{QUrl(QStringLiteral("file:///tmp"))});
         QVERIFY(parseCli({QStringLiteral("--new-window")}, QStringLiteral("/")).newWindow);
     }
+    void ruleOption()
+    {
+        const CliOptions o = parseCli({QStringLiteral("--rule"), QStringLiteral("Old"), QStringLiteral("/tmp/x")}, QStringLiteral("/"));
+        QCOMPARE(o.rule, QStringLiteral("Old"));
+        QCOMPARE(o.urls, QList<QUrl>{QUrl(QStringLiteral("file:///tmp/x"))});
+    }
 };
 
 QTEST_GUILESS_MAIN(CliTest)

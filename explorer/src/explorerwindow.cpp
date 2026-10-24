@@ -37,6 +37,7 @@
 #include <QStatusBar>
 #include <QTabBar>
 #include <QTimer>
+#include <algorithm>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -599,6 +600,35 @@ void ExplorerWindow::selectItems(const QList<QUrl> &urls)
         v->selectUrls(urls);
     else
         connect(lister, &KCoreDirLister::completed, v, [v, urls] { v->selectUrls(urls); }, Qt::SingleShotConnection);
+}
+
+void ExplorerWindow::runSavedRule(const QString &name, const QList<QUrl> &urls)
+{
+    const QList<SavedRule> all = m_actions->library().all();
+    const auto it = std::find_if(all.begin(), all.end(), [&](const SavedRule &r) { return r.name == name; });
+    if (it == all.end()) {
+        KMessageBox::error(this, i18n("No saved rule named %1", name));
+        return;
+    }
+    if (it->kind == SavedRule::Kind::Rename) {
+        KFileItemList items;
+        for (const QUrl &u : urls)
+            items << KFileItem(u);
+        m_actions->renameMany(items, it->text);
+        return;
+    }
+    QUrl folder = urls.value(0);
+    if (folder.isEmpty()) {
+        folder = QUrl::fromLocalFile(QDir::homePath());
+    } else if (!(folder.isLocalFile() && QFileInfo(folder.toLocalFile()).isDir())) {
+        folder = folder.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
+    }
+    if (FolderView *v = activeView())
+        v->openUrl(folder);
+    if (it->kind == SavedRule::Kind::Select)
+        m_actions->selectByFormula(it->text);
+    else
+        m_actions->openScript(it->text);
 }
 
 void ExplorerWindow::showProperties(const QList<QUrl> &urls)

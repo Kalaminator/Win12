@@ -18,6 +18,8 @@ class RuleLibrary : public QObject
 public:
     using QObject::QObject;
     static QString path(); // GenericDataLocation/win12/rules.json (next to tags.json)
+    static QString serviceMenuPath(); // GenericDataLocation/kio/servicemenus/win12-my-rules.desktop
+    QString serviceMenuText() const; // Dolphin's right-click Win12 > My rules; rewritten (0755) on every write, removed when empty
     QList<SavedRule> all() const; // sorted by kind then name (case-insensitive); loaded lazily
     QList<SavedRule> ofKind(SavedRule::Kind) const;
     bool save(const SavedRule &, QString *error); // replaces same name+kind

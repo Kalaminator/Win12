@@ -14,6 +14,14 @@ static void openWindow(const QStringList &args, const QString &cwd)
 {
     const CliOptions o = parseCli(args, cwd);
     ExplorerWindow *w = nullptr;
+    if (!o.rule.isEmpty()) {
+        // ponytail: always a plain new window in this process, never the last window
+        w = new ExplorerWindow({o.urls.isEmpty() ? QUrl::fromLocalFile(QDir::homePath()) : o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash)});
+        w->show();
+        w->raise();
+        w->runSavedRule(o.rule, o.urls);
+        return;
+    }
     if (o.select && !o.urls.isEmpty()) {
         if (s_last && !o.newWindow) {
             w = s_last;
