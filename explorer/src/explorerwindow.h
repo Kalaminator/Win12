@@ -19,6 +19,7 @@ class QLineEdit;
 class QSplitter;
 class QToolButton;
 class RibbonBar;
+class TitleBar;
 namespace KIO { class PreviewJob; }
 
 // The window's page: a QSplitter with one or two FolderViews; the one that last had focus is active().
@@ -77,6 +78,11 @@ class ExplorerWindow : public KMainWindow
     Q_OBJECT
 public:
     explicit ExplorerWindow(const QUrl &url = {}, QWidget *parent = nullptr); // empty: the saved session
+    ~ExplorerWindow() override;
+    static constexpr int ResizeBorder = 6; // frameless: the band at the window edges that resizes
+    static Qt::Edges resizeEdgesAt(const QPoint &pos, const QSize &size, int border = ResizeBorder); // corners: two edges
+    Qt::Edges edgesForPress(const QPoint &windowPos) const; // none while maximised or full screen
+    TitleBar *titleBar() const { return m_titleBar; }
     FolderPage *page() const;
     FolderView *activeView() const;
     void runSavedRule(const QString &name, const QList<QUrl> &urls); // Dolphin's Win12 > My rules; unknown name: error box
@@ -97,6 +103,10 @@ public:
 
 protected:
     bool queryClose() override; // writes [Session] from the page
+    bool eventFilter(QObject *watched, QEvent *event) override; // app-wide: resize band cursor and press
+    void changeEvent(QEvent *) override;
+    void leaveEvent(QEvent *) override;
+    void paintEvent(QPaintEvent *) override; // the 1 px outline in place of KWin's frame
 
 private:
     void buildAddressRow(QWidget *central);
@@ -114,6 +124,9 @@ private:
     ViewSettingsStore m_store;
     ExplorerActions *m_actions;
     RibbonBar *m_ribbon;
+    TitleBar *m_titleBar = nullptr;
+    Qt::Edges m_cursorEdges; // edges whose resize cursor is overridden, none: not overridden
+    void setResizeCursor(Qt::Edges);
     QAction *m_back;
     QAction *m_forward;
     KUrlNavigator *m_navigator;

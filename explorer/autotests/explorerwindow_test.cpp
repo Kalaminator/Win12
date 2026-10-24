@@ -2,11 +2,13 @@
 #include "exploreractions.h"
 #include "folderview.h"
 #include "renamemanydialog.h"
+#include "ribbonbar.h"
 #include "rulelibrary.h"
 #include "selectbyruledialog.h"
 #include "tagregistry.h"
 #include "taglist.h"
 #include "tagstore.h"
+#include "titlebar.h"
 #include <QAbstractItemView>
 #include <KConfigGroup>
 #include <KSharedConfig>
@@ -15,12 +17,16 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QLineEdit>
+#include <QStackedWidget>
 #include <QStatusBar>
 #include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTabBar>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QToolButton>
+
+using namespace Qt::StringLiterals;
 
 class ExplorerWindowTest : public QObject
 {
@@ -303,6 +309,78 @@ private Q_SLOTS:
         delete b;
         QVERIFY(ExplorerWindow::last() == nullptr);
         delete a;
+    }
+
+    void windowIsFramelessWithTitleBar()
+    {
+        ExplorerWindow *w = shownWindow();
+        QVERIFY(w->windowFlags() & Qt::FramelessWindowHint);
+        TitleBar *tb = w->titleBar();
+        QVERIFY(tb);
+        auto *ribbon = w->findChild<RibbonBar *>();
+        QVERIFY(tb->isAncestorOf(ribbon->tabStrip()));
+        auto *body = ribbon->findChild<QStackedWidget *>();
+        QVERIFY(body);
+        QCOMPARE(body->mapTo(w, QPoint(0, 0)).y(), tb->mapTo(w, QPoint(0, tb->height())).y());
+        delete w;
+    }
+
+    void resizeEdgesAtTable()
+    {
+        const QSize s(800, 600);
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({3, 3}, s, 6), Qt::TopEdge | Qt::LeftEdge);
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({400, 2}, s, 6), Qt::Edges(Qt::TopEdge));
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({798, 300}, s, 6), Qt::Edges(Qt::RightEdge));
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({797, 598}, s, 6), Qt::BottomEdge | Qt::RightEdge);
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({400, 300}, s, 6), Qt::Edges());
+        QCOMPARE(ExplorerWindow::resizeEdgesAt({6, 300}, s, 6), Qt::Edges());
+    }
+
+    void noResizeEdgesWhenMaximized()
+    {
+        ExplorerWindow *w = shownWindow();
+        QCOMPARE(w->edgesForPress({2, 300}), Qt::Edges(Qt::LeftEdge));
+        w->showMaximized();
+        QTRY_VERIFY(w->isMaximized());
+        QCOMPARE(w->edgesForPress({2, 300}), Qt::Edges());
+        delete w;
+    }
+
+    void maximizeButtonToggles()
+    {
+        ExplorerWindow *w = shownWindow();
+        QTest::mouseClick(w->titleBar()->maximizeButton(), Qt::LeftButton);
+        QTRY_VERIFY(w->isMaximized());
+        QTest::mouseClick(w->titleBar()->maximizeButton(), Qt::LeftButton);
+        QTRY_VERIFY(!w->isMaximized());
+        delete w;
+    }
+
+    void closeButtonClosesWindow()
+    {
+        ExplorerWindow *w = shownWindow();
+        QTest::mouseClick(w->titleBar()->closeButton(), Qt::LeftButton);
+        QTRY_VERIFY(!w->isVisible());
+        delete w;
+    }
+
+    void windowTitleStillSet()
+    {
+        ExplorerWindow *w = shownWindow();
+        QVERIFY(w->windowTitle().endsWith(u"Win12 Explorer"_s));
+        delete w;
+    }
+
+    void clickingViewTabInTitleBarSwitchesRibbon()
+    {
+        ExplorerWindow *w = shownWindow();
+        auto *ribbon = w->findChild<RibbonBar *>();
+        QWidget *strip = ribbon->tabStrip();
+        const QFontMetrics fm = strip->fontMetrics();
+        const int x = fm.horizontalAdvance(u"File"_s) + 28 + fm.horizontalAdvance(u"Home"_s) + 28 + 10; // inside View
+        QTest::mouseClick(strip, Qt::LeftButton, {}, QPoint(x, 20));
+        QCOMPARE(ribbon->currentTab(), 1);
+        delete w;
     }
 };
 

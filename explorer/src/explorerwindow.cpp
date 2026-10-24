@@ -7,6 +7,7 @@
 #include "tagsearch.h"
 #include "ribbonbar.h"
 #include "ribbonspec.h"
+#include "titlebar.h"
 #include <KConfigGroup>
 #include <KDirLister>
 #include <KFilePlacesModel>
@@ -28,6 +29,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
@@ -40,6 +42,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QWindow>
 
 using namespace Qt::StringLiterals;
 
@@ -223,6 +226,7 @@ ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
     , m_store(m_config)
     , m_actions(new ExplorerActions(this))
 {
+    setWindowFlag(Qt::FramelessWindowHint); // the title bar is ours (TitleBar); KWin still snaps, tiles, shadows
     s_last = this;
     connect(this, &QObject::destroyed, [this] {
         if (s_last == this)
@@ -233,6 +237,8 @@ ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     m_ribbon = new RibbonBar(m_actions, central);
+    m_titleBar = new TitleBar(m_ribbon, KSharedConfig::openConfig(u"kdeglobals"_s), central); // relative name: KConfigWatcher needs it
+    layout->addWidget(m_titleBar);
     layout->addWidget(m_ribbon);
     buildAddressRow(central);
 
@@ -309,6 +315,107 @@ ExplorerWindow::ExplorerWindow(const QUrl &url, QWidget *parent)
 
     resize(1100, 700);
     setAutoSaveSettings(u"MainWindow"_s);
+    setContentsMargins(1, 1, 1, 1); // room for the outline
+    qApp->installEventFilter(this); // child widgets cover the edges: the band is found app-wide
+}
+
+ExplorerWindow::~ExplorerWindow()
+{
+    qApp->removeEventFilter(this);
+    setResizeCursor({});
+}
+
+Qt::Edges ExplorerWindow::resizeEdgesAt(const QPoint &pos, const QSize &size, int border)
+{
+    Qt::Edges e;
+    if (pos.x() < border)
+        e |= Qt::LeftEdge;
+    else if (pos.x() >= size.width() - border)
+        e |= Qt::RightEdge;
+    if (pos.y() < border)
+        e |= Qt::TopEdge;
+    else if (pos.y() >= size.height() - border)
+        e |= Qt::BottomEdge;
+    return e;
+}
+
+Qt::Edges ExplorerWindow::edgesForPress(const QPoint &windowPos) const
+{
+    if (isMaximized() || isFullScreen())
+        return {};
+    return resizeEdgesAt(windowPos, size());
+}
+
+void ExplorerWindow::setResizeCursor(Qt::Edges edges)
+{
+    if (edges == m_cursorEdges)
+        return;
+    Qt::CursorShape shape = Qt::SizeVerCursor;
+    if (edges == (Qt::LeftEdge | Qt::TopEdge) || edges == (Qt::RightEdge | Qt::BottomEdge))
+        shape = Qt::SizeFDiagCursor;
+    else if (edges == (Qt::RightEdge | Qt::TopEdge) || edges == (Qt::LeftEdge | Qt::BottomEdge))
+        shape = Qt::SizeBDiagCursor;
+    else if (edges & (Qt::LeftEdge | Qt::RightEdge))
+        shape = Qt::SizeHorCursor;
+    if (!edges)
+        QGuiApplication::restoreOverrideCursor();
+    else if (!m_cursorEdges)
+        QGuiApplication::setOverrideCursor(shape);
+    else
+        QGuiApplication::changeOverrideCursor(shape);
+    m_cursorEdges = edges;
+}
+
+bool ExplorerWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    const QEvent::Type type = event->type();
+    if (type != QEvent::MouseMove && type != QEvent::MouseButtonPress)
+        return KMainWindow::eventFilter(watched, event);
+    auto *widget = qobject_cast<QWidget *>(watched);
+    auto *me = static_cast<QMouseEvent *>(event);
+    const bool ours = widget && widget->window() == this;
+    const Qt::Edges edges = ours ? edgesForPress(mapFromGlobal(me->globalPosition().toPoint())) : Qt::Edges();
+    if (type == QEvent::MouseMove) {
+        if (me->buttons() == Qt::NoButton || !ours) // a drag or rubber band keeps its cursor
+            setResizeCursor(edges);
+        return false;
+    }
+    if (edges && me->button() == Qt::LeftButton && windowHandle() && windowHandle()->startSystemResize(edges))
+        return true; // offscreen / no support: the press goes on to the widget
+    return false;
+}
+
+void ExplorerWindow::changeEvent(QEvent *e)
+{
+    KMainWindow::changeEvent(e);
+    if (!m_titleBar)
+        return;
+    if (e->type() == QEvent::WindowStateChange) {
+        const bool full = isMaximized() || isFullScreen();
+        setContentsMargins(full ? QMargins() : QMargins(1, 1, 1, 1));
+        m_titleBar->maximizeButton()->setIcon(QIcon::fromTheme(isMaximized() ? u"window-restore"_s : u"window-maximize"_s));
+        if (full)
+            setResizeCursor({});
+    } else if (e->type() == QEvent::ActivationChange) {
+        m_titleBar->setActive(isActiveWindow());
+        update(); // the outline follows the title colour
+    }
+}
+
+void ExplorerWindow::leaveEvent(QEvent *e)
+{
+    setResizeCursor({});
+    KMainWindow::leaveEvent(e);
+}
+
+void ExplorerWindow::paintEvent(QPaintEvent *e)
+{
+    KMainWindow::paintEvent(e);
+    if (isMaximized() || isFullScreen() || !m_titleBar)
+        return;
+    QPainter p(this);
+    p.setPen(m_titleBar->background().darker(140));
+    p.drawRect(rect().adjusted(0, 0, -1, -1));
 }
 
 void ExplorerWindow::buildAddressRow(QWidget *central)
