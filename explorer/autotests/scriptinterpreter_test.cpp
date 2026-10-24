@@ -355,6 +355,16 @@ private Q_SLOTS:
         QCOMPARE(r.statements, qint64(1 + 3));
     }
 
+    void progressHookEveryN()
+    {
+        ScriptInterpreter in(dir.path());
+        QList<qint64> seen;
+        in.setProgress([&](qint64 n, int) { seen << n; }, 2);
+        const ScriptResult r = in.run(parse(u"For Each f In Files(\"Downloads\")\n  f.Trash\nNext"_s), nullptr);
+        QVERIFY2(r.ok, qPrintable(r.error));
+        QCOMPARE(seen, (QList<qint64>{2, 4}));
+    }
+
     void tildeAndOutsideBaseShowFullPath()
     {
         const ScriptResult r = run(u"For Each f In Files(\"Downloads\")\n  f.CopyTo \"~/elsewhere\"\nNext"_s);

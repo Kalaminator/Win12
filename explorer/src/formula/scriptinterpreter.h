@@ -19,10 +19,14 @@ public:
     using Lister = std::function<QList<std::shared_ptr<FxFile>>(const QString &absFolder, bool subfolders, QString *error, const std::atomic_bool *cancel)>;
     void setLister(Lister); // default: QDirIterator, rows sorted and numbered like FormulaRun
 
+    void setProgress(std::function<void(qint64 statements, int planSteps)>, int everyNStatements = 1000); // called from run()'s thread every N statements
+
     ScriptResult run(const Script &, const std::atomic_bool *cancel); // cancel -> ok = false, error "Stopped"
 
 private:
     QString m_base;
     qint64 m_max;
     Lister m_lister;
+    std::function<void(qint64, int)> m_progress;
+    int m_progressEvery = 1000;
 };

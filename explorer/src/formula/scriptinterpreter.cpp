@@ -59,6 +59,8 @@ struct Run {
     std::shared_ptr<FxFile> row; // the innermost For Each file: bare columns and HASTAG read it
     QSet<QString> plannedNames; // paths that planned renames, moves and copies lead to
     QHash<QString, int> trashed; // path -> line of its Trash
+    std::function<void(qint64, int)> progress;
+    int progressEvery = 1000;
 
     bool fail(const QString &message, int line)
     {
@@ -83,6 +85,8 @@ struct Run {
         if (r.statements >= max)
             return fail(i18n("Script stopped after %1 statements (endless loop?)", QLocale().toString(max)), line);
         ++r.statements;
+        if (progress && r.statements % progressEvery == 0)
+            progress(r.statements, int(r.plan.size()));
         return true;
     }
 
@@ -309,9 +313,15 @@ void ScriptInterpreter::setLister(Lister lister)
     m_lister = std::move(lister);
 }
 
+void ScriptInterpreter::setProgress(std::function<void(qint64, int)> f, int everyNStatements)
+{
+    m_progress = std::move(f);
+    m_progressEvery = qMax(1, everyNStatements);
+}
+
 ScriptResult ScriptInterpreter::run(const Script &script, const std::atomic_bool *cancel)
 {
-    Run run{m_base, m_max, m_lister, cancel, {}, {}, {}, {}, {}, {}};
+    Run run{m_base, m_max, m_lister, cancel, {}, {}, {}, {}, {}, {}, m_progress, m_progressEvery};
     run.ctx.baseFolder = m_base;
     run.ctx.variables = &run.vars;
     run.block(script.body);
