@@ -105,6 +105,18 @@ private Q_SLOTS:
         delete w;
     }
 
+    void selectFromRuleOpensTheFolder()
+    {
+        QDir(m_dir.path()).mkpath(QStringLiteral("sub"));
+        QFile f(m_dir.filePath(QStringLiteral("sub/f.txt")));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.close();
+        ExplorerWindow *w = shownWindow();
+        Q_EMIT w->explorerActions()->selectUrlsRequested({QUrl::fromLocalFile(f.fileName())});
+        QTRY_COMPARE(w->activeView()->url().adjusted(QUrl::StripTrailingSlash), QUrl::fromLocalFile(m_dir.filePath(QStringLiteral("sub"))));
+        delete w;
+    }
+
     void fileKeysIgnoreTheSearchBox()
     {
         ExplorerWindow *w = shownWindow();
