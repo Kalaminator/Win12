@@ -72,6 +72,7 @@ explorer_add_test(resultsmodel_test)
 explorer_add_test(taglist_test)
 explorer_add_test(managetagsdialog_test)
 explorer_add_test(fxlexer_test)
+explorer_add_test(fxparser_test)
 ecm_add_test(autotests/overlayplugin_test.cpp overlay/win12tagsoverlay.cpp TEST_NAME overlayplugin_test
     LINK_LIBRARIES win12tags KF6::KIOCore Qt6::Test)
 target_include_directories(overlayplugin_test PRIVATE overlay)
