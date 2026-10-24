@@ -57,6 +57,26 @@ private Q_SLOTS:
         click(l, 1, Qt::ControlModifier);
         QCOMPARE(l.picked().size(), 1);
     }
+    // A picked tag renamed or deleted elsewhere: the filter re-runs with what is left, or clears.
+    void vanishedPickRefilters()
+    {
+        TagRegistry r(m_dir.filePath(QStringLiteral("v.json")));
+        r.touch(T("Red/x"));
+        r.touch(T("Blue/y"));
+        TagList l(&r);
+        l.show();
+        click(l, 0);
+        click(l, 1, Qt::ControlModifier);
+        QSignalSpy spy(&l, &TagList::filterChanged);
+        r.rename(T("Blue/y"), QStringLiteral("z"));
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.last().at(0).value<QList<Tag>>(), QList<Tag>{T("Red/x")});
+        r.touch(T("Green/new")); // the picks survive: no re-run
+        QCOMPARE(spy.count(), 1);
+        r.remove(T("Red/x"));
+        QCOMPARE(spy.count(), 2);
+        QVERIFY(spy.last().at(0).value<QList<Tag>>().isEmpty());
+    }
     void modeToggleEmits()
     {
         TagRegistry r(m_dir.filePath(QStringLiteral("d.json")));

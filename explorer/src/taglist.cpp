@@ -61,6 +61,8 @@ void TagList::reload()
         item->setSelected(keep.contains(t));
     }
     m_list->blockSignals(false);
+    if (picked().size() != keep.size()) // a picked tag was renamed or deleted: its results must not stay shown
+        Q_EMIT filterChanged(picked(), mode());
 }
 
 QList<Tag> TagList::picked() const
