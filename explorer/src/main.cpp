@@ -14,7 +14,7 @@ static void openWindow(const QStringList &args, const QString &cwd)
     ExplorerWindow *w = nullptr;
     if (!o.rule.isEmpty() || o.selectByRule || o.renameMany) {
         // ponytail: always a plain new window in this process, never the last window
-        w = new ExplorerWindow({ExplorerWindow::folderFor(o.urls)});
+        w = new ExplorerWindow(ExplorerWindow::folderFor(o.urls));
         w->show();
         w->raise();
         if (!o.rule.isEmpty())
@@ -29,15 +29,20 @@ static void openWindow(const QStringList &args, const QString &cwd)
         if (ExplorerWindow::last() && !o.newWindow) {
             w = ExplorerWindow::last();
         } else {
-            w = new ExplorerWindow({o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash)});
+            w = new ExplorerWindow(o.urls.first().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash));
             w->show();
         }
         w->selectItems(o.urls);
     } else if (o.daemon && o.urls.isEmpty()) {
         return; // no window
     } else {
-        w = new ExplorerWindow(o.urls); // no urls = the saved session
-        w->show();
+        // no urls = the saved session; several urls = one window each
+        for (int i = 0; i < qMax(1, int(o.urls.size())); ++i) {
+            ExplorerWindow *n = new ExplorerWindow(o.urls.value(i));
+            n->show();
+            if (i == 0)
+                w = n;
+        }
     }
     w->raise();
 }

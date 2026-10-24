@@ -63,7 +63,7 @@ Q_SIGNALS:
     void selectionChanged();
     void countsChanged(int items, int selected);
     void fileActivated(const KFileItem &); // double-click/Enter on a non-folder
-    void folderMiddleClicked(const QUrl &); // tab request
+    void folderMiddleClicked(const QUrl &); // opens a new window
     void contextMenuRequested(const QPoint &globalPos, const KFileItemList &items); // empty = folder background
     void renameRequested(const KFileItem &, const QString &newName);
     void dropRequested(QDropEvent *, const QUrl &destination); // folder under the cursor, else url()

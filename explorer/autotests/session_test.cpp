@@ -30,9 +30,27 @@ private Q_SLOTS:
     {
         const KSharedConfig::Ptr cfg = config(QStringLiteral("sessionrc"));
         KConfigGroup g(cfg, QStringLiteral("Session"));
-        g.writeEntry("Tabs", QStringList{QStringLiteral("file:///a"), QStringLiteral("file:///b")});
-        g.writeEntry("Active", 1);
+        g.writeEntry("Url", QStringLiteral("file:///a"));
+        g.writeEntry("SecondUrl", QStringLiteral("file:///b"));
         QCOMPARE(ExplorerWindow::savedSession(cfg), (QList<QUrl>{QUrl(QStringLiteral("file:///a")), QUrl(QStringLiteral("file:///b"))}));
+    }
+
+    void savedSessionUrlOnly()
+    {
+        const KSharedConfig::Ptr cfg = config(QStringLiteral("urlonlyrc"));
+        KConfigGroup(cfg, QStringLiteral("Session")).writeEntry("Url", QStringLiteral("file:///a"));
+        QCOMPARE(ExplorerWindow::savedSession(cfg).size(), 1);
+    }
+
+    void savedSessionIgnoresOldTabs()
+    {
+        const KSharedConfig::Ptr cfg = config(QStringLiteral("oldtabsrc"));
+        KConfigGroup g(cfg, QStringLiteral("Session"));
+        g.writeEntry("Tabs", QStringList{QStringLiteral("file:///a")});
+        g.writeEntry("Active", 0);
+        QVERIFY(ExplorerWindow::savedSession(cfg).isEmpty());
+        QCOMPARE(ExplorerWindow::sessionUrlsToOpen(ExplorerWindow::savedSession(cfg)),
+                 (QList<QUrl>{QUrl::fromLocalFile(QDir::homePath())}));
     }
 
     void recentFoldersDedupAndTrim()

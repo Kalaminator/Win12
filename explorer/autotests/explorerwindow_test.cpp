@@ -8,6 +8,8 @@
 #include "taglist.h"
 #include "tagstore.h"
 #include <QAbstractItemView>
+#include <KConfigGroup>
+#include <KSharedConfig>
 #include <QAction>
 #include <QFile>
 #include <QLabel>
@@ -61,47 +63,9 @@ private Q_SLOTS:
         QTRY_VERIFY(!list->isHidden());
         QTest::mouseClick(lw->viewport(), Qt::LeftButton, {}, lw->visualItemRect(lw->item(0)).center());
         QVERIFY(w->activeView()->showingResults());
-        w->openTab(QUrl::fromLocalFile(m_dir.path()), true);
+        w->activeView()->openUrl(QUrl::fromLocalFile(m_dir.path()));
         QVERIFY(!w->activeView()->showingResults());
         QVERIFY(list->picked().isEmpty());
-        delete w;
-    }
-
-    void tabSwitchKeepsOtherTabsResults()
-    {
-        QTemporaryDir tree(QDir::homePath() + QStringLiteral("/.cache/tagpick-XXXXXX"));
-        if (!tree.isValid() || !TagStore::supported(QUrl::fromLocalFile(tree.path())))
-            QSKIP("xattr tags not supported here");
-        QFile f(tree.filePath(QStringLiteral("a.txt")));
-        QVERIFY(f.open(QIODevice::WriteOnly));
-        f.close();
-        const Tag tag = Tag::decode(QStringLiteral("Red/pick"));
-        TagStore s;
-        QCOMPARE(s.add({QUrl::fromLocalFile(f.fileName())}, tag), TagStore::Error::None);
-        TagRegistry().touch(tag);
-        auto *w = new ExplorerWindow({QUrl::fromLocalFile(tree.path())});
-        w->show();
-        w->activateWindow();
-        auto *list = w->findChild<TagList *>();
-        auto *lw = list->findChild<QListWidget *>();
-        QTRY_VERIFY(!list->isHidden());
-        QTest::mouseClick(lw->viewport(), Qt::LeftButton, {}, lw->visualItemRect(lw->item(0)).center());
-        FolderView *a = w->activeView();
-        QVERIFY(a->showingResults());
-        w->openTab(QUrl::fromLocalFile(m_dir.path()), true);
-        FolderView *b = w->activeView();
-        QVERIFY(a != b);
-        QVERIFY(!b->showingResults());
-        QVERIFY(a->showingResults());
-        QVERIFY(list->picked().isEmpty());
-        auto *tabs = w->findChild<QTabBar *>();
-        tabs->setCurrentIndex(0);
-        QCOMPARE(w->activeView(), a);
-        QVERIFY(a->showingResults());
-        bool shown = false;
-        for (QLabel *l : w->findChildren<QLabel *>())
-            shown |= l->text() == a->resultsTitle() && l->isVisible();
-        QVERIFY(shown);
         delete w;
     }
 
@@ -162,7 +126,7 @@ private Q_SLOTS:
     void splitMarksTheActivePane()
     {
         ExplorerWindow *w = shownWindow();
-        TabPage *page = w->currentPage();
+        FolderPage *page = w->page();
         const auto marked = [](FolderView *v) {
             auto *mark = v->parentWidget()->findChild<QWidget *>(QStringLiteral("paneMark"), Qt::FindDirectChildrenOnly);
             return mark && mark->isVisible();
@@ -179,17 +143,64 @@ private Q_SLOTS:
         delete w;
     }
 
-    void ctrlTAndCtrlWOpenAndCloseTabs()
+    void noTabBarAndCtrlTDoesNothing()
     {
         ExplorerWindow *w = shownWindow();
-        auto *tabs = w->findChild<QTabBar *>();
-        QCOMPARE(tabs->count(), 1);
+        QVERIFY(!w->findChild<QTabBar *>());
         QTest::keyClick(w, Qt::Key_T, Qt::ControlModifier);
-        QCOMPARE(tabs->count(), 2);
-        QCOMPARE(w->currentPage()->url(), QUrl::fromLocalFile(m_dir.path()));
-        QTest::keyClick(w, Qt::Key_W, Qt::ControlModifier);
-        QCOMPARE(tabs->count(), 1);
+        QCOMPARE(ExplorerWindow::last(), w);
         delete w;
+    }
+
+    void ctrlWClosesWindow()
+    {
+        ExplorerWindow *w = shownWindow();
+        QTest::keyClick(w, Qt::Key_W, Qt::ControlModifier);
+        QTRY_VERIFY(!w->isVisible());
+        delete w;
+    }
+
+    void middleClickOpensNewWindow()
+    {
+        ExplorerWindow *w = shownWindow();
+        QTemporaryDir other;
+        const QUrl dir = QUrl::fromLocalFile(other.path());
+        Q_EMIT w->activeView()->folderMiddleClicked(dir);
+        ExplorerWindow *n = ExplorerWindow::last();
+        QVERIFY(n != w);
+        QCOMPARE(n->activeView()->url(), dir);
+        delete n;
+        delete w;
+    }
+
+    void sessionRestoresFolderAndSplit()
+    {
+        QTemporaryDir other;
+        const QUrl dir2 = QUrl::fromLocalFile(other.path());
+        ExplorerWindow *w = shownWindow();
+        w->page()->setSplit(true);
+        w->page()->secondary()->openUrl(dir2);
+        w->close();
+        delete w;
+        auto *r = new ExplorerWindow();
+        QCOMPARE(r->page()->primary()->url(), QUrl::fromLocalFile(m_dir.path()));
+        QVERIFY(r->page()->isSplit());
+        QCOMPARE(r->page()->secondary()->url(), dir2);
+        delete r;
+    }
+
+    void sessionDropsMissingPrimary()
+    {
+        QTemporaryDir other;
+        const QUrl dir = QUrl::fromLocalFile(other.path());
+        KConfigGroup g(KSharedConfig::openConfig(), QStringLiteral("Session"));
+        g.writeEntry("Url", QStringLiteral("file:///nonexistent-xyz"));
+        g.writeEntry("SecondUrl", dir.toString());
+        g.sync();
+        auto *r = new ExplorerWindow();
+        QVERIFY(!r->page()->isSplit());
+        QCOMPARE(r->page()->primary()->url(), dir);
+        delete r;
     }
 
     static QUrl sel(ExplorerWindow *w)
