@@ -4,6 +4,7 @@
 #include <Baloo/Query>
 #include <KLocalizedString>
 #include <QDirIterator>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QMutex>
 #include <QtConcurrent/QtConcurrentRun>
@@ -86,10 +87,18 @@ void TagSearch::start(const QUrl &folder, const QList<Tag> &tags, Mode mode, Eng
 
         KFileItemList batch;
         auto add = [&](const QString &file) {
-            batch << KFileItem(QUrl::fromLocalFile(file)); // mime type resolved later, on demand
-            if (batch.size() >= 200) {
+            KFileItem item(QUrl::fromLocalFile(file)); // mime type resolved later, on demand
+            item.refresh(); // lstat here, cached in the item: the first sort's isDir()/size() must not stat on the UI thread
+            batch << item;
+        };
+        // Flush at 200 hits, or after 250 ms so a slow walk with few hits still shows them as they come
+        QElapsedTimer sinceFlush;
+        sinceFlush.start();
+        auto tick = [&] {
+            if (batch.size() >= 200 || (!batch.isEmpty() && sinceFlush.hasExpired(250))) {
                 post([self, batch] { Q_EMIT self->found(batch); });
                 batch.clear();
+                sinceFlush.restart();
             }
         };
 
@@ -103,9 +112,11 @@ void TagSearch::start(const QUrl &folder, const QList<Tag> &tags, Mode mode, Eng
             q.setIncludeFolder(path);
             Baloo::ResultIterator it = q.exec();
             // Baloo's tag: is a loose word match; keep only exact hits (also drops stale index entries)
-            while (!run->cancel && it.next())
+            while (!run->cancel && it.next()) {
                 if (matches(encodeAll(TagStore::read(QUrl::fromLocalFile(it.filePath()))), wanted, mode))
                     add(it.filePath());
+                tick();
+            }
         } else {
             // ponytail: the walker re-reads xattrs on every search; a result cache if the user filters the same USB stick repeatedly
             QDirIterator it(path, QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
@@ -113,6 +124,7 @@ void TagSearch::start(const QUrl &folder, const QList<Tag> &tags, Mode mode, Eng
                 const QString file = it.next();
                 if (matches(encodeAll(TagStore::read(QUrl::fromLocalFile(file))), wanted, mode))
                     add(file);
+                tick();
             }
         }
         if (run->cancel)

@@ -80,6 +80,32 @@ private Q_SLOTS:
         QCOMPARE(walk(dir.filePath(QStringLiteral("many")), {red}, TagSearch::Mode::Any, &batches).size(), 300);
         QVERIFY2(batches >= 1 && batches <= 3, qPrintable(QString::number(batches)));
     }
+    void itemsArriveStatted()
+    {
+        // the first sort calls isDir()/size() on every hit: that stat must happen in the worker, not on the UI thread
+        const QString f = file(QStringLiteral("stat/s.txt"), {red.encode()});
+        QFile w(f);
+        QVERIFY(w.open(QIODevice::WriteOnly));
+        w.write("hello");
+        w.close();
+        const QString d = dir.filePath(QStringLiteral("stat/d"));
+        QDir().mkpath(d);
+        UserMetaData(d).setTags({red.encode()});
+        TagSearch s;
+        KFileItemList items;
+        connect(&s, &TagSearch::found, this, [&](const KFileItemList &l) { items << l; });
+        QSignalSpy done(&s, &TagSearch::finished);
+        s.start(QUrl::fromLocalFile(dir.filePath(QStringLiteral("stat"))), {red}, TagSearch::Mode::Any, TagSearch::Engine::Walk);
+        QVERIFY(done.wait(10000));
+        QCOMPARE(items.size(), 2);
+        QVERIFY(QFile::remove(f) && QDir().rmdir(d)); // a stat now would see nothing
+        for (const KFileItem &i : std::as_const(items)) {
+            if (i.name() == QLatin1String("d"))
+                QVERIFY(i.isDir());
+            else
+                QCOMPARE(i.size(), KIO::filesize_t(5));
+        }
+    }
     void stopEndsWithoutFinished()
     {
         TagSearch s;
