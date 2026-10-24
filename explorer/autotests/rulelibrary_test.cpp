@@ -1,6 +1,7 @@
 #include "rulelibrary.h"
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTest>
@@ -14,6 +15,7 @@ private Q_SLOTS:
     void initTestCase() { QStandardPaths::setTestModeEnabled(true); }
     void init()
     {
+        QFile::remove(RuleLibrary::path() + QStringLiteral(".broken"));
         QDir(RuleLibrary::path()).removeRecursively();
         QFile::remove(RuleLibrary::path());
     }
@@ -75,6 +77,21 @@ private Q_SLOTS:
         QString err;
         QVERIFY(!l.save({QStringLiteral("x"), QStringLiteral("a"), K::Select}, &err));
         QVERIFY(!err.isEmpty());
+    }
+    void garbageFileIsMovedAside()
+    {
+        QVERIFY(QDir().mkpath(QFileInfo(RuleLibrary::path()).absolutePath()));
+        QFile f(RuleLibrary::path());
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write("not json {");
+        f.close();
+        RuleLibrary l;
+        QString err;
+        QVERIFY(l.save({QStringLiteral("x"), QStringLiteral("a"), K::Select}, &err));
+        QFile b(RuleLibrary::path() + QStringLiteral(".broken"));
+        QVERIFY(b.open(QIODevice::ReadOnly));
+        QCOMPARE(b.readAll(), QByteArray("not json {"));
+        QCOMPARE(RuleLibrary().all().size(), 1);
     }
     void changedFiresOnlyAfterWrite()
     {

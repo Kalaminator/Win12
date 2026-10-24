@@ -25,6 +25,13 @@ static QString kindName(SavedRule::Kind k)
     return {};
 }
 
+static void sortRules(QList<SavedRule> &rules)
+{
+    std::sort(rules.begin(), rules.end(), [](const SavedRule &a, const SavedRule &b) {
+        return a.kind != b.kind ? a.kind < b.kind : a.name.compare(b.name, Qt::CaseInsensitive) < 0;
+    });
+}
+
 QString RuleLibrary::path()
 {
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + u"/win12/rules.json"_s;
@@ -37,9 +44,20 @@ void RuleLibrary::ensureLoaded() const
     m_loaded = true;
     m_rules.clear();
     QFile f(path());
-    if (!f.open(QIODevice::ReadOnly))
+    if (!QFileInfo(f).isFile())
+        return; // missing, or not a file (save() reports that)
+    QJsonParseError pe;
+    QJsonDocument doc;
+    if (f.open(QIODevice::ReadOnly))
+        doc = QJsonDocument::fromJson(f.readAll(), &pe);
+    if (!doc.isObject()) {
+        // keep what the user had: the next save() must not overwrite it
+        f.close();
+        QFile::remove(path() + u".broken"_s);
+        f.rename(path() + u".broken"_s);
         return;
-    const QJsonArray arr = QJsonDocument::fromJson(f.readAll()).object().value(u"rules"_s).toArray();
+    }
+    const QJsonArray arr = doc.object().value(u"rules"_s).toArray();
     for (const QJsonValue &v : arr) {
         const QJsonObject o = v.toObject();
         const QString k = o.value(u"kind"_s).toString();
@@ -50,9 +68,7 @@ void RuleLibrary::ensureLoaded() const
             if (kindName(kind) == k)
                 m_rules.append({name, o.value(u"text"_s).toString(), kind});
     }
-    std::sort(m_rules.begin(), m_rules.end(), [](const SavedRule &a, const SavedRule &b) {
-        return a.kind != b.kind ? a.kind < b.kind : a.name.compare(b.name, Qt::CaseInsensitive) < 0;
-    });
+    sortRules(m_rules);
 }
 
 QList<SavedRule> RuleLibrary::all() const
@@ -80,9 +96,7 @@ void RuleLibrary::reload()
 // Keeps m_rules sorted; the list is tens of entries, so the whole file is rewritten each time.
 bool RuleLibrary::write(QString *error)
 {
-    std::sort(m_rules.begin(), m_rules.end(), [](const SavedRule &a, const SavedRule &b) {
-        return a.kind != b.kind ? a.kind < b.kind : a.name.compare(b.name, Qt::CaseInsensitive) < 0;
-    });
+    sortRules(m_rules);
     QJsonArray arr;
     for (const SavedRule &r : std::as_const(m_rules))
         arr.append(QJsonObject{{u"name"_s, r.name}, {u"kind"_s, kindName(r.kind)}, {u"text"_s, r.text}});
