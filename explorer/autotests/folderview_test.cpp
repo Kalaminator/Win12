@@ -1,6 +1,9 @@
 #include "folderview.h"
+#include "tagribbon.h"
+#include "tagstore.h"
 #include <KDirLister>
 #include <QApplication>
+#include <QDir>
 #include <QFile>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -19,6 +22,7 @@ class FolderViewTest : public QObject
     QTemporaryDir m_configDir;
     std::unique_ptr<ViewSettingsStore> m_store;
     std::unique_ptr<FolderView> m_view;
+    std::unique_ptr<QTemporaryDir> m_tagDir;
 
     QUrl dirUrl() const { return QUrl::fromLocalFile(m_dir.path()); }
     QUrl fileUrl(const QString &name) const { return QUrl::fromLocalFile(m_dir.filePath(name)); }
@@ -30,6 +34,59 @@ class FolderViewTest : public QObject
         QSignalSpy done(m_view->model()->folderModel()->lister(), &KCoreDirLister::listingDirCompleted);
         nav();
         return done.count() > 0 || done.wait(5000);
+    }
+
+
+    static Tag T(const char *s) { return Tag::decode(QString::fromLatin1(s)); }
+    static QColor colour(const char *tag) { return T(tag).paintColour(); }
+    static int ribbonWidth(const char *tag, const QFont &base) { return TagRibbon::width(T(tag), QFontMetrics(TagRibbon::font(base))); }
+    QUrl tagUrl(const QString &name) const { return QUrl::fromLocalFile(m_tagDir->filePath(name)); }
+
+    // A fresh folder under ~/.cache (/tmp may lack user xattrs) holding `files` with their tags; false = no xattr support.
+    bool writeTagged(const QList<std::pair<QString, QList<Tag>>> &files)
+    {
+        QDir().mkpath(QDir::homePath() + QStringLiteral("/.cache"));
+        m_tagDir = std::make_unique<QTemporaryDir>(QDir::homePath() + QStringLiteral("/.cache/folderview-XXXXXX"));
+        if (!m_tagDir->isValid() || !TagStore::supported(QUrl::fromLocalFile(m_tagDir->path())))
+            return false;
+        for (const auto &[name, tags] : files) {
+            QFile f(m_tagDir->filePath(name));
+            if (!f.open(QIODevice::WriteOnly))
+                return false;
+            for (const Tag &t : tags)
+                if (TagStore().add({tagUrl(name)}, t) != TagStore::Error::None)
+                    return false;
+        }
+        return true;
+    }
+    void show(ViewMode mode)
+    {
+        ViewSettings s = m_view->settings();
+        s.mode = mode;
+        s.columns = {QStringLiteral("name"), QStringLiteral("tags")};
+        m_view->applySettings(s);
+        m_view->currentView()->selectionModel()->clearCurrentIndex(); // Fusion tints the current row's focus frame over the cells
+    }
+    QModelIndex indexOf(const QString &name, int column = 0) const
+    {
+        TagsColumns *m = m_view->model();
+        for (int r = 0; r < m->rowCount(); ++r)
+            if (m->itemFor(m->index(r, 0)).name() == name)
+                return m->index(r, column);
+        return {};
+    }
+    QRect cell(const QString &name, int column = 0) const { return m_view->currentView()->visualRect(indexOf(name, column)); }
+    // Bounding box of the viewport pixels painted exactly in `c` inside `r`.
+    QRect painted(const QRect &r, const QColor &c) const
+    {
+        const QImage img = m_view->currentView()->viewport()->grab().toImage();
+        const QRect area = r & img.rect();
+        QRect box;
+        for (int y = area.top(); y <= area.bottom(); ++y)
+            for (int x = area.left(); x <= area.right(); ++x)
+                if (img.pixel(x, y) == c.rgb())
+                    box |= QRect(x, y, 1, 1);
+        return box;
     }
 
 private Q_SLOTS:
@@ -53,6 +110,7 @@ private Q_SLOTS:
     {
         m_view.reset();
         m_store.reset();
+        m_tagDir.reset();
     }
 
     void opensAndCounts()
@@ -306,6 +364,98 @@ private Q_SLOTS:
         drop({QUrl::fromLocalFile(f.fileName())});
         QCOMPARE(spy.count(), 1);
         QTRY_VERIFY(QFile::exists(m_dir.filePath(QStringLiteral("sub/") + name)));
+    }
+
+    // Details: ribbons only in the Tags column, its text suppressed; the name column stays plain.
+    void detailsTagsColumnShowsRibbon()
+    {
+        if (!writeTagged({{QStringLiteral("phone"), {T("Red/Xiaomi")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::Details);
+        const QColor red = colour("Red/Xiaomi");
+        QTRY_VERIFY(!painted(cell(QStringLiteral("phone"), TagsColumns::TagsColumn), red).isEmpty());
+        QVERIFY(painted(cell(QStringLiteral("phone")), red).isEmpty());
+    }
+
+    // List: the ribbon follows the name and the item grows to hold it whole.
+    void listModeRibbonAfterName()
+    {
+        if (!writeTagged({{QStringLiteral("phone"), {T("Red/Xiaomi")}}, {QStringLiteral("radio-with-a-much-longer-name"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::List);
+        const QAbstractItemView *v = m_view->currentView();
+        const QRect r = cell(QStringLiteral("phone"));
+        QRect box;
+        QTRY_VERIFY(!(box = painted(r, colour("Red/Xiaomi"))).isEmpty());
+        QVERIFY(box.left() > r.left() + v->iconSize().width() + v->fontMetrics().horizontalAdvance(QStringLiteral("phone")));
+        QVERIFY(box.width() >= ribbonWidth("Red/Xiaomi", m_view->font()) - 2);
+
+        // Tagged while shown (the widest item, so nothing else makes its room): the item grows too.
+        QCOMPARE(TagStore().add({tagUrl(QStringLiteral("radio-with-a-much-longer-name"))}, T("Gold/Go")), TagStore::Error::None);
+        m_view->model()->invalidateTags({tagUrl(QStringLiteral("radio-with-a-much-longer-name"))});
+        QTRY_VERIFY(painted(cell(QStringLiteral("radio-with-a-much-longer-name")), colour("Gold/Go")).width() >= ribbonWidth("Gold/Go", m_view->font()) - 2);
+    }
+
+    // Small icons, Tiles and Content: a ribbon after the name, on the name's line.
+    void otherModesRibbonAfterName()
+    {
+        if (!writeTagged({{QStringLiteral("phone"), {T("Red/Xiaomi")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        for (ViewMode mode : {ViewMode::SmallIcons, ViewMode::Tiles, ViewMode::Content}) {
+            show(mode);
+            const QRect r = cell(QStringLiteral("phone"));
+            QRect box;
+            QTRY_VERIFY(!(box = painted(r, colour("Red/Xiaomi"))).isEmpty());
+            QVERIFY(box.left() > r.left() + m_view->currentView()->iconSize().width() + m_view->fontMetrics().horizontalAdvance(QStringLiteral("phone")));
+        }
+    }
+
+    // Big icons: Dolphin-style 12x5 flags at the icon's bottom-right, no ribbon.
+    void iconModeFlagsAtCorner()
+    {
+        if (!writeTagged({{QStringLiteral("phone"), {T("Red/Xiaomi")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::LargeIcons);
+        const QRect r = cell(QStringLiteral("phone"));
+        QRect box;
+        QTRY_VERIFY(!(box = painted(r, colour("Red/Xiaomi"))).isEmpty());
+        QVERIFY2(box.width() <= 12 && box.height() <= 5, qPrintable(QStringLiteral("%1x%2").arg(box.width()).arg(box.height())));
+        QVERIFY(box.left() > r.center().x());
+        QVERIFY(box.top() < r.top() + m_view->currentView()->iconSize().height() + 8);
+    }
+
+    // One slot per tag, as wide as the longest tag in the folder: every row's slots start at the same x.
+    void slotWidthIsLongestTag()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi"), T("Green/b")}}, {QStringLiteral("b"), {T("Gold/Go"), T("Green/b")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::Details);
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Red/Xiaomi", m_view->font()));
+        qobject_cast<QTreeView *>(m_view->currentView())->header()->resizeSection(TagsColumns::TagsColumn, 300);
+        const QRect a = cell(QStringLiteral("a"), TagsColumns::TagsColumn), b = cell(QStringLiteral("b"), TagsColumns::TagsColumn);
+        const QColor green = colour("Green/b");
+        QTRY_VERIFY(!painted(b, colour("Gold/Go")).isEmpty());
+        QCOMPARE(painted(b, colour("Gold/Go")).left(), painted(a, colour("Red/Xiaomi")).left());
+        QVERIFY(!painted(a, green).isEmpty());
+        QCOMPARE(painted(b, green).left(), painted(a, green).left());
+        QCOMPARE(painted(a, green).left() - painted(a, colour("Red/Xiaomi")).left(), m_view->tagSlotWidth() + TagRibbon::Gap);
+    }
+
+    void slotWidthRecomputedAfterInvalidate()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Gold/Go")}}, {QStringLiteral("b"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::Details);
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Gold/Go", m_view->font()));
+        QCOMPARE(TagStore().add({tagUrl(QStringLiteral("b"))}, T("Red/Xiaomi")), TagStore::Error::None);
+        m_view->model()->invalidateTags({tagUrl(QStringLiteral("b"))});
+        QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Red/Xiaomi", m_view->font()));
     }
 };
 

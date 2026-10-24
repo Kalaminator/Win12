@@ -42,6 +42,8 @@ public:
     void setNameFilter(const QString &); // case-insensitive substring
     QAbstractItemView *currentView() const;
     TagsColumns *model() const;
+    // Widest TagRibbon over every row's tags (one slot each, so ribbons line up); 0 when no tags. Cached, dirty on model changes.
+    int tagSlotWidth() const;
     // The delegate's text: the suffix of non-folders hidden when !showExtensions; dot-files keep their name.
     static QString displayName(const KFileItem &, bool showExtensions);
 
@@ -80,4 +82,6 @@ private:
     QList<QUrl> m_history; // NavHistory: at most 50 entries
     int m_historyIndex = -1;
     bool m_applying = false;
+    mutable int m_tagSlotWidth = 0;
+    mutable bool m_tagSlotDirty = true;
 };

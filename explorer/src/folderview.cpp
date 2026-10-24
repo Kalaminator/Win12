@@ -1,4 +1,5 @@
 #include "folderview.h"
+#include "tagribbon.h"
 #include <KDirLister>
 #include <KIO/CopyJob>
 #include <KIO/DropJob>
@@ -99,6 +100,11 @@ public:
             s = QStyledItemDelegate::sizeHint(option, index);
             if (hasGutter(index))
                 s.rwidth() += CheckSize + 4;
+            if (const int n = int(tagsOf(index).size())) {
+                s.setHeight(qMax(s.height(), TagRibbon::Height + 4));
+                if (mode == ViewMode::List)
+                    s.rwidth() += ribbonRoom(n);
+            }
         }
         s.rheight() += stripHeight(option, index);
         return s;
@@ -117,10 +123,28 @@ public:
         const QRect check = checkRect(opt.rect, index);
         if (hasGutter(index))
             opt.rect.setLeft(opt.rect.left() + CheckSize + 4);
-        if (m_settings->mode == ViewMode::Tiles || m_settings->mode == ViewMode::Content)
+        const ViewMode mode = m_settings->mode;
+        const int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, w) + 1; // the style's text margin
+        if (mode == ViewMode::Tiles || mode == ViewMode::Content) {
             paintRich(p, opt, style, index);
-        else
+        } else if (mode == ViewMode::Details) {
+            const bool tagsColumn = index.column() == TagsColumns::TagsColumn;
+            if (tagsColumn)
+                opt.text.clear(); // the ribbons replace the "Red/Xiaomi, ..." text
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            if (tagsColumn)
+                paintRibbons(p, opt.rect.left() + margin, opt.rect, opt.rect, tagsOf(index));
+        } else if (const QList<Tag> tags = tagsOf(index); tags.isEmpty()) {
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+        } else if (isIconMode(mode)) {
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            TagRibbon::paintFlags(p, style->subElementRect(QStyle::SE_ItemViewItemDecoration, &opt, w), tags);
+        } else { // List, Small icons: the name elided to leave the ribbons room, the ribbons right after it
+            const QRect text = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
+            opt.text = opt.fontMetrics.elidedText(opt.text, opt.textElideMode, qMax(0, text.width() - 2 * margin - ribbonRoom(int(tags.size()))));
+            style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
+            paintRibbons(p, text.left() + margin + opt.fontMetrics.horizontalAdvance(opt.text) + TagRibbon::Gap, opt.rect, opt.rect, tags);
+        }
         if (m_settings->checkBoxes && index.column() == 0 && (opt.state & (QStyle::State_MouseOver | QStyle::State_Selected))) {
             QStyleOptionButton cb;
             cb.rect = check;
@@ -180,6 +204,30 @@ protected:
     }
 
 private:
+    static QList<Tag> tagsOf(const QModelIndex &index) // served on the Tags column only
+    {
+        return index.siblingAtColumn(TagsColumns::TagsColumn).data(TagsColumns::TagsRole).value<QList<Tag>>();
+    }
+    // Room n ribbons take after a name: a gap and one slot each.
+    int ribbonRoom(int n) const
+    {
+        return n ? n * (TagRibbon::Gap + m_view->tagSlotWidth()) : 0;
+    }
+    // One tagSlotWidth() slot per tag from x, so every row's ribbons line up; centred on `line`, clipped to `clip`.
+    // Selected rows keep the tag colours: the white text stays readable on the highlight.
+    void paintRibbons(QPainter *p, int x, const QRect &line, const QRect &clip, const QList<Tag> &tags) const
+    {
+        const int slot = m_view->tagSlotWidth();
+        const QFontMetrics fm(TagRibbon::font(m_view->font()));
+        p->save();
+        p->setClipRect(clip, Qt::IntersectClip);
+        for (const Tag &t : tags) {
+            TagRibbon::paint(p, QRect(x, line.top(), slot, line.height()), t, fm);
+            x += slot + TagRibbon::Gap;
+        }
+        p->restore();
+    }
+
     int stripHeight(const QStyleOptionViewItem &o, const QModelIndex &index) const
     {
         return m_settings->groupRole != GroupRole::None && index.siblingAtColumn(0).data(FolderModel::GroupFirstRole).toBool()
@@ -239,16 +287,26 @@ private:
             p->setPen(c);
             p->drawText(box, Qt::AlignLeft | v, fm.elidedText(s, Qt::ElideRight, box.width()));
         };
+        const QList<Tag> tags = tagsOf(index);
+        // One line box: the name, elided to leave its ribbons room, then the ribbons (clipped to the box's columns).
+        const auto nameLine = [&](const QRect &box) {
+            const QString name = fm.elidedText(opt.text, Qt::ElideRight, qMax(0, box.width() - ribbonRoom(int(tags.size()))));
+            line(box, name, main, Qt::AlignVCenter);
+            if (!tags.isEmpty())
+                paintRibbons(p, box.left() + fm.horizontalAdvance(name) + TagRibbon::Gap, box,
+                             QRect(box.left(), opt.rect.top(), box.width(), opt.rect.height()), tags);
+        };
         p->save();
         if (m_settings->mode == ViewMode::Tiles) {
             const QStringList lines = size.isEmpty() ? QStringList{opt.text, type} : QStringList{opt.text, type, size};
             int y = text.top() + (text.height() - int(lines.size()) * lh) / 2;
-            for (int i = 0; i < lines.size(); ++i, y += lh)
-                line(QRect(text.left(), y, text.width(), lh), lines.at(i), i ? dim : main, Qt::AlignVCenter);
+            nameLine(QRect(text.left(), y, text.width(), lh));
+            for (int i = 1; i < lines.size(); ++i)
+                line(QRect(text.left(), y + i * lh, text.width(), lh), lines.at(i), dim, Qt::AlignVCenter);
         } else {
             const int third = text.width() / 3;
             const QRect name(text.left(), text.top(), third - 8, text.height() / 2);
-            line(name, opt.text, main, Qt::AlignBottom);
+            nameLine(QRect(name.left(), name.bottom() + 1 - lh, name.width(), lh));
             line(name.translated(0, name.height()), type, dim, Qt::AlignTop);
             const QString modified = QLocale().toString(item.time(KFileItem::ModificationTime), QLocale::ShortFormat);
             const QRect col(text.left() + third, text.top(), third - 8, text.height());
@@ -378,6 +436,19 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
         emitCounts();
     });
     connect(m_folderModel->lister(), &KCoreDirLister::listingDirCompleted, m_previews, &PreviewLoader::requestVisible);
+    // tagSlotWidth() rescans lazily, at most once per change, never per paint.
+    const auto tagsDirty = [this] {
+        m_tagSlotDirty = true;
+    };
+    connect(m_model, &QAbstractItemModel::modelReset, this, tagsDirty);
+    connect(m_model, &QAbstractItemModel::rowsInserted, this, tagsDirty);
+    connect(m_model, &QAbstractItemModel::rowsRemoved, this, tagsDirty);
+    connect(m_model, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &, const QModelIndex &, const QList<int> &roles) {
+        if (!roles.isEmpty() && !roles.contains(TagsColumns::TagsRole))
+            return; // previews and icons: no tag change
+        m_tagSlotDirty = true;
+        currentView()->viewport()->update(); // a new widest tag moves every row's slots, not only the changed row's
+    });
     apply(m_settings);
 }
 
@@ -503,6 +574,20 @@ void FolderView::apply(const ViewSettings &s)
     if (m_selection->currentIndex().isValid())
         currentView()->scrollTo(m_selection->currentIndex());
     currentView()->viewport()->update();
+}
+
+int FolderView::tagSlotWidth() const
+{
+    if (m_tagSlotDirty) {
+        // ponytail: one pass over all rows per change; TagsRole is cached per url, so only the first pass reads xattrs
+        const QFontMetrics fm(TagRibbon::font(font()));
+        m_tagSlotWidth = 0;
+        for (int r = 0; r < m_model->rowCount(); ++r)
+            for (const Tag &t : m_model->index(r, TagsColumns::TagsColumn).data(TagsColumns::TagsRole).value<QList<Tag>>())
+                m_tagSlotWidth = qMax(m_tagSlotWidth, TagRibbon::width(t, fm));
+        m_tagSlotDirty = false;
+    }
+    return m_tagSlotWidth;
 }
 
 void FolderView::applyColumns()
