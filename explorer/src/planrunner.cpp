@@ -8,6 +8,7 @@
 #include <KJobWidgets>
 #include <KLocalizedString>
 #include <QFileInfo>
+#include <QPointer>
 #include <QTimer>
 #include <memory>
 
@@ -71,7 +72,10 @@ void PlanRunner::start(const PlanStep &s)
         transfer(s);
         return;
     case PlanStep::Rename: {
+        QPointer<PlanRunner> self(this); // rename spins a nested event loop: the runner may be deleted inside it
         const QString error = ExplorerActions::rename(KFileItem(s.source), s.newName, m_window); // refuses existing targets
+        if (!self)
+            return;
         if (error.isEmpty() && s.newName != s.source.fileName()) {
             QUrl to = s.source.adjusted(QUrl::RemoveFilename);
             to.setPath(to.path() + s.newName);
@@ -125,6 +129,12 @@ void PlanRunner::transfer(const PlanStep &s)
         connect(job, &KJob::result, this, [this, s, dest](KJob *j) {
             if (!j->error() && dest->isValid()) // valid only when it really landed (not "Skip")
                 m_executed << Done{s.kind, s.source, *dest, {}};
+            if (j->error() == KIO::ERR_USER_CANCELED) { // "Cancel" in the conflict dialog = Stop, not a failed step
+                m_cancel = true;
+                ++m_index;
+                QTimer::singleShot(0, this, &PlanRunner::next);
+                return;
+            }
             stepDone(j->error() ? j->errorString() : QString());
         });
     };
@@ -182,9 +192,13 @@ void PlanRunner::undoNext()
         connect(job, &KJob::result, this, jobDone);
         return;
     }
-    case PlanStep::Rename:
-        undoDone(ExplorerActions::rename(KFileItem(d.to), d.from.fileName(), m_window));
+    case PlanStep::Rename: {
+        QPointer<PlanRunner> self(this); // nested event loop, see start()
+        const QString error = ExplorerActions::rename(KFileItem(d.to), d.from.fileName(), m_window);
+        if (self)
+            undoDone(error);
         return;
+    }
     case PlanStep::Tag:
     case PlanStep::Untag: {
         const TagStore::Error e = d.kind == PlanStep::Tag ? m_tags->remove({d.from}, d.tag) : m_tags->add({d.from}, d.tag);

@@ -182,6 +182,20 @@ private Q_SLOTS:
         QVERIFY(!QFile::exists(p(u"u/b2.txt"_s)));
         QVERIFY(TagStore::read(u(u"u/c.txt"_s)).isEmpty());
     }
+    void undoCopyTrashesTheCopy()
+    {
+        TagStore tags;
+        PlanRunner r(nullptr, &tags);
+        QSignalSpy fin(&r, &PlanRunner::finished);
+        QSignalSpy und(&r, &PlanRunner::undone);
+        r.run({to(PlanStep::Copy, file(u"uc/a.txt"_s), u(u"uc/out"_s))});
+        QTRY_COMPARE(fin.count(), 1);
+        QVERIFY(QFile::exists(p(u"uc/out/a.txt"_s)));
+        r.undo();
+        QTRY_COMPARE(und.count(), 1);
+        QVERIFY(!QFile::exists(p(u"uc/out/a.txt"_s)));
+        QVERIFY(QFile::exists(p(u"uc/a.txt"_s)));
+    }
     void undoNoteForTrash()
     {
         TagStore tags;
