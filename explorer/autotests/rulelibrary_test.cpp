@@ -47,7 +47,7 @@ private Q_SLOTS:
         QVERIFY(l.save({QStringLiteral("B"), QStringLiteral("=1"), K::Select}, nullptr));
         const QStringList keys = l.serviceActionKeys();
         QCOMPARE(keys, (QStringList{u"a-select-by-rule"_s, u"b-rename-many"_s, u"rule000"_s, u"rule001"_s}));
-        const KDesktopFile df(QFINDTESTDATA("../win12-servicemenu.desktop"));
+        const KDesktopFile df(QStringLiteral(SERVICEMENU_FILE));
         QVERIFY(!df.actions().isEmpty());
         for (const KDesktopFileAction &act : df.actions())
             QVERIFY2(keys.contains(act.actionsKey()), qPrintable(act.actionsKey()));
@@ -74,7 +74,7 @@ private Q_SLOTS:
     }
     void staticMenuSharesSubmenu()
     {
-        KDesktopFile f(QFINDTESTDATA("../win12-servicemenu.desktop"));
+        KDesktopFile f(QStringLiteral(SERVICEMENU_FILE));
         QCOMPARE(f.desktopGroup().readEntry("X-KDE-Submenu"), QString(RuleLibrary::kSubmenu));
         const QStringList a = f.readActions();
         QCOMPARE(a.size(), 2);

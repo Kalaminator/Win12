@@ -584,7 +584,7 @@ private Q_SLOTS:
         const QString win12 = servicesDir() + QStringLiteral("/win12-servicemenu.desktop");
         const QString other = servicesDir() + QStringLiteral("/other-app.desktop");
         removeTestServiceMenus();
-        QVERIFY(QFile::copy(QFINDTESTDATA("../win12-servicemenu.desktop"), win12));
+        QVERIFY(QFile::copy(QStringLiteral(SERVICEMENU_FILE), win12));
         writeFile(other, "[Desktop Entry]\nType=Service\nMimeType=all/allfiles;inode/directory;\nActions=zzz-other;\n\n"
                          "[Desktop Action zzz-other]\nName=Other app entry\nExec=true\n");
         const auto perms = QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::ReadGroup

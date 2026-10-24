@@ -36,6 +36,7 @@ target_link_libraries(win12-explorer win12explorer)
 function(explorer_add_test name)
     ecm_add_test(autotests/${name}.cpp TEST_NAME ${name} LINK_LIBRARIES win12explorer Qt6::Test)
     set_tests_properties(${name} PROPERTIES ENVIRONMENT QT_QPA_PLATFORM=offscreen)
+    target_compile_definitions(${name} PRIVATE SERVICEMENU_FILE="${CMAKE_CURRENT_SOURCE_DIR}/win12-servicemenu.desktop") # makepkg remaps __FILE__, so QFINDTESTDATA cannot find it
 endfunction()
 
 install(TARGETS win12-explorer ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
