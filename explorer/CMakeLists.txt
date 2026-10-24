@@ -74,6 +74,7 @@ explorer_add_test(taglist_test)
 explorer_add_test(managetagsdialog_test)
 explorer_add_test(fxlexer_test)
 explorer_add_test(fxparser_test)
+explorer_add_test(script_test)
 explorer_add_test(fxeval_test)
 explorer_add_test(formularun_test)
 ecm_add_test(autotests/overlayplugin_test.cpp overlay/win12tagsoverlay.cpp TEST_NAME overlayplugin_test

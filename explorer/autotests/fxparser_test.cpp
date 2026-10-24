@@ -214,6 +214,18 @@ private Q_SLOTS:
         QVERIFY(!script(u"LEFT(a, x:=1)"_s, &err));
         QVERIFY2(err.message.contains(u":="_s), qPrintable(err.message));
     }
+    void nestedTooDeeply()
+    {
+        QCOMPARE(formulaError(QString(300, u'(') + u'1' + QString(300, u')')).message, u"Formula is nested too deeply"_s);
+        QCOMPARE(formulaError(QString(300, u'-') + u'1').message, u"Formula is nested too deeply"_s);
+        QVERIFY(formula(QString(100, u'(') + u'1' + QString(100, u')')));
+    }
+    void filesNeedsAFolder()
+    {
+        FxParseError err;
+        QVERIFY(!script(u"Files(Subfolders:=True)"_s, &err));
+        QCOMPARE(err.message, u"Files needs a folder"_s);
+    }
     void functionTableHasAllSpecNames()
     {
         const QStringList spec = u"LEFT RIGHT MID LEN FIND SUBSTITUTE UPPER LOWER PROPER TRIM TEXT CONTAINS STARTSWITH ENDSWITH REGEX "

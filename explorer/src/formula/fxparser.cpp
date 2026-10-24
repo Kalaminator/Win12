@@ -87,6 +87,7 @@ struct Parser {
     int &pos;
     Mode mode;
     FxParseError *err;
+    int depth = 0; // nested unary() calls: every '(' , argument list and '-'/NOT goes through it
 
     const FxToken &at(int k) const
     {
@@ -155,7 +156,13 @@ struct Parser {
 
     FxExpr unary()
     {
+        struct Depth {
+            int &d;
+            ~Depth() { --d; }
+        } guard{++depth};
         const FxToken &tok = cur();
+        if (depth > 256) // a pasted "((((…" would otherwise overflow the stack
+            return fail(i18n("Formula is nested too deeply"), tok);
         const bool minus = tok.kind == FxToken::Op && tok.text == u"-"_s;
         const bool notWord = isWord(tok, u"NOT"_s) && at(pos + 1).kind != FxToken::LParen; // NOT(x) stays a call
         if (!minus && !notWord)
@@ -246,6 +253,8 @@ struct Parser {
         if (!arguments(n, upper == u"FILES"_s))
             return nullptr;
         const int count = int(n->args.size());
+        if (upper == u"FILES"_s && count && n->args[0]->kind == FxNode::Literal && n->args[0]->literal.type == FxValue::Type::Bool)
+            return fail(i18n("Files needs a folder"), nameTok); // Files(Subfolders:=True): the flag landed in args[0]
         if (upper == u"IFS"_s) {
             if (count < 2 || count % 2)
                 return fail(i18n("IFS takes an even number of arguments"), nameTok);
