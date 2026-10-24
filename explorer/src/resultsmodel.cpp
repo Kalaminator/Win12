@@ -2,7 +2,9 @@
 #include <KDirModel>
 #include <KIO/Global>
 #include <KLocalizedString>
+#include <KUrlMimeData>
 #include <QIcon>
+#include <QMimeData>
 
 void ResultsModel::clear()
 {
@@ -114,4 +116,30 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
         return i18ndc("kio6", "@title:column", "Type");
     }
     return {};
+}
+
+Qt::ItemFlags ResultsModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+    Qt::ItemFlags f = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+    if (index.column() == KDirModel::Name)
+        f |= Qt::ItemIsEditable;
+    return f;
+}
+
+QStringList ResultsModel::mimeTypes() const
+{
+    return KUrlMimeData::mimeDataTypes();
+}
+
+QMimeData *ResultsModel::mimeData(const QModelIndexList &indexes) const
+{
+    QList<QUrl> urls;
+    for (const QModelIndex &i : indexes)
+        if (i.isValid() && i.column() == KDirModel::Name)
+            urls << itemAt(i.row()).url();
+    auto *mime = new QMimeData;
+    KUrlMimeData::setUrls(urls, urls, mime);
+    return mime;
 }

@@ -1,6 +1,7 @@
 #include "resultsmodel.h"
 #include <KDirModel>
 #include <QSignalSpy>
+#include <QMimeData>
 #include <QTest>
 
 class ResultsModelTest : public QObject
@@ -35,6 +36,22 @@ private Q_SLOTS:
         m.clear();
         QCOMPARE(m.rowCount(), 0);
         QVERIFY(!m.indexForUrl(QUrl::fromLocalFile(QStringLiteral("/tmp/b"))).isValid());
+    }
+    void flagsAllowRenameAndDrag()
+    {
+        ResultsModel m;
+        m.append({item(QStringLiteral("/tmp/a"))});
+        QVERIFY(m.flags(m.index(0, 0)).testFlag(Qt::ItemIsEditable));
+        QVERIFY(m.flags(m.index(0, 0)).testFlag(Qt::ItemIsDragEnabled));
+        QVERIFY(!m.flags(m.index(0, KDirModel::Size)).testFlag(Qt::ItemIsEditable));
+        QVERIFY(m.flags(m.index(0, KDirModel::Size)).testFlag(Qt::ItemIsDragEnabled));
+    }
+    void mimeDataHasUrls()
+    {
+        ResultsModel m;
+        m.append({item(QStringLiteral("/tmp/a")), item(QStringLiteral("/tmp/b"))});
+        std::unique_ptr<QMimeData> d(m.mimeData({m.index(0, 0), m.index(0, 1), m.index(1, 0)}));
+        QCOMPARE(d->urls(), (QList<QUrl>{QUrl::fromLocalFile(QStringLiteral("/tmp/a")), QUrl::fromLocalFile(QStringLiteral("/tmp/b"))}));
     }
     void fileItemRoleRoundTrip()
     {

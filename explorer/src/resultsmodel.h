@@ -26,6 +26,10 @@ public:
     int columnCount(const QModelIndex &parent = {}) const override;
     QVariant data(const QModelIndex &, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
+    // Like KDirModel: every row drags, the Name column opens the editor (the window runs the KIO rename, not setData).
+    Qt::ItemFlags flags(const QModelIndex &) const override;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &) const override;
 
 private:
     std::vector<std::unique_ptr<KFileItem>> m_items;
