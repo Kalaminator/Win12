@@ -1,6 +1,7 @@
 #include "managetagsdialog.h"
 #include "tagregistry.h"
 #include "tagstore.h"
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QPushButton>
 #include <QSignalSpy>
@@ -83,6 +84,74 @@ private Q_SLOTS:
         QVERIFY(spy.wait(5000));
         QCOMPARE(tagsOf(a), QList<Tag>{T("Green/g")});
         QCOMPARE(reg.tags(), QList<Tag>{T("Green/g")});
+    }
+    void closeDisabledWhileRunning()
+    {
+        TagRegistry reg(cfg.filePath(QStringLiteral("r5.json")));
+        TagStore store;
+        reg.touch(T("Red/q"));
+        ManageTagsDialog d(&reg, &store, QUrl::fromLocalFile(dir.path()), nullptr);
+        d.setEngineForTests(TagSearch::Engine::Walk);
+        d.show();
+        QSignalSpy spy(&d, &ManageTagsDialog::applied);
+        d.applyTo(T("Red/q"), std::nullopt);
+        QVERIFY(!d.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Close)->isEnabled());
+        d.reject();
+        QVERIFY(d.isVisible());
+        QVERIFY(spy.wait(5000));
+        QVERIFY(d.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Close)->isEnabled());
+        d.reject();
+        QVERIFY(!d.isVisible());
+    }
+    void deleteAsksConfirmation()
+    {
+        TagRegistry reg(cfg.filePath(QStringLiteral("r6.json")));
+        TagStore store;
+        reg.touch(T("Red/c"));
+        ManageTagsDialog d(&reg, &store, QUrl::fromLocalFile(dir.path()), nullptr);
+        d.setEngineForTests(TagSearch::Engine::Walk);
+        bool ask = false, yes = false;
+        d.setConfirmDelete([&](const Tag &) { ask = true; return yes; });
+        auto *del = d.findChild<QPushButton *>(QStringLiteral("delete"));
+        del->click();
+        QVERIFY(ask);
+        QVERIFY(reg.contains(T("Red/c"))); // declined
+        yes = true;
+        QSignalSpy spy(&d, &ManageTagsDialog::applied);
+        del->click();
+        QVERIFY(spy.wait(5000));
+        QVERIFY(!reg.contains(T("Red/c")));
+    }
+    void renameOntoTagFileAlreadyHasMerges()
+    {
+        TagRegistry reg(cfg.filePath(QStringLiteral("r7.json")));
+        TagStore store;
+        reg.touch(T("Red/A"));
+        const QUrl a = file(QStringLiteral("m"));
+        store.add({a}, T("Red/A"));
+        store.add({a}, T("Blue/B"));
+        ManageTagsDialog d(&reg, &store, QUrl::fromLocalFile(dir.path()), nullptr);
+        d.setEngineForTests(TagSearch::Engine::Walk);
+        QSignalSpy spy(&d, &ManageTagsDialog::applied);
+        d.applyTo(T("Red/A"), T("Blue/B"));
+        QVERIFY(spy.wait(5000));
+        QCOMPARE(tagsOf(a), QList<Tag>{T("Blue/B")});
+    }
+    void tagsChangedOncePerBatch()
+    {
+        TagRegistry reg(cfg.filePath(QStringLiteral("r8.json")));
+        TagStore store;
+        reg.touch(T("Red/o"));
+        const QUrl a = file(QStringLiteral("o1")), b = file(QStringLiteral("o2"));
+        store.add({a, b}, T("Red/o"));
+        ManageTagsDialog d(&reg, &store, QUrl::fromLocalFile(dir.path()), nullptr);
+        d.setEngineForTests(TagSearch::Engine::Walk);
+        QSignalSpy changed(&store, &TagStore::tagsChanged);
+        QSignalSpy spy(&d, &ManageTagsDialog::applied);
+        d.applyTo(T("Red/o"), std::nullopt);
+        QVERIFY(spy.wait(5000));
+        QCOMPARE(changed.count(), 1);
+        QCOMPARE(changed.value(0).value(0).value<QList<QUrl>>().size(), 2);
     }
     void buttonsDisabledWhileRunning()
     {

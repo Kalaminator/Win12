@@ -3,6 +3,8 @@
 #include "tagribbon.h"
 #include "tagstore.h"
 #include <KLocalizedString>
+#include <KMessageBox>
+#include <QSignalBlocker>
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -33,7 +35,11 @@ ManageTagsDialog::ManageTagsDialog(TagRegistry *registry, TagStore *store, const
     auto *note = new QLabel(i18n("Changes apply to indexed locations and to %1 (with subfolders)", m_folder.isLocalFile() ? m_folder.toLocalFile() : m_folder.toDisplayString()), this);
     note->setWordWrap(true);
     auto *box = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    m_close = box->button(QDialogButtonBox::Close);
     connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    m_confirm = [this](const Tag &t) {
+        return KMessageBox::warningContinueCancel(this, i18n("Remove the tag \"%1\" from all files it is on?", t.display()), i18n("Delete tag"), KStandardGuiItem::del()) == KMessageBox::Continue;
+    };
     auto *buttons = new QVBoxLayout;
     buttons->addWidget(m_rename);
     buttons->addWidget(m_recolour);
@@ -54,26 +60,41 @@ ManageTagsDialog::ManageTagsDialog(TagRegistry *registry, TagStore *store, const
     connect(m_rename, &QPushButton::clicked, this, [this] { edit(true); });
     connect(m_recolour, &QPushButton::clicked, this, [this] { edit(false); });
     connect(m_delete, &QPushButton::clicked, this, [this] {
-        if (m_list->currentRow() >= 0)
+        if (m_list->currentRow() >= 0 && m_confirm(m_registry->tags().at(m_list->currentRow())))
             applyTo(m_registry->tags().at(m_list->currentRow()), std::nullopt);
     });
     for (TagSearch *s : {&m_walk, &m_baloo}) {
         connect(s, &TagSearch::found, this, [this](const KFileItemList &items) {
-            for (const KFileItem &i : items) {
-                if (m_done.contains(i.url()))
-                    continue;
-                m_done.insert(i.url());
-                const TagStore::Error e = m_to ? m_store->replace(i.url(), m_from, *m_to) : m_store->remove({i.url()}, m_from);
-                if (e != TagStore::Error::None) {
-                    m_failed = true;
-                    m_error = TagStore::errorText(e);
+            // ponytail: writes run on the UI thread, one batch (<= 200 files) per event-loop turn; worker thread if thousands of files carry the tag
+            QList<QUrl> changed;
+            {
+                QSignalBlocker block(m_store); // one tagsChanged per batch, not per file
+                for (const KFileItem &i : items) {
+                    if (m_done.contains(i.url()))
+                        continue;
+                    m_done.insert(i.url());
+                    const TagStore::Error e = m_to ? m_store->replace(i.url(), m_from, *m_to) : m_store->remove({i.url()}, m_from);
+                    if (e == TagStore::Error::None)
+                        changed << i.url();
+                    else {
+                        m_failed = true;
+                        m_error = TagStore::errorText(e);
+                    }
                 }
             }
+            if (!changed.isEmpty())
+                Q_EMIT m_store->tagsChanged(changed);
             m_status->setText(i18np("%1 file changed…", "%1 files changed…", m_done.size()));
         });
-        connect(s, &TagSearch::finished, this, [this](bool ok, const QString &error) { searchDone(ok, error); });
+        connect(s, &TagSearch::finished, this, [this, s](bool ok, const QString &error) { searchDone(ok, error, s == &m_walk); });
     }
     setBusy(false);
+}
+
+void ManageTagsDialog::reject()
+{
+    if (!m_pending)
+        QDialog::reject();
 }
 
 void ManageTagsDialog::fill()
@@ -93,6 +114,7 @@ void ManageTagsDialog::setBusy(bool busy)
     m_recolour->setEnabled(pick);
     m_delete->setEnabled(pick);
     m_list->setEnabled(!busy);
+    m_close->setEnabled(!busy);
 }
 
 void ManageTagsDialog::edit(bool word)
@@ -119,6 +141,7 @@ void ManageTagsDialog::applyTo(const Tag &from, const std::optional<Tag> &to)
     m_done.clear();
     m_failed = false;
     m_error.clear();
+    m_balooError.clear();
     setBusy(true);
     m_status->setText(i18n("Working…"));
     const QList<Tag> wanted{from};
@@ -131,11 +154,15 @@ void ManageTagsDialog::applyTo(const Tag &from, const std::optional<Tag> &to)
     }
 }
 
-void ManageTagsDialog::searchDone(bool ok, const QString &error)
+void ManageTagsDialog::searchDone(bool ok, const QString &error, bool isWalk)
 {
     if (!ok) {
-        m_failed = true;
-        m_error = error;
+        if (isWalk) {
+            m_failed = true;
+            m_error = error;
+        } else {
+            m_balooError = error; // a failed index search alone does not strand the registry
+        }
     }
     if (--m_pending > 0)
         return;
@@ -152,7 +179,10 @@ void ManageTagsDialog::searchDone(bool ok, const QString &error)
                 m_registry->recolour(cur, m_to->colour);
         }
     }
-    m_status->setText(m_failed ? i18n("Some files could not be changed: %1", m_error) : i18np("%1 file changed", "%1 files changed", m_done.size()));
+    QString text = m_failed ? i18n("Some files could not be changed: %1", m_error) : i18np("%1 file changed", "%1 files changed", m_done.size());
+    if (!m_balooError.isEmpty())
+        text += QLatin1Char(' ') + i18n("Indexed locations could not be searched: %1", m_balooError);
+    m_status->setText(text);
     setBusy(false);
     Q_EMIT applied(m_done.size());
 }
