@@ -553,6 +553,24 @@ private Q_SLOTS:
         std::sort(urls.begin(), urls.end());
         QCOMPARE(urls, (QList<QUrl>{tagUrl(QStringLiteral("a")), tagUrl(QStringLiteral("b"))}));
     }
+    void untaggedFirstRowHasNoHeaderStrip()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/x")}}, {QStringLiteral("b"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        groupByTag(GroupRole::TagName);
+        QAbstractItemView *v = m_view->currentView();
+        QStyleOptionViewItem o;
+        o.widget = v;
+        o.font = m_view->font();
+        o.fontMetrics = QFontMetrics(o.font);
+        const QModelIndex tagged = indexOf(QStringLiteral("a"));
+        const QModelIndex plain = indexOf(QStringLiteral("b"));
+        QVERIFY(tagged.isValid() && plain.isValid());
+        QVERIFY(tagged.data(FolderModel::GroupFirstRole).toBool());
+        QVERIFY(plain.data(FolderModel::GroupFirstRole).toBool());
+        QVERIFY(v->itemDelegate()->sizeHint(o, tagged).height() > v->itemDelegate()->sizeHint(o, plain).height());
+    }
     void groupByTagShowsHeaders()
     {
         if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi"), T("OrangeBright/Urgent")}}}))

@@ -67,7 +67,7 @@ static GroupInfo nameGroup(const KFileItem &item)
 QList<GroupInfo> tagGroups(const QList<Tag> &tags, GroupRole role)
 {
     if (tags.isEmpty())
-        return {{1000, i18n("No tag")}};
+        return {{1000, QString()}};
     QList<GroupInfo> out;
     for (const Tag &t : tags) {
         GroupInfo g;

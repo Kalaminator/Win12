@@ -115,6 +115,7 @@ private Q_SLOTS:
             const auto g = tagGroups({}, r);
             QCOMPARE(g.size(), 1);
             QCOMPARE(g.first().order, 1000);
+            QVERIFY(g.first().label.isEmpty());
             QVERIFY(g.first().order > TagColours::Count);
         }
     }

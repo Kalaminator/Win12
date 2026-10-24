@@ -80,7 +80,8 @@ private Q_SLOTS:
         TagGroupProxy p;
         p.setSourceModel(&src);
         p.setGroupRole(GroupRole::TagName);
-        QCOMPARE(labels(p), (QStringList{QStringLiteral("x:u2"), noTag() + QStringLiteral(":u1")}));
+        QVERIFY(noTag().isEmpty());
+        QCOMPARE(labels(p), (QStringList{QStringLiteral("x:u2"), QStringLiteral(":u1")}));
     }
     void tagColourMergesSameColour()
     {

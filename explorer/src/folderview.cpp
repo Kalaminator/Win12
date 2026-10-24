@@ -238,6 +238,8 @@ private:
 
     int stripHeight(const QStyleOptionViewItem &o, const QModelIndex &index) const
     {
+        if (index.data(FolderModel::GroupLabelRole).toString().isEmpty())
+            return 0;
         return m_settings->groupRole != GroupRole::None && index.siblingAtColumn(0).data(FolderModel::GroupFirstRole).toBool()
             ? o.fontMetrics.height() * 2
             : 0;
