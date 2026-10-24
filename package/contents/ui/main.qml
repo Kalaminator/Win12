@@ -307,7 +307,6 @@ ContainmentItem {
             root.userAccent = a.length >= 3 && a.every(n => n >= 0 && n <= 255) ? Qt.rgba(a[0] / 255, a[1] / 255, a[2] / 255, 1) : "";
             root.syncWindowDeco();
             root.syncExplorerDefault();
-            root.syncExplorerTagFlags();
             root.syncWindowColors();
         }
     }
@@ -601,7 +600,7 @@ ContainmentItem {
         if (!configReady || isMirror) return;
         explorerDefaultRunner.connectSource("win12-explorer-default " + (cfg.explorerDefault ? "on" : "off"));
     }
-    // Dolphin overlay plugin and Win12 Explorer read this key; written on every start too, like the default.
+    // Dolphin overlay plugin and Win12 Explorer read this key; written only when the switch changes, never at start.
     P5Support.DataSource {
         id: explorerTagFlagsRunner
         engine: "executable"
@@ -610,7 +609,7 @@ ContainmentItem {
     }
     function syncExplorerTagFlags() {
         if (!configReady || isMirror) return;
-        explorerTagFlagsRunner.connectSource("kwriteconfig6 --file win12-explorerrc --group Tags --key showFlags " + (cfg.explorerTagFlags ? "true" : "false"));
+        explorerTagFlagsRunner.connectSource("kwriteconfig6 --file win12-explorerrc --group Tags --key showFlags --notify " + (cfg.explorerTagFlags ? "true" : "false"));
     }
     function syncExplorerLauncher(on) {
         const from = on ? "applications:org.kde.dolphin.desktop" : "applications:org.win12.explorer.desktop";
