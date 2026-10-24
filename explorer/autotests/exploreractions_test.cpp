@@ -18,6 +18,9 @@
 #include <KIO/FileUndoManager>
 #include "renamemanydialog.h"
 #include "newtagdialog.h"
+#include "tagpicker.h"
+#include <QWidgetAction>
+#include <QLabel>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QLineEdit>
@@ -129,16 +132,53 @@ private Q_SLOTS:
         a.addTag({KFileItem(u)}, T("Red/old")); // touches Red/old again: now most recent
         std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
         const QList<QAction *> acts = m->actions();
-        QCOMPARE(acts[0]->text(), QStringLiteral("old"));
-        QCOMPARE(acts[1]->text(), QStringLiteral("new"));
-        QVERIFY(acts[0]->isCheckable() && acts[0]->isChecked());
-        QVERIFY(!acts[1]->isChecked());
-        QVERIFY(acts[2]->isSeparator());
-        QCOMPARE(acts.size(), 5); // New tag…, Manage tags…
-        acts[1]->trigger(); // toggles on
+        QVERIFY(acts[0]->isSeparator());
+        QCOMPARE(acts[0]->text(), QStringLiteral("Your tags"));
+        QCOMPARE(acts[1]->text(), QStringLiteral("old"));
+        QCOMPARE(acts[2]->text(), QStringLiteral("new"));
+        QVERIFY(acts[1]->isCheckable() && acts[1]->isChecked());
+        QVERIFY(!acts[2]->isChecked());
+        QVERIFY(acts[3]->isSeparator());
+        QCOMPARE(acts[3]->text(), QStringLiteral("New tag"));
+        QVERIFY(qobject_cast<QWidgetAction *>(acts[4]));
+        QCOMPARE(acts.size(), 6); // + Manage tags…
+        acts[2]->trigger(); // toggles on
         QCOMPARE(TagStore::read(u).size(), 2);
-        acts[0]->trigger(); // toggles off
+        acts[1]->trigger(); // toggles off
         QCOMPARE(TagStore::read(u), QList<Tag>{T("Gold/new")});
+    }
+    void tagsMenuPanelAddsTagOnColourClick()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        clearRegistry(a);
+        const QUrl u = tagFile(QStringLiteral("panel"));
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
+        TagPicker *picker = nullptr;
+        for (QAction *act : m->actions())
+            if (auto *wa = qobject_cast<QWidgetAction *>(act))
+                picker = wa->defaultWidget()->findChild<TagPicker *>();
+        QVERIFY(picker);
+        QTest::keyClicks(picker->wordEdit(), QStringLiteral("w"));
+        picker->colourButton(3)->click();
+        QCOMPARE(TagStore::read(u), QList<Tag>({Tag{3, QStringLiteral("w")}}));
+        QVERIFY(a.registry().contains(Tag{3, QStringLiteral("w")}));
+    }
+    void tagsMenuHasNoNewTagDialogEntry()
+    {
+        if (tagsUnsupported())
+            QSKIP("xattr tags not supported here");
+        ExplorerActions a(nullptr);
+        std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(tagFile(QStringLiteral("nodlg")))}));
+        for (QAction *act : m->actions())
+            QVERIFY(!act->text().startsWith(QStringLiteral("New tag…")));
+    }
+    void tagPickerRejectsCommaAndSlash()
+    {
+        TagPicker p;
+        QTest::keyClicks(p.wordEdit(), QStringLiteral("a,b/c\"") );
+        QCOMPARE(p.wordEdit()->text(), QStringLiteral("abc"));
     }
     void tagsMenuOnUnsupportedDriveIsOneDisabledEntry()
     {
@@ -160,17 +200,20 @@ private Q_SLOTS:
             a.addTag({KFileItem(u)}, T(t));
         std::unique_ptr<QMenu> m(a.tagsMenu({KFileItem(u)}));
         int enabledChecked = 0, disabledUnchecked = 0;
-        QAction *newTag = nullptr;
+        TagPicker *picker = nullptr;
+        QLabel *label = nullptr;
         for (QAction *act : m->actions()) {
             if (act->isCheckable())
                 (act->isChecked() ? enabledChecked : disabledUnchecked) += act->isEnabled() == act->isChecked();
-            if (act->text().startsWith(QLatin1String("New tag")))
-                newTag = act;
+            if (auto *wa = qobject_cast<QWidgetAction *>(act)) {
+                picker = wa->defaultWidget()->findChild<TagPicker *>();
+                label = wa->defaultWidget()->findChild<QLabel *>();
+            }
         }
         QCOMPARE(enabledChecked, 3);
         QCOMPARE(disabledUnchecked, 1);
-        QVERIFY(newTag && !newTag->isEnabled());
-        QVERIFY(newTag->text().contains(QLatin1String("max 3 tags")));
+        QVERIFY(picker && !picker->isEnabled());
+        QVERIFY(label && label->text() == QStringLiteral("max 3 tags"));
     }
     void removeMenuUnsupportedSaysSo()
     {
@@ -246,15 +289,6 @@ private Q_SLOTS:
         d.setTag(T("Red/w"));
         QVERIFY(ok->isEnabled());
         QCOMPARE(d.tag(), T("Red/w"));
-    }
-    void newTagDialogRejectsCommaAndSlash()
-    {
-        // user.xdg.tags is a comma list and '/' splits colour from word: neither may reach a word
-        NewTagDialog d(nullptr);
-        d.setTag(T("Red/"));
-        auto *edit = d.findChild<QLineEdit *>();
-        QTest::keyClicks(edit, QStringLiteral("a,b/c"));
-        QCOMPARE(d.tag(), T("Red/abc"));
     }
     void everySpecIdHasAnAction()
     {

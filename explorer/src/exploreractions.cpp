@@ -5,6 +5,13 @@
 #include "ribbonspec.h"
 #include "selectbyruledialog.h"
 #include "tagribbon.h"
+#include "tagpicker.h"
+#include <QApplication>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTimer>
+#include <QWidgetAction>
 #include <KSharedConfig>
 #include <KConfigGroup>
 #include <QPainter>
@@ -958,6 +965,8 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
         full = full && win12TagCount(have.last()) >= MaxTags;
     }
     const QList<Tag> known = m_registry.tags();
+    if (!known.isEmpty())
+        menu->addSection(i18n("Your tags"));
     for (const Tag &t : known.mid(0, 8)) {
         QAction *a = menu->addAction(TagRibbon::icon(t), t.display());
         a->setCheckable(true);
@@ -973,12 +982,24 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
                 removeTag(items, t);
         });
     }
-    menu->addSeparator();
-    QAction *newTagAction = menu->addAction(QIcon::fromTheme(QStringLiteral("tag-new")), i18n("New tag…"), this, [this, items] { newTag(items); });
+    menu->addSection(i18n("New tag"));
+    auto *host = new QWidget(menu);
+    auto *row = new QHBoxLayout(host);
+    auto *picker = new TagPicker(host);
+    row->addWidget(picker);
     if (full) {
-        newTagAction->setEnabled(false);
-        newTagAction->setText(i18n("New tag… (max 3 tags)"));
+        picker->setEnabled(false);
+        row->addWidget(new QLabel(i18n("max 3 tags"), host));
     }
+    connect(picker, &TagPicker::colourPicked, this, [this, items](const Tag &t) {
+        addTag(items, t);
+        while (auto *p = qobject_cast<QMenu *>(QApplication::activePopupWidget()))
+            p->hide();
+    });
+    connect(menu, &QMenu::aboutToShow, picker, [w = picker->wordEdit()] { QTimer::singleShot(0, w, qOverload<>(&QWidget::setFocus)); });
+    auto *wa = new QWidgetAction(menu);
+    wa->setDefaultWidget(host);
+    menu->addAction(wa);
     menu->addAction(QIcon::fromTheme(QStringLiteral("tag-properties")), i18n("Manage tags…"), this, [this] { Q_EMIT manageTagsRequested(); });
 }
 
