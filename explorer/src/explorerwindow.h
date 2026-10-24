@@ -12,6 +12,7 @@
 class ExplorerActions;
 class KFilePlacesView;
 class KUrlNavigator;
+class TagList;
 class QAction;
 class QLabel;
 class QLineEdit;
@@ -117,6 +118,9 @@ private:
     QTabBar *m_tabs;
     QStackedWidget *m_stack;
     KFilePlacesView *m_places;
+    TagList *m_tagList;
+    QLabel *m_resultsTitle;
+    QAction *m_resultsTitleAction;
     SidePane *m_side;
     QLabel *m_statusText;
     QToolButton *m_detailsButton;

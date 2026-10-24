@@ -1,9 +1,13 @@
 #include "explorerwindow.h"
 #include "folderview.h"
+#include "tagregistry.h"
+#include "taglist.h"
+#include "tagstore.h"
 #include <QAbstractItemView>
 #include <QAction>
 #include <QFile>
 #include <QLabel>
+#include <QListWidget>
 #include <QLineEdit>
 #include <QStatusBar>
 #include <QSignalSpy>
@@ -30,6 +34,33 @@ private Q_SLOTS:
     void initTestCase()
     {
         QStandardPaths::setTestModeEnabled(true);
+    }
+
+    void tagPickShowsResultsAndNavigationClears()
+    {
+        QTemporaryDir tree(QDir::homePath() + QStringLiteral("/.cache/tagpick-XXXXXX"));
+        if (!tree.isValid() || !TagStore::supported(QUrl::fromLocalFile(tree.path())))
+            QSKIP("xattr tags not supported here");
+        QFile f(tree.filePath(QStringLiteral("a.txt")));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.close();
+        const Tag tag = Tag::decode(QStringLiteral("Red/pick"));
+        TagStore s;
+        QCOMPARE(s.add({QUrl::fromLocalFile(f.fileName())}, tag), TagStore::Error::None);
+        TagRegistry().touch(tag); // test-mode tags.json, read by the window's own registry
+        auto *w = new ExplorerWindow({QUrl::fromLocalFile(tree.path())});
+        w->show();
+        w->activateWindow();
+        auto *list = w->findChild<TagList *>();
+        QVERIFY(list);
+        auto *lw = list->findChild<QListWidget *>();
+        QTRY_VERIFY(!list->isHidden());
+        QTest::mouseClick(lw->viewport(), Qt::LeftButton, {}, lw->visualItemRect(lw->item(0)).center());
+        QVERIFY(w->activeView()->showingResults());
+        w->openTab(QUrl::fromLocalFile(m_dir.path()), true);
+        QVERIFY(!w->activeView()->showingResults());
+        QVERIFY(list->picked().isEmpty());
+        delete w;
     }
 
     void fileKeysIgnoreTheSearchBox()

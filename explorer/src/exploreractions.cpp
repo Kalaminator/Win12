@@ -164,16 +164,6 @@ bool showFlagsConfigured()
     return KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).readEntry("showFlags", true);
 }
 
-// The tag ribbon itself as a menu icon.
-QIcon ribbonIcon(const Tag &t)
-{
-    const QFontMetrics fm(TagRibbon::font(QApplication::font()));
-    QPixmap px(TagRibbon::width(t, fm), TagRibbon::Height);
-    px.fill(Qt::transparent);
-    QPainter p(&px);
-    TagRibbon::paint(&p, px.rect(), t, fm);
-    return QIcon(px);
-}
 }
 
 QAction *ExplorerActions::action(const QString &id) const
@@ -858,7 +848,7 @@ void ExplorerActions::fillTagsMenu(QMenu *menu, const KFileItemList &items)
     }
     const QList<Tag> known = m_registry.tags();
     for (const Tag &t : known.mid(0, 8)) {
-        QAction *a = menu->addAction(ribbonIcon(t), t.display());
+        QAction *a = menu->addAction(TagRibbon::icon(t), t.display());
         a->setCheckable(true);
         a->setChecked(std::all_of(have.begin(), have.end(), [&](const QList<Tag> &h) { return h.contains(t); }));
         if (full && !a->isChecked()) {
@@ -894,7 +884,7 @@ void ExplorerActions::fillRemoveMenu(QMenu *menu, const KFileItemList &items)
             if (t.colour >= 0 && !present.contains(t))
                 present << t;
     for (const Tag &t : present)
-        menu->addAction(ribbonIcon(t), t.display(), this, [this, items, t] { removeTag(items, t); });
+        menu->addAction(TagRibbon::icon(t), t.display(), this, [this, items, t] { removeTag(items, t); });
     if (present.isEmpty())
         return;
     menu->addSeparator();

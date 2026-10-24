@@ -1,8 +1,21 @@
 #include "tagribbon.h"
+#include <QGuiApplication>
 #include <QPainter>
+#include <QPixmap>
 #include <QPolygonF>
 
 namespace TagRibbon {
+
+QIcon icon(const Tag &t)
+{
+    const QFontMetrics fm(font(QGuiApplication::font()));
+    QPixmap px(width(t, fm), Height);
+    px.fill(Qt::transparent);
+    QPainter p(&px);
+    paint(&p, px.rect(), t, fm);
+    p.end();
+    return QIcon(px);
+}
 
 QFont font(const QFont &base)
 {
