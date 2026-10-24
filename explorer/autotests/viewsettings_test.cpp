@@ -57,6 +57,15 @@ private Q_SLOTS:
         st.save(QUrl(u"file:///tmp/a"_s), s);
         QCOMPARE(st.load(QUrl(u"file:///tmp/b"_s)), s);
     }
+    void groupRoleTagRoundTrip()
+    {
+        QCOMPARE(int(GroupRole::Size), 4);
+        ViewSettingsStore st(cfg());
+        ViewSettings s;
+        s.groupRole = GroupRole::TagColour;
+        st.save(QUrl(u"file:///tmp/a"_s), s);
+        QCOMPARE(st.load(QUrl(u"file:///tmp/a"_s)).groupRole, GroupRole::TagColour);
+    }
     void perFolderRoundTrip()
     {
         ViewSettingsStore st(cfg());

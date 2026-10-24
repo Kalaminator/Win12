@@ -6,7 +6,7 @@
 
 enum class ViewMode { ExtraLargeIcons, LargeIcons, MediumIcons, SmallIcons, List, Details, Tiles, Content };
 enum class SortRole { Name, Modified, Type, Size };
-enum class GroupRole { None, Name, Modified, Type, Size };
+enum class GroupRole { None, Name, Modified, Type, Size, TagName, TagColour };
 
 struct ViewSettings {
     ViewMode mode = ViewMode::Details;
