@@ -507,6 +507,23 @@ private Q_SLOTS:
         QCOMPARE(m_view->selectedCount(), 2);
         QCOMPARE(m_view->itemsInViewOrder(false).size(), 2);
     }
+    // Tagging regroups (a model reset); the selected files stay selected.
+    void groupByTagKeepsSelectionWhenTagging()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi")}}, {QStringLiteral("b"), {}}, {QStringLiteral("c"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        groupByTag(GroupRole::TagName);
+        m_view->selectUrls({tagUrl(QStringLiteral("a")), tagUrl(QStringLiteral("b"))});
+        QCOMPARE(m_view->selectedCount(), 2);
+        QCOMPARE(TagStore().add({tagUrl(QStringLiteral("b"))}, T("Gold/Go")), TagStore::Error::None);
+        m_view->model()->invalidateTags({tagUrl(QStringLiteral("b"))});
+        QList<QUrl> urls;
+        for (const KFileItem &i : m_view->selectedItems())
+            urls << i.url();
+        std::sort(urls.begin(), urls.end());
+        QCOMPARE(urls, (QList<QUrl>{tagUrl(QStringLiteral("a")), tagUrl(QStringLiteral("b"))}));
+    }
     void groupByTagShowsHeaders()
     {
         if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi"), T("OrangeBright/Urgent")}}}))

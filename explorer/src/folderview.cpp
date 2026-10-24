@@ -387,6 +387,15 @@ FolderView::FolderView(ViewSettingsStore *store, QWidget *parent)
     }
     m_selection = m_list->selectionModel();
     m_tree->setSelectionModel(m_selection);
+    connect(m_model->groupProxy(), &QAbstractItemModel::modelAboutToBeReset, this, [this] {
+        m_keptSelection.clear();
+        for (const KFileItem &i : selectedItems())
+            m_keptSelection << i.url();
+    });
+    connect(m_model->groupProxy(), &QAbstractItemModel::modelReset, this, [this] {
+        if (!m_keptSelection.isEmpty())
+            selectUrls(std::exchange(m_keptSelection, {}));
+    });
     m_list->setSelectionRectVisible(true);
     m_list->setLayoutMode(QListView::Batched);
     m_tree->setRootIsDecorated(false);

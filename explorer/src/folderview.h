@@ -92,6 +92,7 @@ private:
     ViewSettings m_settings;
     QUrl m_url;
     QList<QUrl> m_history; // NavHistory: at most 50 entries
+    QList<QUrl> m_keptSelection; // selected urls across a TagGroupProxy reset (tag grouping regroups on every tag change)
     int m_historyIndex = -1;
     bool m_applying = false;
     mutable int m_tagSlotWidth = 0;
