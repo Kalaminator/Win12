@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QPixmap>
 #include <QPushButton>
+#include <QRegularExpressionValidator>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -19,6 +20,8 @@ NewTagDialog::NewTagDialog(QWidget *parent)
     auto *box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     box->button(QDialogButtonBox::Ok)->setEnabled(false);
     m_word->setPlaceholderText(i18n("Tag name (optional)"));
+    // user.xdg.tags is a comma list and '/' splits colour from word, so neither can be typed
+    m_word->setValidator(new QRegularExpressionValidator(QRegularExpression(QStringLiteral("[^,/]*")), m_word));
 
     auto *grid = new QGridLayout;
     grid->setSpacing(4);

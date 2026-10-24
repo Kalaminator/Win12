@@ -19,6 +19,7 @@
 #include "newtagdialog.h"
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QLineEdit>
 #include <memory>
 #include "tagstore.h"
 #include <KFileMetaData/UserMetaData>
@@ -226,6 +227,15 @@ private Q_SLOTS:
         d.setTag(T("Red/w"));
         QVERIFY(ok->isEnabled());
         QCOMPARE(d.tag(), T("Red/w"));
+    }
+    void newTagDialogRejectsCommaAndSlash()
+    {
+        // user.xdg.tags is a comma list and '/' splits colour from word: neither may reach a word
+        NewTagDialog d(nullptr);
+        d.setTag(T("Red/"));
+        auto *edit = d.findChild<QLineEdit *>();
+        QTest::keyClicks(edit, QStringLiteral("a,b/c"));
+        QCOMPARE(d.tag(), T("Red/abc"));
     }
     void everySpecIdHasAnAction()
     {
