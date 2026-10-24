@@ -282,7 +282,8 @@ void ExplorerActions::buildViewMenus()
     QMenu *group = action(QStringLiteral("view_group"))->menu();
     const QList<std::pair<QString, GroupRole>> groupRoles = {{i18n("(None)"), GroupRole::None}, {i18n("Name"), GroupRole::Name},
                                                              {i18n("Date modified"), GroupRole::Modified}, {i18n("Type"), GroupRole::Type},
-                                                             {i18n("Size"), GroupRole::Size}};
+                                                             {i18n("Size"), GroupRole::Size},     {i18n("Tag name"), GroupRole::TagName},
+                                                             {i18n("Tag colour"), GroupRole::TagColour}};
     auto *groupGroup = new QActionGroup(group);
     for (const auto &[text, role] : groupRoles) {
         QAction *a = group->addAction(text);

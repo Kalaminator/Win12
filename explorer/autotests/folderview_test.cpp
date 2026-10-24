@@ -273,7 +273,7 @@ private Q_SLOTS:
         m_view->applySettings(s);
         m_view->selectUrls({fileUrl(QStringLiteral("a.txt"))});
         QAbstractItemView *v = m_view->currentView();
-        const QModelIndex b = m_view->model()->mapFromSource(m_view->model()->folderModel()->indexFor(fileUrl(QStringLiteral("b.txt"))));
+        const QModelIndex b = m_view->model()->indexFor(fileUrl(QStringLiteral("b.txt")));
         const QRect r = v->visualRect(b);
         QTest::mouseClick(v->viewport(), Qt::LeftButton, {}, QPoint(r.left() + 10, r.center().y()));
         QCOMPARE(m_view->selectedCount(), 2);
@@ -299,7 +299,7 @@ private Q_SLOTS:
         QSignalSpy spy(m_view.get(), &FolderView::folderMiddleClicked);
         const QUrl sub = fileUrl(QStringLiteral("sub"));
         QAbstractItemView *v = m_view->currentView();
-        const QRect r = v->visualRect(m_view->model()->mapFromSource(m_view->model()->folderModel()->indexFor(sub)));
+        const QRect r = v->visualRect(m_view->model()->indexFor(sub));
         QTest::mouseClick(v->viewport(), Qt::MiddleButton, {}, r.center());
         QCOMPARE(spy.count(), 1);
         QCOMPARE(spy.at(0).at(0).toUrl(), sub);
@@ -484,6 +484,43 @@ private Q_SLOTS:
         QTRY_VERIFY(!painted(cell(QStringLiteral("b"), TagsColumns::TagsColumn), colour("Gold/Go")).isEmpty());
         QVERIFY(painted(cell(QStringLiteral("a"), TagsColumns::TagsColumn), colour("Gold/Go")).isEmpty());
         QCOMPARE(m_view->tagSlotWidth(), ribbonWidth("Gold/Go", m_view->font()));
+    }
+
+    void groupByTag(GroupRole role)
+    {
+        ViewSettings s = m_view->settings();
+        s.groupRole = role;
+        m_view->applySettings(s);
+    }
+    // A file with two tags shows twice under Group by tag name; selecting everything still yields each file once.
+    void selectedItemsDedupeDuplicates()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi"), T("OrangeBright/Urgent")}}, {QStringLiteral("b"), {}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        groupByTag(GroupRole::TagName);
+        QCOMPARE(m_view->model()->rowCount(), 3);
+        QCOMPARE(m_view->itemCount(), 2);
+        m_view->selectAll();
+        QCOMPARE(m_view->selectedItems().size(), 2);
+        QCOMPARE(m_view->selectedCount(), 2);
+        QCOMPARE(m_view->itemsInViewOrder(false).size(), 2);
+    }
+    void groupByTagShowsHeaders()
+    {
+        if (!writeTagged({{QStringLiteral("a"), {T("Red/Xiaomi"), T("OrangeBright/Urgent")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        groupByTag(GroupRole::TagName);
+        TagsColumns *m = m_view->model();
+        int firsts = 0;
+        for (int r = 0; r < m->rowCount(); ++r)
+            firsts += m->index(r, 0).data(FolderModel::GroupFirstRole).toBool();
+        QCOMPARE(firsts, 2);
+        QCOMPARE(m->folderModel()->groupRole(), GroupRole::None); // the proxy groups, FolderModel only sorts
+        groupByTag(GroupRole::Name);
+        QCOMPARE(m->rowCount(), 1);
+        QCOMPARE(m->folderModel()->groupRole(), GroupRole::Name);
     }
 };
 

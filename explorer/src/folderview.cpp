@@ -1,5 +1,6 @@
 #include "folderview.h"
 #include "tagribbon.h"
+#include "taggroupproxy.h"
 #include <KDirLister>
 #include <KIO/CopyJob>
 #include <KIO/DropJob>
@@ -18,6 +19,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScopedValueRollback>
+#include <QSet>
 #include <QStackedWidget>
 #include <QStyledItemDelegate>
 #include <QTimer>
@@ -543,8 +545,11 @@ void FolderView::apply(const ViewSettings &s)
         lister->setShowHiddenFiles(s.hiddenFiles);
         lister->emitChanges();
     }
-    if (m_folderModel->groupRole() != s.groupRole)
-        m_folderModel->setGroupRole(s.groupRole);
+    // Tag groups put a file in several groups: TagGroupProxy groups, FolderModel only sorts.
+    const bool byTag = s.groupRole == GroupRole::TagName || s.groupRole == GroupRole::TagColour;
+    if (m_folderModel->groupRole() != (byTag ? GroupRole::None : s.groupRole))
+        m_folderModel->setGroupRole(byTag ? GroupRole::None : s.groupRole);
+    m_model->groupProxy()->setGroupRole(s.groupRole);
     const int sortColumn = SortGroup::sortColumnFor(s.sortRole);
     if (m_folderModel->sortColumn() != sortColumn || m_folderModel->sortOrder() != s.sortOrder)
         m_folderModel->setSorting(s.sortRole, s.sortOrder);
@@ -631,19 +636,31 @@ void FolderView::zoom(int steps)
 KFileItemList FolderView::selectedItems() const
 {
     KFileItemList items;
+    QSet<QUrl> seen; // grouped by tag, one file can fill several rows
     const QModelIndexList rows = m_selection->selectedRows();
-    for (const QModelIndex &index : rows)
-        items << m_model->itemFor(index);
+    for (const QModelIndex &index : rows) {
+        const KFileItem item = m_model->itemFor(index);
+        if (!seen.contains(item.url())) {
+            seen.insert(item.url());
+            items << item;
+        }
+    }
     return items;
 }
 
 KFileItemList FolderView::itemsInViewOrder(bool selectedOnly) const
 {
     KFileItemList items;
+    QSet<QUrl> seen;
     const QAbstractItemModel *model = currentView()->model();
     for (int r = 0; r < model->rowCount(); ++r)
-        if (!selectedOnly || m_selection->isRowSelected(r))
-            items << m_model->itemFor(model->index(r, 0));
+        if (!selectedOnly || m_selection->isRowSelected(r)) {
+            const KFileItem item = m_model->itemFor(model->index(r, 0));
+            if (!seen.contains(item.url())) {
+                seen.insert(item.url());
+                items << item;
+            }
+        }
     return items;
 }
 
@@ -655,12 +672,12 @@ KFileItem FolderView::currentItem() const
 
 int FolderView::itemCount() const
 {
-    return m_model->rowCount();
+    return m_folderModel->rowCount(); // files, not view rows
 }
 
 int FolderView::selectedCount() const
 {
-    return int(m_selection->selectedRows().size());
+    return int(selectedItems().size());
 }
 
 void FolderView::selectAll()
@@ -689,7 +706,7 @@ void FolderView::selectUrls(const QList<QUrl> &urls)
     QItemSelection selection;
     QModelIndex first;
     for (const QUrl &url : urls) {
-        const QModelIndex index = m_model->mapFromSource(m_folderModel->indexFor(url));
+        const QModelIndex index = m_model->indexFor(url);
         if (!index.isValid())
             continue;
         selection.select(index, index);

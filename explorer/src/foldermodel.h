@@ -14,6 +14,7 @@
 
 class KDirLister;
 class QAbstractItemView;
+class TagGroupProxy;
 namespace KIO { class PreviewJob; }
 class PreviewLoader;
 
@@ -60,15 +61,14 @@ class TagsColumns : public KExtraColumnsProxyModel
 public:
     static constexpr int TagsColumn = KDirModel::ColumnCount; // 7
     static constexpr int TagsRole = Qt::UserRole + 101; // QList<Tag>
-    explicit TagsColumns(FolderModel *source, QObject *parent = nullptr);
+    explicit TagsColumns(FolderModel *source, QObject *parent = nullptr); // chain: source -> TagGroupProxy -> this
     FolderModel *folderModel() const;
-    KFileItem itemFor(const QModelIndex &) const; // maps through both proxies
+    TagGroupProxy *groupProxy() const; // also holds the tag cache
+    KFileItem itemFor(const QModelIndex &) const; // maps through all three proxies
+    QModelIndex indexFor(const QUrl &) const; // column 0 of the url's first row
     QVariant extraColumnData(const QModelIndex &parent, int row, int extraColumn, int role) const override;
     QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override; // columnTitle()
-    void invalidateTags(const QList<QUrl> &); // drops the cached tags, repaints column 0 and the Tags column of those rows
-
-private:
-    mutable QHash<QUrl, QList<Tag>> m_cache;
+    void invalidateTags(const QList<QUrl> &); // drops the cached tags, repaints column 0 and the Tags column of those rows (regroups in tag mode)
 };
 
 class PreviewLoader : public QObject
@@ -91,7 +91,6 @@ private:
     void stop();
     void clearCache();
 
-    FolderModel *m_model;
     QPointer<QAbstractItemView> m_view;
     bool m_enabled = false;
     int m_size = 48;

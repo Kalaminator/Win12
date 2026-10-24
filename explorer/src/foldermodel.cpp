@@ -1,5 +1,5 @@
 #include "foldermodel.h"
-#include "tagstore.h"
+#include "taggroupproxy.h"
 #include <KDirLister>
 #include <KIO/PreviewJob>
 #include <KLocalizedString>
@@ -174,26 +174,30 @@ TagsColumns::TagsColumns(FolderModel *source, QObject *parent)
     : KExtraColumnsProxyModel(parent)
 {
     appendColumn(i18n("Tags"));
-    setSourceModel(source);
-    auto clear = [this] { m_cache.clear(); };
-    connect(source, &QAbstractItemModel::modelReset, this, clear);
-    connect(source, &QAbstractItemModel::rowsRemoved, this, clear);
-    // KDirModel emits dataChanged for every icon/preview/mimetype update: drop only those rows.
-    connect(source, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &tl, const QModelIndex &br) {
-        for (int r = tl.row(); r <= br.row(); ++r)
-            m_cache.remove(folderModel()->itemFor(folderModel()->index(r, 0, tl.parent())).url());
-    });
+    auto *groups = new TagGroupProxy(this);
+    groups->setSourceModel(source);
+    setSourceModel(groups);
 }
 
 FolderModel *TagsColumns::folderModel() const
 {
-    return static_cast<FolderModel *>(sourceModel());
+    return static_cast<FolderModel *>(groupProxy()->sourceModel());
+}
+
+TagGroupProxy *TagsColumns::groupProxy() const
+{
+    return static_cast<TagGroupProxy *>(sourceModel());
 }
 
 KFileItem TagsColumns::itemFor(const QModelIndex &idx) const
 {
     // Extra columns have no source index; go through column 0 of the same row.
-    return folderModel()->itemFor(mapToSource(index(idx.row(), 0, idx.parent())));
+    return folderModel()->itemFor(groupProxy()->mapToSource(mapToSource(index(idx.row(), 0, idx.parent()))));
+}
+
+QModelIndex TagsColumns::indexFor(const QUrl &url) const
+{
+    return mapFromSource(groupProxy()->mapFromSource(folderModel()->indexFor(url)));
 }
 
 QVariant TagsColumns::headerData(int section, Qt::Orientation orientation, int role) const
@@ -209,19 +213,15 @@ QVariant TagsColumns::extraColumnData(const QModelIndex &parent, int row, int, i
 {
     if (role != TagsRole && role != Qt::DisplayRole && role != Qt::ToolTipRole)
         return {};
-    const QUrl url = itemFor(index(row, 0, parent)).url();
-    auto it = m_cache.find(url);
-    if (it == m_cache.end()) // ponytail: one getxattr per row, the first time the row is read (paint, or the view's slot-width scan); move to the PreviewLoader thread if a network mount is slow
-        it = m_cache.insert(url, TagStore::read(url));
+    const QList<Tag> tags = groupProxy()->tags(itemFor(index(row, 0, parent)).url());
     if (role == TagsRole)
-        return QVariant::fromValue(*it);
-    return encodeAll(*it).join(QStringLiteral(", "));
+        return QVariant::fromValue(tags);
+    return encodeAll(tags).join(QStringLiteral(", "));
 }
 
 void TagsColumns::invalidateTags(const QList<QUrl> &urls)
 {
-    for (const QUrl &u : urls)
-        m_cache.remove(u);
+    groupProxy()->invalidateTags(urls);
     const QSet<QUrl> set(urls.begin(), urls.end());
     for (int r = 0; r < rowCount(); ++r)
         if (set.contains(itemFor(index(r, 0)).url()))
@@ -235,7 +235,6 @@ static std::pair<QUrl, qint64> cacheKey(const KFileItem &item)
 
 PreviewLoader::PreviewLoader(FolderModel *model, QObject *parent)
     : QObject(parent)
-    , m_model(model)
     , m_plugins(KIO::PreviewJob::availablePlugins())
 {
     m_debounce.setSingleShot(true);
@@ -300,10 +299,13 @@ void PreviewLoader::requestVisible()
 void PreviewLoader::start()
 {
     stop();
-    const int rows = m_model->rowCount();
-    if (!m_enabled || !m_view || rows == 0)
+    if (!m_enabled || !m_view)
         return;
-    // View rows equal FolderModel rows (TagsColumns is an identity proxy).
+    // View rows, not FolderModel rows: grouped by tag, one file may show in several rows.
+    const QAbstractItemModel *model = m_view->model();
+    const int rows = model->rowCount();
+    if (rows == 0)
+        return;
     const QRect r = m_view->viewport()->rect();
     const QModelIndex top = m_view->indexAt(r.topLeft());
     QModelIndex bottom = m_view->indexAt(r.bottomRight());
@@ -312,11 +314,14 @@ void PreviewLoader::start()
     // ponytail: corner probes; a gap under both bottom corners counts every row after `top` as visible.
     const int first = top.isValid() ? top.row() : 0;
     const int last = bottom.isValid() ? bottom.row() : rows - 1;
-    const auto enqueue = [this](int from, int to) {
+    QSet<QUrl> queued;
+    const auto enqueue = [&](int from, int to) {
         for (int row = from; row <= to; ++row) {
-            const KFileItem item = m_model->itemFor(m_model->index(row, 0));
-            if (!m_cache.contains(cacheKey(item)))
+            const KFileItem item = model->index(row, 0).data(KDirModel::FileItemRole).value<KFileItem>();
+            if (!m_cache.contains(cacheKey(item)) && !queued.contains(item.url())) {
+                queued.insert(item.url());
                 m_queue.append(item);
+            }
         }
     };
     enqueue(first, last);
