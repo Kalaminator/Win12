@@ -1005,6 +1005,8 @@ void ExplorerActions::fillRemoveMenu(QMenu *menu, const KFileItemList &items)
     });
 }
 
+const QStringList ExplorerActions::kHiddenPlugins = {QStringLiteral("tagsfileitemaction"), QStringLiteral("setfoldericonitemaction"), QStringLiteral("kactivitymanagerd_fileitem_linking_plugin")};
+
 QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &folder)
 {
     auto *menu = new QMenu(m_window);
@@ -1016,19 +1018,6 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         return a;
     };
     const bool canPaste = folder.isValid() && clipboardHasUrls();
-    const auto addWin12 = [&] {
-        auto *win12 = new QMenu(i18n("Win12"), menu);
-        win12->addAction(i18n("Select by rule…"), this, [this] { selectByRule(SelectByRuleDialog::Action::Trash); });
-        if (!items.isEmpty())
-            win12->addAction(i18n("Rename many…"), this, [this, items] { renameMany(items); });
-        if (!m_library.all().isEmpty())
-            win12->addMenu(myRulesMenu(items, win12)); // owned by win12, dies with the context menu
-        Q_EMIT fillWin12Menu(win12, items);
-        if (win12->isEmpty())
-            delete win12;
-        else
-            menu->addMenu(win12);
-    };
 
     if (!items.isEmpty()) {
         QAction *open = menu->addAction(QIcon::fromTheme(QStringLiteral("document-open")), i18n("Open"));
@@ -1043,12 +1032,12 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
         entry(QStringLiteral("home_copy"), [this, items] { copyToClipboard(items, false); });
         entry(QStringLiteral("home_paste_shortcut"), [this, folder] { pasteShortcut(folder); }, canPaste);
         menu->addSeparator();
-        fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services);
+        fia->addActionsTo(menu, KFileItemActions::MenuActionSource::Services | KFileItemActions::MenuActionSource::Plugins, {},
+                          m_library.serviceActionKeys() + kHiddenPlugins);
         menu->addSeparator();
         auto *tags = tagsMenu(items);
         tags->setParent(menu, tags->windowFlags()); // dies with the context menu
         menu->addMenu(tags);
-        addWin12();
         menu->addSeparator();
         entry(QStringLiteral("home_delete_trash"), [this, items] { trash(items); });
         entry(QStringLiteral("home_delete_permanent"), [this, items] { deletePermanently(items); });
@@ -1084,8 +1073,6 @@ QMenu *ExplorerActions::contextMenu(const KFileItemList &items, const QUrl &fold
     QAction *newItem = action(QStringLiteral("home_new_item"));
     if (inActiveFolder)
         menu->addAction(newItem);
-    menu->addSeparator();
-    addWin12();
     menu->addSeparator();
     entry(QStringLiteral("home_properties"), [this, folder] { properties({}, folder); }, folder.isValid());
     return menu;

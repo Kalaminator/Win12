@@ -1,5 +1,6 @@
 #include "rulelibrary.h"
 #include <KDesktopFile>
+#include <KDesktopFileAction>
 #include <KConfigGroup>
 #include <QDir>
 #include <QFile>
@@ -8,6 +9,7 @@
 #include <QStandardPaths>
 #include <QTest>
 
+using namespace Qt::StringLiterals;
 using K = SavedRule::Kind;
 
 class RuleLibraryTest : public QObject
@@ -37,6 +39,19 @@ private Q_SLOTS:
         QVERIFY(t.contains(QString::fromUtf8("X-KDE-Submenu=Win12")));
         QVERIFY(t.contains(QStringLiteral("Actions=rule000;")));
         QVERIFY(t.contains(QStringLiteral("Exec=win12-explorer --rule \"Old CED files\" %U")));
+    }
+    void serviceActionKeysMatchFiles()
+    {
+        RuleLibrary l;
+        QVERIFY(l.save({QStringLiteral("A"), QStringLiteral("=1"), K::Select}, nullptr));
+        QVERIFY(l.save({QStringLiteral("B"), QStringLiteral("=1"), K::Select}, nullptr));
+        const QStringList keys = l.serviceActionKeys();
+        QCOMPARE(keys, (QStringList{u"a-select-by-rule"_s, u"b-rename-many"_s, u"rule000"_s, u"rule001"_s}));
+        const KDesktopFile df(QFINDTESTDATA("../win12-servicemenu.desktop"));
+        QVERIFY(!df.actions().isEmpty());
+        for (const KDesktopFileAction &act : df.actions())
+            QVERIFY2(keys.contains(act.actionsKey()), qPrintable(act.actionsKey()));
+        QVERIFY(l.serviceMenuText().contains(QStringLiteral("[Desktop Action rule001]")));
     }
     void serviceMenuEscapesPercent()
     {

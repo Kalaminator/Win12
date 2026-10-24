@@ -24,6 +24,8 @@ public:
     static constexpr QLatin1String kSubmenu{"Win12"}; // X-KDE-Submenu shared by the static and generated service menus
     static QString path(); // GenericDataLocation/win12/rules.json (next to tags.json)
     static QString serviceMenuPath(); // GenericDataLocation/kio/servicemenus/win12-my-rules.desktop
+    static QString ruleKey(int i) { return QStringLiteral("rule%1").arg(i, 3, 10, QLatin1Char('0')); } // [Desktop Action <key>] in the generated menu
+    QStringList serviceActionKeys() const; // action keys of both Win12 service menus, for KFileItemActions' excludeList
     QString serviceMenuText() const; // Dolphin's right-click Win12 > My rules; rewritten (0755) on every write, removed when empty
     QList<SavedRule> all() const; // sorted by kind then name (case-insensitive); loaded lazily
     QList<SavedRule> ofKind(SavedRule::Kind) const;

@@ -125,6 +125,15 @@ static QString execQuoted(QString s)
     return u'"' + q + u'"';
 }
 
+QStringList RuleLibrary::serviceActionKeys() const
+{
+    ensureLoaded();
+    QStringList keys{u"a-select-by-rule"_s, u"b-rename-many"_s}; // keys of win12-servicemenu.desktop
+    for (qsizetype i = 0; i < m_rules.size(); ++i)
+        keys << ruleKey(i);
+    return keys;
+}
+
 QString RuleLibrary::serviceMenuText() const
 {
     ensureLoaded();
@@ -132,11 +141,11 @@ QString RuleLibrary::serviceMenuText() const
     QString body;
     for (qsizetype i = 0; i < m_rules.size(); ++i) {
         const SavedRule &r = m_rules[i];
-        actions += u"rule%1;"_s.arg(i, 3, 10, QLatin1Char('0'));
+        actions += ruleKey(i) + u';'; 
         QString name = r.name;
         name.remove(u'\n').remove(u'\r');
         name.replace(u'\\', u"\\\\"_s);
-        body += u"[Desktop Action rule%1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %U\n"_s.arg(i, 3, 10, QLatin1Char('0')).arg(
+        body += u"[Desktop Action %1]\nName=%2\nIcon=%3\nExec=win12-explorer --rule %4 %U\n"_s.arg(ruleKey(i)).arg(
             name, r.kind == SavedRule::Kind::Script ? u"text-x-script"_s : u"accessories-calculator"_s, execQuoted(r.name));
     }
     return u"[Desktop Entry]\nType=Service\nMimeType=inode/directory;all/allfiles;\nX-KDE-Submenu=%2\nActions=%1\n"_s.arg(actions, QString(RuleLibrary::kSubmenu)) + body;
