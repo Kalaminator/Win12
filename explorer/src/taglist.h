@@ -15,7 +15,7 @@ public:
     explicit TagList(TagRegistry *, QWidget *parent = nullptr);
     QList<Tag> picked() const;
     TagSearch::Mode mode() const;
-    void clearPicks();
+    void clearPicks(bool silent = false); // silent: no filterChanged (tab switch)
 
 Q_SIGNALS:
     void filterChanged(const QList<Tag> &picked, TagSearch::Mode); // empty picked = cleared

@@ -42,7 +42,7 @@ TagList::TagList(TagRegistry *registry, QWidget *parent)
 
     connect(m_list, &QListWidget::itemSelectionChanged, this, [this] { Q_EMIT filterChanged(picked(), mode()); });
     connect(group, &QButtonGroup::buttonToggled, this, [this](QAbstractButton *, bool on) {
-        if (on)
+        if (on && !m_list->selectedItems().isEmpty())
             Q_EMIT filterChanged(picked(), mode());
     });
     connect(m_registry, &TagRegistry::changed, this, &TagList::reload);
@@ -76,7 +76,13 @@ TagSearch::Mode TagList::mode() const
     return m_any->isChecked() ? TagSearch::Mode::Any : TagSearch::Mode::All;
 }
 
-void TagList::clearPicks()
+void TagList::clearPicks(bool silent)
 {
-    m_list->clearSelection(); // emits only when something was picked
+    const bool had = !m_list->selectedItems().isEmpty();
+    {
+        QSignalBlocker block(m_list);
+        m_list->clearSelection();
+    }
+    if (had && !silent)
+        Q_EMIT filterChanged({}, mode());
 }

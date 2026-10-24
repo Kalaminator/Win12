@@ -504,6 +504,7 @@ void FolderView::showResults(const QString &title, TagSearch *search)
     connect(search, &TagSearch::found, m_results, &ResultsModel::append); // rowsInserted -> countsChanged ("<n> items")
     m_results->clear();
     m_folderModel->setResultsSource(m_results);
+    m_resultsTitle = title;
     Q_EMIT resultsTitleChanged(title);
 }
 
@@ -519,6 +520,7 @@ void FolderView::clearResults()
     m_folderModel->clearResultsSource();
     m_results->clear();
     m_previews->requestVisible(); // the swap reset dropped the previews; no listing will ask again
+    m_resultsTitle.clear();
     Q_EMIT resultsTitleChanged(QString());
 }
 

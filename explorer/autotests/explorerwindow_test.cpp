@@ -63,6 +63,44 @@ private Q_SLOTS:
         delete w;
     }
 
+    void tabSwitchKeepsOtherTabsResults()
+    {
+        QTemporaryDir tree(QDir::homePath() + QStringLiteral("/.cache/tagpick-XXXXXX"));
+        if (!tree.isValid() || !TagStore::supported(QUrl::fromLocalFile(tree.path())))
+            QSKIP("xattr tags not supported here");
+        QFile f(tree.filePath(QStringLiteral("a.txt")));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.close();
+        const Tag tag = Tag::decode(QStringLiteral("Red/pick"));
+        TagStore s;
+        QCOMPARE(s.add({QUrl::fromLocalFile(f.fileName())}, tag), TagStore::Error::None);
+        TagRegistry().touch(tag);
+        auto *w = new ExplorerWindow({QUrl::fromLocalFile(tree.path())});
+        w->show();
+        w->activateWindow();
+        auto *list = w->findChild<TagList *>();
+        auto *lw = list->findChild<QListWidget *>();
+        QTRY_VERIFY(!list->isHidden());
+        QTest::mouseClick(lw->viewport(), Qt::LeftButton, {}, lw->visualItemRect(lw->item(0)).center());
+        FolderView *a = w->activeView();
+        QVERIFY(a->showingResults());
+        w->openTab(QUrl::fromLocalFile(m_dir.path()), true);
+        FolderView *b = w->activeView();
+        QVERIFY(a != b);
+        QVERIFY(!b->showingResults());
+        QVERIFY(a->showingResults());
+        QVERIFY(list->picked().isEmpty());
+        auto *tabs = w->findChild<QTabBar *>();
+        tabs->setCurrentIndex(0);
+        QCOMPARE(w->activeView(), a);
+        QVERIFY(a->showingResults());
+        bool shown = false;
+        for (QLabel *l : w->findChildren<QLabel *>())
+            shown |= l->text() == a->resultsTitle() && l->isVisible();
+        QVERIFY(shown);
+        delete w;
+    }
+
     void fileKeysIgnoreTheSearchBox()
     {
         ExplorerWindow *w = shownWindow();

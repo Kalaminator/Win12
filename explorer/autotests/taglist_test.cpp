@@ -72,6 +72,16 @@ private Q_SLOTS:
         QCOMPARE(spy.at(0).at(1).value<TagSearch::Mode>(), TagSearch::Mode::Any);
         QCOMPARE(l.mode(), TagSearch::Mode::Any);
     }
+    void modeToggleWithoutPicksDoesNotEmit()
+    {
+        TagRegistry r(m_dir.filePath(QStringLiteral("f.json")));
+        r.touch(T("Red/x"));
+        TagList l(&r);
+        l.show();
+        QSignalSpy spy(&l, &TagList::filterChanged);
+        l.findChildren<QToolButton *>().last()->click();
+        QCOMPARE(spy.count(), 0);
+    }
     void clearPicksEmitsEmpty()
     {
         TagRegistry r(m_dir.filePath(QStringLiteral("e.json")));

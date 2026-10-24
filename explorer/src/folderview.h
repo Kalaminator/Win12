@@ -25,6 +25,7 @@ public:
     void showResults(const QString &title, TagSearch *search);
     void clearResults(); // back to the folder listing
     bool showingResults() const;
+    QString resultsTitle() const { return m_resultsTitle; }
     QUrl url() const;
     bool goBack();
     bool goForward();
@@ -81,6 +82,7 @@ private:
     FolderModel *m_folderModel;
     ResultsModel *m_results;
     QPointer<TagSearch> m_search;
+    QString m_resultsTitle;
     TagsColumns *m_model;
     PreviewLoader *m_previews;
     QItemSelectionModel *m_selection;

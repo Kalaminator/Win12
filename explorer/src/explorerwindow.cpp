@@ -503,6 +503,8 @@ void ExplorerWindow::wireView(FolderView *v)
         if (v != activeView())
             return;
         addRecentFolder(m_config, url);
+        m_tagList->clearPicks(); // real navigation drops the tag filter
+        v->clearResults();       // also when the list had no picks (results from an earlier tab visit)
         syncToActiveView();
     });
     connect(v, &FolderView::resultsTitleChanged, this, [this, v](const QString &title) {
@@ -610,7 +612,9 @@ void ExplorerWindow::syncToActiveView()
     if (!v)
         return;
     m_actions->setActiveView(v);
-    m_tagList->clearPicks(); // navigating (or switching tab) drops the tag filter
+    m_tagList->clearPicks(true); // each tab keeps its own results; the list just starts clean
+    m_resultsTitle->setText(v->resultsTitle());
+    m_resultsTitleAction->setVisible(!v->resultsTitle().isEmpty());
     const QUrl url = v->url();
     if (m_navigator->locationUrl() != url)
         m_navigator->setLocationUrl(url);
