@@ -542,6 +542,20 @@ private Q_SLOTS:
     }
 
     // Opens the tagged folder and shows the Red/Xiaomi search over it, walked to the end.
+    // A failed filter (vanished folder, non-local url) says why in the results title instead of an empty list.
+    void failedSearchShowsError()
+    {
+        auto *search = new TagSearch;
+        QSignalSpy done(search, &TagSearch::finished);
+        m_view->showResults(QStringLiteral("Red"), search);
+        search->start(QUrl(QStringLiteral("smb://nowhere/share")), {T("Red/Xiaomi")}, TagSearch::Mode::Any, TagSearch::Engine::Walk);
+        QVERIFY(done.wait(5000));
+        const QString error = done.first().at(1).toString();
+        QVERIFY(!error.isEmpty());
+        QVERIFY2(m_view->resultsTitle().contains(error), qPrintable(m_view->resultsTitle()));
+        QVERIFY(m_view->resultsTitle().startsWith(QStringLiteral("Red")));
+        m_view->clearResults();
+    }
     bool showRedResults()
     {
         if (!writeTagged({{QStringLiteral("b"), {T("Red/Xiaomi")}},

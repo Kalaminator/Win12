@@ -511,6 +511,12 @@ void FolderView::showResults(const QString &title, TagSearch *search)
     m_search = search;
     search->setParent(this);
     connect(search, &TagSearch::found, m_results, &ResultsModel::append); // rowsInserted -> countsChanged ("<n> items")
+    connect(search, &TagSearch::finished, this, [this, search, title](bool ok, const QString &error) {
+        if (ok || search != m_search)
+            return;
+        m_resultsTitle = i18n("%1 (%2)", title, error); // the window shows the title; an empty list alone says nothing
+        Q_EMIT resultsTitleChanged(m_resultsTitle);
+    });
     m_results->clear();
     m_folderModel->setResultsSource(m_results);
     m_resultsTitle = title;
