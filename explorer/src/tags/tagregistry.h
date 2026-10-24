@@ -28,6 +28,7 @@ private:
         QDateTime used;
     };
     int indexOf(const Tag &) const;
+    void dropIfDuplicate(int i);
     void load();
     void save();
     QString m_file;

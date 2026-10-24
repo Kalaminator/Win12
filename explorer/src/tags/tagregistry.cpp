@@ -58,12 +58,24 @@ void TagRegistry::touch(const Tag &t)
     save();
 }
 
+// the edited entry i now equals another one: merge by dropping i
+void TagRegistry::dropIfDuplicate(int i)
+{
+    const Tag t = m_entries[i].tag;
+    for (int j = 0; j < m_entries.size(); ++j)
+        if (j != i && m_entries[j].tag == t) {
+            m_entries.removeAt(i);
+            return;
+        }
+}
+
 void TagRegistry::rename(const Tag &from, const QString &word)
 {
     const int i = indexOf(from);
     if (i < 0)
         return;
     m_entries[i].tag.word = word;
+    dropIfDuplicate(i);
     save();
 }
 
@@ -73,6 +85,7 @@ void TagRegistry::recolour(const Tag &from, int colour)
     if (i < 0 || colour < 0 || colour >= TagColours::Count)
         return;
     m_entries[i].tag.colour = colour;
+    dropIfDuplicate(i);
     save();
 }
 

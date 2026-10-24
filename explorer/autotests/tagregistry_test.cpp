@@ -58,6 +58,22 @@ private Q_SLOTS:
         TagRegistry r2(path());
         QVERIFY(r2.tags().isEmpty());
     }
+    void renameOntoExistingMerges()
+    {
+        TagRegistry r(path());
+        r.touch(Tag{3, QStringLiteral("a")});
+        r.touch(Tag{3, QStringLiteral("b")});
+        r.rename(Tag{3, QStringLiteral("a")}, QStringLiteral("b"));
+        QCOMPARE(r.tags(), QList<Tag>{(Tag{3, QStringLiteral("b")})});
+    }
+    void recolourOntoExistingMerges()
+    {
+        TagRegistry r(path());
+        r.touch(Tag{3, QStringLiteral("a")});
+        r.touch(Tag{4, QStringLiteral("a")});
+        r.recolour(Tag{3, QStringLiteral("a")}, 4);
+        QCOMPARE(r.tags(), QList<Tag>{(Tag{4, QStringLiteral("a")})});
+    }
     void unknownColourDropped()
     {
         QDir().mkpath(dir.path() + QStringLiteral("/sub"));
