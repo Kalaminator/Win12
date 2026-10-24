@@ -1,0 +1,20 @@
+#pragma once
+#include "tag.h"
+#include <QDialog>
+
+class QButtonGroup;
+class QLineEdit;
+
+// New tag: a word (may be empty) and one of the 48 colours; OK stays disabled until a colour is picked.
+class NewTagDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit NewTagDialog(QWidget *parent);
+    Tag tag() const;
+    void setTag(const Tag &);
+
+private:
+    QLineEdit *m_word;
+    QButtonGroup *m_colours;
+};

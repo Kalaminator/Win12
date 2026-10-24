@@ -39,12 +39,25 @@ private Q_SLOTS:
                  (QStringList{u"Panes"_s, u"Layout"_s, u"Current view"_s, u"Tags"_s, u"Show/hide"_s, u"Split view"_s}));
         QCOMPARE(tab(u"view"_s)->groups[3].phase, 2);
     }
+    void tagsGroupHasPhase2Buttons()
+    {
+        const auto &g = tab(u"view"_s)->groups[3];
+        QStringList ids;
+        for (const auto &b : g.buttons)
+            ids << b.action;
+        QCOMPARE(ids, (QStringList{u"tags_add"_s, u"tags_remove"_s, u"tags_manage"_s, u"tags_group_name"_s, u"tags_group_colour"_s,
+                                   u"tags_flags"_s}));
+        QCOMPARE(Ribbon::button(u"tags_add"_s)->size, Ribbon::Size::Big);
+        QVERIFY(Ribbon::button(u"tags_add"_s)->menu);
+        QVERIFY(Ribbon::button(u"tags_remove"_s)->menu);
+        QVERIFY(!Ribbon::button(u"tags_manage"_s)->menu);
+    }
     void actionIdsUniqueAndNamed()
     {
         const QStringList ids = Ribbon::actionIds();
-        QCOMPARE(ids.size(), 58);
-        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 58);
-        const QRegularExpression re(u"^(file|home|share|view|adv)_[a-z_]+$"_s);
+        QCOMPARE(ids.size(), 64);
+        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 64);
+        const QRegularExpression re(u"^(file|home|share|view|adv|tags)_[a-z_]+$"_s);
         for (const auto &id : ids)
             QVERIFY2(re.match(id).hasMatch(), qPrintable(id));
     }

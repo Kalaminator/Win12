@@ -86,7 +86,14 @@ const QList<Tab> &spec()
                 B("view_group", ki18n("Group by"), "object-group", S::Small, true),
                 B("view_columns", ki18n("Add columns"), "view-form-table", S::Small, true),
             }},
-            {i18n("Tags"), {}, 2},
+            {i18n("Tags"), {
+                B("tags_add", ki18n("Add tag"), "tag-new", S::Big, true),
+                B("tags_remove", ki18n("Remove tag"), "tag-delete", S::Small, true),
+                B("tags_manage", ki18n("Manage tags…"), "tag-properties"),
+                B("tags_group_name", ki18n("Group: tag name"), "object-group"),
+                B("tags_group_colour", ki18n("Group: tag colour"), "color-management"),
+                B("tags_flags", ki18n("Show tag flags"), "flag"),
+            }, 2},
             {i18n("Show/hide"), {
                 B("view_checkboxes", ki18n("Item check boxes"), "checkbox"),
                 B("view_extensions", ki18n("File name extensions"), "document-properties"),
