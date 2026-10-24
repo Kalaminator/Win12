@@ -3,7 +3,9 @@
 #include "tagsearch.h"
 #include "tagribbon.h"
 #include "taggroupproxy.h"
+#include <KConfigGroup>
 #include <KDirLister>
+#include <KSharedConfig>
 #include <KIO/CopyJob>
 #include <KIO/DropJob>
 #include <KIO/FileUndoManager>
@@ -28,6 +30,7 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <optional>
 #include <functional>
 
 namespace {
@@ -142,7 +145,8 @@ public:
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
         } else if (isIconMode(mode)) {
             style->drawControl(QStyle::CE_ItemViewItem, &opt, p, w);
-            TagRibbon::paintFlags(p, style->subElementRect(QStyle::SE_ItemViewItemDecoration, &opt, w), tags);
+            if (FolderView::showFlags())
+                TagRibbon::paintFlags(p, style->subElementRect(QStyle::SE_ItemViewItemDecoration, &opt, w), tags);
         } else { // List, Small icons: the name elided to leave the ribbons room, the ribbons right after it
             const QRect text = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
             opt.text = opt.fontMetrics.elidedText(opt.text, opt.textElideMode, qMax(0, text.width() - 2 * margin - ribbonRoom(int(tags.size()))));
@@ -500,6 +504,23 @@ void FolderView::navigate(const QUrl &url)
 QUrl FolderView::url() const
 {
     return m_url;
+}
+
+static std::optional<bool> s_showFlags;
+
+bool FolderView::showFlags()
+{
+    if (!s_showFlags)
+        s_showFlags = KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).readEntry("showFlags", true);
+    return *s_showFlags;
+}
+
+void FolderView::setShowFlags(bool on)
+{
+    s_showFlags = on;
+    for (QWidget *w : QApplication::allWidgets()) // ponytail: rare toggle, a scan beats a view registry
+        if (auto *v = qobject_cast<FolderView *>(w))
+            v->currentView()->viewport()->update();
 }
 
 void FolderView::showResults(const QString &title, TagSearch *search)

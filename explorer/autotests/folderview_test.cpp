@@ -429,6 +429,21 @@ private Q_SLOTS:
         QVERIFY(box.top() < r.top() + m_view->currentView()->iconSize().height() + 8);
     }
 
+    // "Show tag flags" off: no flags on big icons.
+    void iconModeFlagsFollowSetting()
+    {
+        if (!writeTagged({{QStringLiteral("phone"), {T("Red/Xiaomi")}}}))
+            QSKIP("xattr tags not supported here");
+        QVERIFY(waitListed([&] { m_view->openUrl(QUrl::fromLocalFile(m_tagDir->path())); }));
+        show(ViewMode::LargeIcons);
+        FolderView::setShowFlags(false);
+        const QRect r = cell(QStringLiteral("phone"));
+        const bool hidden = painted(r, colour("Red/Xiaomi")).isEmpty();
+        FolderView::setShowFlags(true);
+        QVERIFY(hidden);
+        QTRY_VERIFY(!painted(r, colour("Red/Xiaomi")).isEmpty());
+    }
+
     // One slot per tag, as wide as the longest tag in the folder: every row's slots start at the same x.
     void slotWidthIsLongestTag()
     {

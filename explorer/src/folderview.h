@@ -26,6 +26,8 @@ public:
     void clearResults(); // back to the folder listing
     bool showingResults() const;
     QString resultsTitle() const { return m_resultsTitle; }
+    static bool showFlags(); // win12-explorerrc [Tags] showFlags (tag flags on big icons), read once
+    static void setShowFlags(bool); // the ribbon toggle: every view repaints
     QUrl url() const;
     bool goBack();
     bool goForward();

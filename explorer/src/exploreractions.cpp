@@ -159,14 +159,6 @@ QAction *ExplorerActions::add(const QString &id, const QString &text, const QStr
     return a;
 }
 
-namespace {
-bool showFlagsConfigured()
-{
-    return KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).readEntry("showFlags", true);
-}
-
-}
-
 QAction *ExplorerActions::action(const QString &id) const
 {
     return m_actions.value(id);
@@ -257,7 +249,7 @@ void ExplorerActions::syncViewState()
     action(QStringLiteral("view_hidden"))->setChecked(s.hiddenFiles);
     action(QStringLiteral("tags_group_name"))->setChecked(s.groupRole == GroupRole::TagName);
     action(QStringLiteral("tags_group_colour"))->setChecked(s.groupRole == GroupRole::TagColour);
-    action(QStringLiteral("tags_flags"))->setChecked(showFlagsConfigured());
+    action(QStringLiteral("tags_flags"))->setChecked(FolderView::showFlags());
 }
 
 void ExplorerActions::buildViewMenus()
@@ -359,8 +351,9 @@ void ExplorerActions::buildViewMenus()
     }
     QAction *flags = action(QStringLiteral("tags_flags"));
     flags->setCheckable(true);
-    flags->setChecked(showFlagsConfigured());
+    flags->setChecked(FolderView::showFlags());
     connect(flags, &QAction::triggered, this, [](bool on) {
+        FolderView::setShowFlags(on);
         KConfigGroup(KSharedConfig::openConfig(QStringLiteral("win12-explorerrc")), QStringLiteral("Tags")).writeEntry("showFlags", on, KConfigGroup::Notify);
         KSharedConfig::openConfig(QStringLiteral("win12-explorerrc"))->sync();
     });
