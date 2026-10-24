@@ -17,6 +17,8 @@ public:
     explicit TagSearch(QObject *parent = nullptr);
     ~TagSearch() override;
     static Engine engineFor(const QUrl &folder); // Baloo iff local, indexing on and the path is indexed
+    // Exact match of a file's encoded tags against the picked, encoded ones; both engines filter through this
+    static bool matches(const QStringList &have, const QStringList &wanted, Mode);
     void start(const QUrl &folder, const QList<Tag> &tags, Mode, Engine); // stops a running search first
     void start(const QUrl &folder, const QList<Tag> &tags, Mode mode) { start(folder, tags, mode, engineFor(folder)); }
     void stop(); // no found()/finished() afterwards

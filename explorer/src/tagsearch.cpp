@@ -36,6 +36,14 @@ TagSearch::Engine TagSearch::engineFor(const QUrl &folder)
     return c.fileIndexingEnabled() && c.shouldBeIndexed(folder.toLocalFile()) ? Engine::Baloo : Engine::Walk;
 }
 
+bool TagSearch::matches(const QStringList &have, const QStringList &wanted, Mode mode)
+{
+    if (have.isEmpty())
+        return false;
+    const auto hasTag = [&](const QString &t) { return have.contains(t); };
+    return mode == Mode::All ? std::all_of(wanted.begin(), wanted.end(), hasTag) : std::any_of(wanted.begin(), wanted.end(), hasTag);
+}
+
 void TagSearch::stop()
 {
     if (!m_run)
@@ -94,19 +102,16 @@ void TagSearch::start(const QUrl &folder, const QList<Tag> &tags, Mode mode, Eng
             q.setSearchString(terms.join(mode == Mode::All ? QStringLiteral(" AND ") : QStringLiteral(" OR ")));
             q.setIncludeFolder(path);
             Baloo::ResultIterator it = q.exec();
+            // Baloo's tag: is a loose word match; keep only exact hits (also drops stale index entries)
             while (!run->cancel && it.next())
-                add(it.filePath());
+                if (matches(encodeAll(TagStore::read(QUrl::fromLocalFile(it.filePath()))), wanted, mode))
+                    add(it.filePath());
         } else {
             // ponytail: the walker re-reads xattrs on every search; a result cache if the user filters the same USB stick repeatedly
             QDirIterator it(path, QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
             while (!run->cancel && it.hasNext()) {
                 const QString file = it.next();
-                const QStringList have = encodeAll(TagStore::read(QUrl::fromLocalFile(file)));
-                if (have.isEmpty())
-                    continue;
-                const auto hasTag = [&](const QString &t) { return have.contains(t); };
-                if (mode == Mode::All ? std::all_of(wanted.begin(), wanted.end(), hasTag)
-                                      : std::any_of(wanted.begin(), wanted.end(), hasTag))
+                if (matches(encodeAll(TagStore::read(QUrl::fromLocalFile(file))), wanted, mode))
                     add(file);
             }
         }

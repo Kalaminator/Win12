@@ -124,6 +124,21 @@ private Q_SLOTS:
         QVERIFY(!done.first().at(1).toString().isEmpty());
         QVERIFY(!s.isRunning());
     }
+    void matchesIsExact()
+    {
+        using M = TagSearch::Mode;
+        const QStringList wantRed = encodeAll({Tag::decode(QStringLiteral("Red"))});
+        const QStringList have = {QStringLiteral("Red/Xiaomi")};
+        QVERIFY(!TagSearch::matches(have, wantRed, M::Any)); // colour-only Red is not Red/Xiaomi
+        QVERIFY(!TagSearch::matches(have, wantRed, M::All));
+        QVERIFY(!TagSearch::matches({QStringLiteral("red/xiaomi")}, encodeAll({red}), M::Any)); // foreign, lower-case
+        QVERIFY(TagSearch::matches(have, encodeAll({red}), M::All));
+        QVERIFY(!TagSearch::matches({}, encodeAll({red}), M::Any));
+        const QStringList both = encodeAll({red, orange});
+        QVERIFY(TagSearch::matches(have, both, M::Any));
+        QVERIFY(!TagSearch::matches(have, both, M::All));
+        QVERIFY(TagSearch::matches({both.first(), both.last()}, both, M::All));
+    }
     void engineForTmpIsWalk()
     {
         Baloo::IndexerConfig c;
