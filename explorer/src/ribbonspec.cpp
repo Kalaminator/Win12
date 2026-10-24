@@ -116,6 +116,7 @@ const QList<Tab> &spec()
                 B("adv_copy_matches", ki18n("Copy matches to…"), "edit-copy"),
                 B("adv_move_matches", ki18n("Move matches to…"), "edit-cut"),
                 B("adv_rename_matches", ki18n("Rename matches…"), "edit-rename"),
+                B("adv_tag_matches", ki18n("Tag matches…"), "tag-new"),
                 B("adv_trash_matches", ki18n("Trash matches"), "user-trash", S::Big),
             }, 3},
             {i18n("Automate"), {}, 4},

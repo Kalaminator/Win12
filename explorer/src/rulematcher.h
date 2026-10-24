@@ -6,8 +6,8 @@
 #include <functional>
 #include <optional>
 
-enum class Field { Name, Extension, Size, Modified, Created, Kind }; // phase 2 adds Tag
-enum class Test { StartsWith, Contains, EndsWith, Equals, Regex, OlderThan, NewerThan, BiggerThan, SmallerThan }; // phase 2 adds HasTag
+enum class Field { Name, Extension, Size, Modified, Created, Kind, Tag };
+enum class Test { StartsWith, Contains, EndsWith, Equals, Regex, OlderThan, NewerThan, BiggerThan, SmallerThan, HasTag };
 
 struct Rule {
     Field field;

@@ -1,4 +1,5 @@
 #include "rulematcher.h"
+#include "tagstore.h"
 #include <KFileItem>
 #include <QDateTime>
 #include <QFile>
@@ -63,6 +64,31 @@ private Q_SLOTS:
         b = item("B.TXT");
         big = item("big.bin");
         old = item("old");
+    }
+    void hasTagByWordOrEncoded()
+    {
+        QTemporaryDir td(QDir::homePath() + QStringLiteral("/.cache/rulematcher-XXXXXX"));
+        if (!td.isValid() || !TagStore::supported(QUrl::fromLocalFile(td.path())))
+            QSKIP("xattr tags not supported here");
+        write(td.path() + QStringLiteral("/t.txt"), 1);
+        const QUrl u = QUrl::fromLocalFile(td.path() + QStringLiteral("/t.txt"));
+        TagStore s;
+        QCOMPARE(s.add({u}, Tag::decode(QStringLiteral("Red/Xiaomi"))), TagStore::Error::None);
+        const KFileItem it(u);
+        auto hit = [&](const char *v) {
+            QString err;
+            const auto m = RuleMatcher::compile({{Field::Tag, Test::HasTag, QString::fromLatin1(v)}}, &err);
+            return m && m->matches(it);
+        };
+        QVERIFY(hit("xiaomi"));
+        QVERIFY(hit("Red/Xiaomi"));
+        QVERIFY(!hit("Blue/Xiaomi"));
+        QVERIFY(!hit("other"));
+    }
+    void hasTagEmptyValueIsError()
+    {
+        QVERIFY(run({{Field::Tag, Test::HasTag, QString()}}).first().startsWith(QLatin1String("ERR:")));
+        QCOMPARE(testsFor(Field::Tag), QList<Test>{Test::HasTag});
     }
     void nameStartsWithIsCaseInsensitive()
     {

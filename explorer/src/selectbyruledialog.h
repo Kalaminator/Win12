@@ -22,7 +22,7 @@ class SelectByRuleDialog : public QDialog
 {
     Q_OBJECT
 public:
-    enum class Action { Select, CopyTo, MoveTo, Rename, Trash, DeleteForever, Zip, CopyPaths };
+    enum class Action { Select, CopyTo, MoveTo, Rename, Trash, DeleteForever, Zip, CopyPaths, AddTag };
     SelectByRuleDialog(const QUrl &lookIn, Action defaultAction, QWidget *parent);
     ~SelectByRuleDialog() override;
 

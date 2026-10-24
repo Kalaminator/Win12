@@ -1,6 +1,8 @@
 #include "selectbyruledialog.h"
 #include <KLineEdit>
 #include <KUrlRequester>
+#include <QAction>
+#include <QComboBox>
 #include <QDir>
 #include <QKeyEvent>
 #include <QLineEdit>
@@ -79,6 +81,23 @@ private Q_SLOTS:
         QVERIFY(!d->findChild<QLabel *>(QStringLiteral("errorLabel"))->text().isEmpty());
         d->setRules({{Field::Name, Test::Regex, QStringLiteral("a")}});
         QVERIFY(f->isEnabled());
+    }
+    void fieldComboOffersTag()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Select));
+        auto *combo = d->findChild<QComboBox *>();
+        QVERIFY(combo);
+        QVERIFY(combo->findText(fieldText(Field::Tag)) >= 0);
+    }
+    void addTagActionInMenu()
+    {
+        std::unique_ptr<SelectByRuleDialog> d(make(SelectByRuleDialog::Action::Select));
+        auto *qa = d->findChild<QAction *>(QStringLiteral("actAddTag"));
+        QVERIFY(qa);
+        QVERIFY(qa->text().startsWith(QLatin1String("Add tag")));
+        runFind(*d);
+        qa->trigger();
+        QCOMPARE(d->chosenAction(), SelectByRuleDialog::Action::AddTag);
     }
     void defaultActionButtonIsDefault()
     {

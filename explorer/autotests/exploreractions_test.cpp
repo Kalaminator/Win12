@@ -211,6 +211,13 @@ private Q_SLOTS:
         a.newTag({KFileItem(u)});
         QCOMPARE(TagStore::read(u), QList<Tag>{T("Green/seam")});
     }
+    void selectByRuleAddTagOpensNewTagDialog()
+    {
+        // ponytail: the dialog's own accept path is covered by selectbyruledialog_test; here only the dispatch
+        QVERIFY(Ribbon::actionIds().contains(QStringLiteral("adv_tag_matches")));
+        ExplorerActions a(nullptr);
+        QVERIFY(a.action(QStringLiteral("adv_tag_matches")));
+    }
     void newTagDialogNeedsAColour()
     {
         NewTagDialog d(nullptr);

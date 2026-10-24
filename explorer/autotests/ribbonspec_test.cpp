@@ -55,8 +55,8 @@ private Q_SLOTS:
     void actionIdsUniqueAndNamed()
     {
         const QStringList ids = Ribbon::actionIds();
-        QCOMPARE(ids.size(), 64);
-        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 64);
+        QCOMPARE(ids.size(), 65);
+        QCOMPARE(QSet<QString>(ids.begin(), ids.end()).size(), 65);
         const QRegularExpression re(u"^(file|home|share|view|adv|tags)_[a-z_]+$"_s);
         for (const auto &id : ids)
             QVERIFY2(re.match(id).hasMatch(), qPrintable(id));
@@ -67,7 +67,7 @@ private Q_SLOTS:
         QCOMPARE(tab(u"advanced"_s)->groups[3].phase, 4);
         const QStringList ids = Ribbon::actionIds();
         for (const char *id : {"adv_select_rule", "adv_rename_many", "adv_rename_undo", "adv_select_matches",
-                               "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches"})
+                               "adv_copy_matches", "adv_move_matches", "adv_rename_matches", "adv_trash_matches", "adv_tag_matches"})
             QVERIFY2(ids.contains(QString::fromLatin1(id)), id);
         QCOMPARE(Ribbon::button(u"adv_trash_matches"_s)->size, Ribbon::Size::Big);
     }

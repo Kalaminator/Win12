@@ -427,6 +427,7 @@ void ExplorerActions::connectActions()
     });
     on("adv_rename_undo", [this] { undoRenameBatch(); });
     on("adv_rename_matches", [this] { selectByRule(A::Rename); });
+    on("adv_tag_matches", [this] { selectByRule(A::AddTag); });
     on("adv_trash_matches", [this] { selectByRule(A::Trash); });
     on("home_move_to", [this] { transferTo(selection(), true); });
     on("home_copy_to", [this] { transferTo(selection(), false); });
@@ -631,7 +632,7 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
         return;
     using A = SelectByRuleDialog::Action;
     const A chosen = dialog.chosenAction();
-    if (chosen != A::Select && chosen != A::Rename && chosen != A::CopyPaths)
+    if (chosen != A::Select && chosen != A::Rename && chosen != A::CopyPaths && chosen != A::AddTag)
         items = withoutNested(items); // a ticked folder already carries what is inside it
     switch (chosen) {
     case A::Select: Q_EMIT selectUrlsRequested(items.urlList()); break;
@@ -642,6 +643,7 @@ void ExplorerActions::selectByRule(SelectByRuleDialog::Action defaultAction)
     case A::DeleteForever: deletePermanently(items); break;
     case A::Zip: zip(items); break;
     case A::CopyPaths: copyPaths(items); break;
+    case A::AddTag: newTag(items); break;
     }
 }
 
