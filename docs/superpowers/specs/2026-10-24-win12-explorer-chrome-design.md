@@ -115,3 +115,6 @@ and tagging from the right-click menu without a separate window.
 - **Colours:** `kdeglobals [WM]` keys first; when missing, the colour scheme's Header colours
   (`KColorScheme(…, KColorScheme::Header)`). An inactive window uses the inactive colours, as
   KWin does.
+- **User decision (2026-10-24):** the frameless window is accepted. It loses KWin's shadow, rounded
+  corners and the title-bar window menu; move, resize, maximise (incl. double-click), snap and
+  close must keep working. Win12 Explorer draws a simple shadow of its own (builder's call how).
