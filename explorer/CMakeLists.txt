@@ -7,7 +7,7 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMAddTests)
 include(FeatureSummary)
-find_package(Qt6 6.6 REQUIRED Widgets DBus Test)
+find_package(Qt6 6.6 REQUIRED Widgets DBus Concurrent Test)
 find_package(KF6 6.0 REQUIRED KIO ItemModels XmlGui I18n Config ConfigWidgets ColorScheme DBusAddons Purpose FileMetaData Baloo CoreAddons)
 set(CMAKE_CXX_STANDARD 20) # KDECompilerSettings' default; defaulted comparisons need it
 enable_testing()
@@ -26,7 +26,7 @@ add_library(win12explorer STATIC ${SRCS})
 target_include_directories(win12explorer PUBLIC src)
 target_link_libraries(win12explorer PUBLIC Qt6::Widgets Qt6::DBus KF6::KIOCore KF6::KIOGui KF6::KIOWidgets
     KF6::KIOFileWidgets KF6::ItemModels KF6::XmlGui KF6::I18n KF6::ConfigCore KF6::ConfigWidgets
-    KF6::ColorScheme KF6::DBusAddons KF6::PurposeWidgets win12tags)
+    KF6::ColorScheme KF6::DBusAddons KF6::PurposeWidgets KF6::Baloo Qt6::Concurrent win12tags)
 target_compile_definitions(win12explorer PUBLIC TRANSLATION_DOMAIN="win12-explorer")
 
 add_executable(win12-explorer src/main.cpp)
@@ -66,6 +66,7 @@ explorer_add_test(tagstore_test)
 explorer_add_test(emblem_test)
 explorer_add_test(tagribbon_test)
 explorer_add_test(taggroupproxy_test)
+explorer_add_test(tagsearch_test)
 ecm_add_test(autotests/overlayplugin_test.cpp overlay/win12tagsoverlay.cpp TEST_NAME overlayplugin_test
     LINK_LIBRARIES win12tags KF6::KIOCore Qt6::Test)
 target_include_directories(overlayplugin_test PRIVATE overlay)
