@@ -1,0 +1,34 @@
+[Icon Theme]
+Name=Win12-XP
+Comment=Original bright glossy icons in the Windows XP spirit (part of Win12)
+Inherits=breeze,hicolor
+Directories=scalable/places,scalable/apps,scalable/actions,scalable/devices
+
+[scalable/places]
+Context=Places
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+
+[scalable/apps]
+Context=Applications
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+
+[scalable/actions]
+Context=Actions
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+
+[scalable/devices]
+Context=Devices
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+
