@@ -168,17 +168,28 @@ BLUE = {
 BASES = {"olive": "#7f9656", "silver": "#c9c9d9"}
 # "luna" (settings: Classic XP): the classic buttons on the glossy bars measured from real XP screenshots.
 LUNA = {
-    "blue": ([(0, "#3c8ae8", 1), (0.06, "#188ced", 1), (0.15, "#0570e2", 1), (0.32, "#0b54dd", 1), (0.6, "#085be3", 1),
-              (0.88, "#0262ec", 1), (0.94, "#055ce3", 1), (1, "#064cc4", 1)], ("#5aa6ff", 1), "#245edb"),
+    "blue": ([(0, "#1f2f86", 1), (0.03, "#3165c4", 1), (0.06, "#3682e5", 1), (0.10, "#4490e6", 1), (0.12, "#3883e5", 1),
+              (0.15, "#2b71e0", 1), (0.18, "#2663da", 1), (0.20, "#235bd6", 1), (0.23, "#2258d5", 1), (0.38, "#2157d6", 1),
+              (0.54, "#245ddb", 1), (0.86, "#2562df", 1), (0.89, "#245fdc", 1), (0.92, "#2158d4", 1), (0.95, "#1d4ec0", 1),
+              (0.98, "#1941a5", 1), (1, "#1941a5", 1)], ("#3e8ae6", 1), "#2258d5"),
     "olive": ([(0, "#e1e8b9", 1), (0.1, "#b9c68e", 1), (0.22, "#acb984", 1), (0.55, "#acb984", 1), (0.8, "#c3ce96", 1),
                (0.92, "#bcca90", 1), (1, "#a9b781", 1)], ("#f4f7de", 1), "#acb984"),
     "silver": ([(0, "#ffffff", 1), (0.08, "#f3f3f7", 1), (0.25, "#e3e3eb", 1), (0.55, "#d6d6e0", 1), (0.8, "#e4e4ec", 1),
                 (0.92, "#cfcfdc", 1), (1, "#a9a9be", 1)], (W, 1), "#d6d6e0"),
 }
 
+LUNA_TASKS = {   # measured (blue): normal / hover / pressed-in focus / attention
+    "normal": (("#2253b8", 1), [(0, "#3e85f4", 1), (1, "#3a7ff0", 1)], ("#8cb8ff", .6)),
+    "hover": (("#2253b8", 1), [(0, "#5aa8ff", 1), (1, "#4f9cfa", 1)], ("#bfdcff", .6)),
+    "focus": (("#13357e", 1), [(0, "#1a46a6", 1), (.2, "#1e52b7", 1), (1, "#1f55bd", 1)], None),
+    "attention": (("#c76d10", 1), [(0, "#ffb35a", 1), (1, "#f58a1a", 1)], (W, 0.4)),
+    "minimized": (("#2253b8", 1), [(0, "#3779e4", 1), (1, "#336fdc", 1)], ("#8cb8ff", .35)),
+}
+
 def luna(sch):
     panel, edge, B = LUNA[sch]
-    return dict(BLUE["classic"] if sch == "blue" else derive(B, "classic"), panel=panel, edge=edge, base=B)
+    return dict(BLUE["classic"] if sch == "blue" else derive(B, "classic"), panel=panel, edge=edge, base=B,
+                **({"tasks": LUNA_TASKS} if sch == "blue" else {}))
 
 def derive(B, sub):
     if sub != "modern":   # classic, luna (custom colour: same as classic)
@@ -401,11 +412,11 @@ GLYPHS = {  # unit box 0..1, stroked
     "help": "M .3,.32 C .3,.1 .72,.1 .72,.32 C .72,.5 .5,.5 .5,.66 M .5,.82 V .86", "alldesktops": "M .3,.5 H .7 M .5,.3 V .7",
     "keepabove": "M .2,.66 L .5,.3 L .8,.66", "keepbelow": "M .2,.34 L .5,.7 L .8,.34", "shade": "M .2,.6 L .5,.3 L .8,.6 M .2,.82 H .8"}
 
-def deco_frame(prefix, y0, T, S, ry, stops, side, line, hi, gid):
+def deco_frame(prefix, y0, T, S, ry, stops, side, line, hi, gid, cols=None, rows=None):
     """Window frame: title piece T high, borders S wide (= the rc borders, Aurorae aligns them), top corners
     rounded (rx S, ry), bottom corners square. Box 100 x T+40 at (10, y0). T41: OPT radius (>= 0) = rx = ry
     (corner box widened to fit; the client covers the extra border)."""
-    rx = S
+    rx = S   # cols/rows (luna): the S side columns outside->in / bottom rows top->bottom, one colour each
     if OPT["radius"] >= 0:
         rx = ry = OPT["radius"]
         S = max(S, rx)
@@ -429,6 +440,20 @@ def deco_frame(prefix, y0, T, S, ry, stops, side, line, hi, gid):
         gid, y0, y0 + T, "".join('<stop offset="%s" stop-color="%s" stop-opacity="%s"/>' % (tuple(s) + (1,))[:3] for s in stops))
     p = prefix + "-"
     g = lambda n, b: '<g id="%s%s">%s</g>' % (p, n, b)
+    if cols:
+        c_ = lambda x, y, h, k, m: r(x + m * k, y, 1, h, 'fill="%s"' % cols[k])
+        r_ = lambda x, y, w, j: r(x, y + j, w, 1, 'fill="%s"' % rows[j])
+        mid = lambda x, y, h, m: "".join(c_(x, y, h, k, m) for k in range(S))
+        hh = H - T - S
+        out = [g("topleft", r(x0, y0, S, T, 'fill="none"') + corner(x0, 1)),
+               g("topright", r(x2, y0, S, T, 'fill="none"') + corner(x0 + W, -1)),
+               g("top", r(x0 + S, y0, W - 2 * S, 1, L) + r(x0 + S, y0 + 1, W - 2 * S, 1, 'fill="%s"' % hi) + r(x0 + S, y0 + 2, W - 2 * S, T - 2, F)),
+               g("left", mid(x0, y0 + T, hh, 1)), g("right", mid(x0 + W - 1, y0 + T, hh, -1)),
+               g("bottomleft", mid(x0, yb, S, 1) + "".join(r_(x0 + 1, yb, S - 1, j) for j in range(S))),
+               g("bottomright", mid(x0 + W - 1, yb, S, -1) + "".join(r_(x2, yb, S - 1, j) for j in range(S))),
+               g("bottom", "".join(r_(x0 + S, yb, W - 2 * S, j) for j in range(S))),
+               g("center", r(x0 + S, y0 + T, W - 2 * S, H - T - S, Sd))]
+        return defs, "".join(out)
     out = [g("topleft", r(x0, y0, S, T, 'fill="none"') + corner(x0, 1)),
            g("topright", r(x2, y0, S, T, 'fill="none"') + corner(x0 + W, -1)),
            g("top", r(x0 + S, y0, W - 2 * S, 1, L) + r(x0 + S, y0 + 1, W - 2 * S, 1, 'fill="%s"' % hi) + r(x0 + S, y0 + 2, W - 2 * S, T - 2, F)),
@@ -440,6 +465,39 @@ def deco_frame(prefix, y0, T, S, ry, stops, side, line, hi, gid):
            g("center", r(x0 + S, y0 + T, W - 2 * S, H - T - S, Sd))]
     return defs, "".join(out)
 
+# Luna title bar (measured, blue): 1 px outline, highlight, dip, slow climb, dark base. Other colours: each measured
+# colour keeps its lightness relative to the reference blue (LUNA_REF) but takes B's hue (tr).
+LUNA_COL = ("#0831d9 #0997ff #0578f7 #0158ef #0053ee #0052ee #0052ee #0052ee #0051ee #0051ee #0051ee #0050ee #0050ee #0052f0 "
+            "#0054f1 #0055f2 #0057f4 #0059f5 #005bf6 #005cf7 #005ef9 #0060fa #0061fb #0063fd #0065fe #0066ff #0066ff #003dd7 #003dd7").split()
+LUNA_COL_I = ["#6582d9", "#7697e7", "#83a2e4", "#96b3e9", "#8cace6", "#80a3e3", "#7b9de1", "#7a99df", "#7996de"]
+LUNA_COL_I = LUNA_COL_I + ["#7996de"] * 14 + ["#82a9e9", "#7c9ae3", "#7a94df", "#abbae3"]
+LUNA_REF = ("#0054e3", "#0855dd", "#7996de")   # active title, border and inactive reference colours
+SIDE, SIDE_I = ["#0831d9", "#166aee", "#0855dd", "#0855dd"], ["#6582d9", "#7a9cea", "#6c8ede", "#6c8ede"]
+BOT, BOT_I = ["#0855dd", "#003bda", "#001ea0", "#00138c"], ["#6c8ede", "#4a68c4", "#3a52a0", "#2f4590"]
+
+def tr(c, ref, b):
+    """measured colour c (relative to measured reference ref) re-based on b; identity for luna blue."""
+    if b.lower() in ("#0054e3", "#7996de", "#c3d2f0") or b.lower() == mix("#0054e3", "#d4d8e4", .55).lower():
+        return c
+    lc, lr = (lambda h: .299 * rgb(h)[0] + .587 * rgb(h)[1] + .114 * rgb(h)[2]), None
+    d = lc(c) - lc(ref)
+    return mix(b, W, min(1, d / (255 - lc(ref)))) if d > 0 else mix(b, K, min(1, -d / max(1, lc(ref))))
+
+def luna_title(b, active):
+    col, ref = (LUNA_COL, LUNA_REF[0]) if active else (LUNA_COL_I, LUNA_REF[2])
+    n = len(col) + 1
+    return [(round((i + .5) / n, 4), tr(c, ref, b), 1) for i, c in enumerate(col + col[-1:])]
+
+# Luna buttons (measured): (top-left glow, bottom-right) per state; min/max blue, close orange.
+LUNA_BTN = {"blue": {"active": ("#6f97e8", "#2263d5"), "hover": ("#82b2ff", "#2874fb"), "pressed": ("#5e80c5", "#1c54b5")},
+            "close": {"active": ("#e49c77", "#d55816"), "hover": ("#ffb88c", "#fb6719"), "pressed": ("#c18465", "#b54a12")}}
+
+def lunabtn(btn, st, b):
+    t, e = LUNA_BTN["close" if btn == "close" else "blue"][st.split("-")[0] if st.split("-")[0] in ("hover", "pressed") else "active"]
+    if btn == "close":
+        return [(0, t, 1), (.5, mix(t, e, .55) if st == "active" else mix(t, e, .5), 1), (1, e, 1)]
+    return [(0, tr(t, "#2263d5", b), 1), (.5, mix(tr(t, "#2263d5", b), tr(e, "#2263d5", b), .6), 1), (1, tr(e, "#2263d5", b), 1)]
+
 def write_deco(base, B, sub, label):
     """Aurorae theme for panel/title colour B: decoration.svg, one svg per button, <name>rc, metadata.desktop."""
     name = os.path.basename(os.path.normpath(base))
@@ -448,18 +506,21 @@ def write_deco(base, B, sub, label):
     Bi = mix(B, "#d4d8e4", .55)  # inactive: washed out
     classic, luna = sub != "modern", sub == "luna"
     # luna (Classic XP): taller glossy title, rounder top, bigger buttons, XP's red-orange close.
-    S, ry, T, bs, c = (4, 9, 30, 22, 3) if luna else (4, 7, 28, 21, 3) if classic else (5, 10, 30, 20, 5)
+    S, ry, T, bs, c = (4, 9, 30, 21, 3) if luna else (4, 7, 28, 21, 3) if classic else (5, 10, 30, 20, 5)
     T = OPT["title"] or T   # T41
     bs = min(bs, T - 2)
     def stops(b):
         if luna:
-            return [(0, mix(b, W, .5)), (.08, mix(b, W, .2)), (.18, b), (.6, mix(b, K, .03)), (.88, mix(b, W, .16)), (1, mix(b, K, .25))]
+            return luna_title(b, b == B)
         return ([(0, mix(b, W, .4)), (.12, mix(b, W, .08)), (.5, b), (.85, mix(b, W, .1)), (1, mix(b, K, .15))] if classic
                 else [(0, mix(b, W, .14)), (1, b)])
+    ex = lambda b, act: dict(cols=[tr(c_, LUNA_REF[1], b) for c_ in (SIDE if act else SIDE_I)], rows=[tr(c_, LUNA_REF[1], b) for c_ in (BOT if act else BOT_I)]) if luna else {}
+    ln = lambda b, act: (tr(LUNA_COL[0], LUNA_REF[0], b) if act else tr(LUNA_COL_I[0], LUNA_REF[2], b)) if luna else mix(b, K, .45 if act else .3)
+    hl = lambda b, act: (tr(LUNA_COL[1], LUNA_REF[0], b) if act else tr(LUNA_COL_I[1], LUNA_REF[2], b)) if luna else mix(b, W, .5)
     svg(os.path.join(base, "decoration.svg"),
-        [deco_frame("decoration", 10, T, S, ry, stops(B), mix(B, K, .05), mix(B, K, .45), mix(B, W, .5), "da"),
-         deco_frame("decoration-inactive", T + 70, T, S, ry, stops(Bi), Bi, mix(Bi, K, .3), mix(Bi, W, .5), "di")], size=(130, 2 * T + 140))
-    red = [(0, "#f2a68c", 1), (.45, "#e04343", 1), (1, "#b02a1c", 1)] if luna else [(0, "#e8906c", 1), (1, "#c13c13", 1)]
+        [deco_frame("decoration", 10, T, S, ry, stops(B), mix(B, K, .05), ln(B, 1), hl(B, 1), "da", **ex(B, 1)),
+         deco_frame("decoration-inactive", T + 70, T, S, ry, stops(Bi), Bi, ln(Bi, 0), hl(Bi, 0), "di", **ex(Bi, 0))], size=(130, 2 * T + 140))
+    red = [(0, "#e49c77", 1), (.5, "#d86930", 1), (1, "#d55816", 1)] if luna else [(0, "#e8906c", 1), (1, "#c13c13", 1)]
     for btn in BUTTONS:
         frames = []
         for i, st in enumerate(("active", "hover", "pressed", "deactivated", "inactive", "hover-inactive", "pressed-inactive", "deactivated-inactive")):
@@ -467,7 +528,10 @@ def write_deco(base, B, sub, label):
             k = {"hover": .25, "pressed": -.2}.get(st.split("-")[0], 0)
             tone = lambda h: mix(h, W, k) if k > 0 else mix(h, K, -k)
             gl = W if (btn == "close" or not lt) else ink
-            if classic:
+            if luna and act and st != "deactivated":
+                fill = lunabtn(btn, st, b)
+                bd = (W, 1)
+            elif classic:
                 fill = ([(o, tone(col), 1) for o, col, _ in red] if btn == "close" else [(0, tone(mix(b, W, .55)), 1), (.45, tone(mix(b, W, .18)), 1), (1, tone(mix(b, K, .05)), 1)] if luna
                         else [(0, tone(mix(b, W, .4)), 1), (1, tone(mix(b, W, .02)), 1)])
                 bd = (W, 1 if act else .6)
