@@ -749,11 +749,12 @@ FocusScope {
         contentItem: Row {
             spacing: m.px(6)
             // Luna: the original coloured key / power icon.
-            Kirigami.Icon {
+            Image {
                 visible: style.luna
                 anchors.verticalCenter: parent.verticalCenter
                 width: m.px(24)
                 height: width
+                sourceSize: Qt.size(width * 2, height * 2)
                 source: style.xpIcon(bb.xpName)
             }
             // Coloured square (XP) / circle (modern) with a white symbol.
