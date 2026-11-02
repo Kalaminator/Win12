@@ -78,7 +78,7 @@ FocusScope {
     readonly property var lunas: ({
         blue: {
             headTop: "#3185e6", headMid: "#0661d3", headBottom: "#2992f3", barTop: "#3d95f0", barMid: "#1a78e6",
-            barBottom: "#0560d4", right: "#d3e5fa", rightLine: "#a7c5ea", edge: "#2a6fd6", placeText: "#0a246a", line: "#dedede"
+            barBottom: "#0560d4", right: "#d3e5fa", rightLine: "#87b3e2", edge: "#0d3db0", placeText: "#00136b", line: "#2e000000"
         },
         olive: {
             headTop: "#e6edc8", headMid: "#a7b97f", headBottom: "#cddcab", barTop: "#e6edc8", barMid: "#d6deb1",
@@ -94,6 +94,7 @@ FocusScope {
     function pick(k, def) {
         return lunaScheme[k] !== undefined ? lunaScheme[k] : def !== undefined ? def : scheme[k][si];
     }
+    readonly property bool lunaBlue: luna && cfg.xpColor === "blue"
     readonly property real edgeW: luna ? m.px(2) : 0
     QtObject {
         id: c
@@ -163,8 +164,8 @@ FocusScope {
         gradient: Gradient {
             orientation: Gradient.Horizontal
             GradientStop { position: 0; color: "transparent" }
-            GradientStop { position: 0.15; color: tone }
-            GradientStop { position: 0.85; color: tone }
+            GradientStop { position: style.luna ? 0.5 : 0.15; color: tone }
+            GradientStop { position: style.luna ? 0.5 : 0.85; color: tone }
             GradientStop { position: 1; color: "transparent" }
         }
     }
@@ -202,10 +203,27 @@ FocusScope {
         topRightRadius: style.radius
         bottomLeftRadius: style.modern ? style.radius : 0
         bottomRightRadius: style.modern ? style.radius : 0
-        gradient: Gradient {
+        gradient: style.lunaBlue ? lunaHead : plainHead
+        Gradient {
+            id: plainHead
             GradientStop { position: 0; color: c.headTop }
             GradientStop { position: style.luna ? 0.12 : 0; color: c.headMid }
             GradientStop { position: 1; color: c.headBottom }
+        }
+        // Luna blue: measured XP header.
+        Gradient {
+            id: lunaHead
+            GradientStop { position: 0; color: "#1868ce" }
+            GradientStop { position: 0.12; color: "#0e60cb" }
+            GradientStop { position: 0.2; color: "#0e60cb" }
+            GradientStop { position: 0.32; color: "#1164cf" }
+            GradientStop { position: 0.47; color: "#1b6cd3" }
+            GradientStop { position: 0.54; color: "#1e70d9" }
+            GradientStop { position: 0.6; color: "#2476dc" }
+            GradientStop { position: 0.65; color: "#297ae0" }
+            GradientStop { position: 0.77; color: "#3482e3" }
+            GradientStop { position: 0.9; color: "#428ee9" }
+            GradientStop { position: 1; color: "#4791eb" }
         }
         // XP: light top edge.
         Rectangle {
@@ -213,11 +231,11 @@ FocusScope {
             x: style.radius / 2
             width: parent.width - style.radius
             height: 1
-            color: Qt.alpha("#ffffff", 0.45)
+            color: style.lunaBlue ? "#6ba5f7" : Qt.alpha("#ffffff", 0.45)
         }
         // Luna: soft highlight over the top half of the header, edge to edge (rounded like the header's top).
         Rectangle {
-            visible: style.luna
+            visible: style.luna && !style.lunaBlue
             width: parent.width
             height: Math.round(parent.height * 0.58)
             topLeftRadius: style.radius
@@ -318,13 +336,13 @@ FocusScope {
         anchors.top: header.bottom
         anchors.topMargin: style.modern ? m.px(6) : 0
         width: parent.width - x * 2
-        height: m.px(style.modern || style.luna ? 3 : 2)
+        height: m.px(style.modern ? 3 : 2)
         radius: style.luna ? 0 : height / 2
         gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0; color: style.modern ? "transparent" : c.orange }
-            GradientStop { position: 0.5; color: c.orangeLight }
-            GradientStop { position: 1; color: style.modern ? "transparent" : c.orange }
+            GradientStop { position: 0; color: style.modern || style.luna ? "transparent" : c.orange }
+            GradientStop { position: 0.5; color: style.luna ? "#da884a" : c.orangeLight }
+            GradientStop { position: 1; color: style.modern || style.luna ? "transparent" : c.orange }
         }
     }
 
@@ -585,6 +603,13 @@ FocusScope {
         Rectangle {
             id: rightCol
             readonly property var ids: style.cfg.railItems.filter(id => id !== "user" && id !== "power" && places.info(id) !== undefined)
+            // Luna with the stock list: XP's own grouping (bold group | Control Panel... | Help...).
+            readonly property bool xpList: style.luna && style.cfg.railItems.join(",") === "user,documents,downloads,music,pictures,personalization,settings,files,power"
+            readonly property var xpModel: [
+                { id: "documents", main: true }, { id: "recent", main: true }, { id: "pictures", main: true },
+                { id: "music", main: true }, { id: "computer", main: true }, { id: "", main: false },
+                { id: "settings", main: false }, { id: "network", main: false }, { id: "", main: false },
+                { id: "help", main: false }, { id: "search", main: false }, { id: "run", main: false }]
             readonly property var folders: ["home", "documents", "downloads", "pictures", "music", "videos", "files", "network"]
             anchors.right: parent.right
             anchors.top: parent.top
@@ -607,7 +632,7 @@ FocusScope {
                 anchors.margins: m.px(style.modern ? 8 : 6)
                 clip: true
                 Repeater {
-                    model: [{ id: "home", main: true }]
+                    model: rightCol.xpList ? rightCol.xpModel : [{ id: "home", main: true }]
                         .concat(rightCol.ids.filter(id => rightCol.folders.includes(id) && id !== "home").map(id => ({ id: id, main: true })))
                         .concat([{ id: "", main: false }])
                         .concat(rightCol.ids.filter(id => !rightCol.folders.includes(id)).map(id => ({ id: id === "separator" ? "" : id, main: false })))
@@ -615,7 +640,8 @@ FocusScope {
                         id: pb
                         required property var modelData
                         readonly property bool sep: modelData.id === ""
-                        readonly property var info: sep ? null : places.info(modelData.id)
+                        readonly property var lunaInfo: style.luna ? style.lunaNames[modelData.id] : undefined
+                        readonly property var info: sep ? null : lunaInfo ? { text: lunaInfo[0], icon: lunaInfo[1] } : places.info(modelData.id)
                         readonly property bool hot: hovered || root.kbCurrent === pb
                         width: placeCol.width
                         height: sep ? style.sepH : style.placeH
@@ -629,7 +655,7 @@ FocusScope {
                             Sep {
                                 visible: pb.sep
                                 anchors.centerIn: parent
-                                width: parent.width
+                                width: parent.width - (style.luna ? m.px(20) : 0)
                                 tone: c.rightLine
                             }
                             HoverBox {
@@ -645,7 +671,17 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: m.px(pb.modelData.main || style.luna ? 24 : 22)
                                 height: width
+                                // Luna: our Win12-XP file icon as a plain Image (Kirigami.Icon showed the theme icon instead).
+                                readonly property string xpSrc: pb.info && style.luna ? String(style.xpIcon(pb.info.icon.replace(/-symbolic$/, ""))) : ""
+                                readonly property bool xpFile: xpSrc.endsWith(".svg")
+                            Image {
+                                visible: parent.xpFile
+                                anchors.fill: parent
+                                sourceSize: Qt.size(width * 2, height * 2)
+                                source: parent.xpFile ? parent.xpSrc : ""
+                            }
                             Kirigami.Icon {
+                                visible: !parent.xpFile
                                 // Luna: looked up at 32 and drawn at 24 (the theme's 22/24 place icons are monochrome).
                                 anchors.centerIn: parent
                                 width: style.luna ? m.px(32) : parent.width
@@ -654,7 +690,7 @@ FocusScope {
                                 // The theme's place icons are white (dark theme): draw them black on the light
                                 // blue pane and white on the blue hover, so they always stand out.
                                 // Luna: the theme's full-colour icon (no -symbolic), like XP's coloured places.
-                                source: pb.info ? (style.luna ? pb.info.icon.replace(/-symbolic$/, "") : pb.info.icon) : ""
+                                source: pb.info ? (style.luna ? style.xpIcon(pb.info.icon.replace(/-symbolic$/, "")) : pb.info.icon) : ""
                                 isMask: !style.luna
                                 color: pb.hot ? c.hoverText : "#000000"
                             }
@@ -680,11 +716,31 @@ FocusScope {
     // White glyphs drawn as masks: take them from Breeze, not the icon theme. A full-colour theme (the XP icons)
     // answers "-symbolic" names with its coloured icon, and a mask turns that into a solid white square.
     // ponytail: Breeze ships with Plasma; if it is missing the glyph is just empty.
+    // Luna: the original Win12-XP icons loaded by file (works without the theme installed); else the theme name.
+    readonly property var xpIconDir: ({
+        "folder-documents": "places", "folder-pictures": "places", "folder-music": "places", "folder-download": "places",
+        "folder-videos": "places", "user-home": "places", "document-open-recent": "places", "network-workgroup": "places",
+        "user-trash": "places", "computer": "devices", "preferences-system": "apps", "help-browser": "apps",
+        "system-search": "actions", "system-run": "actions", "system-log-out": "actions", "system-shutdown": "actions"
+    })
+    function xpIcon(name) {
+        const d = xpIconDir[name];
+        return d ? Qt.resolvedUrl("../../icons/Win12-XP/scalable/" + d + "/" + name + ".svg") : name;
+    }
+    // Luna names and icons for the right column (XP wording), by Places id.
+    readonly property var lunaNames: ({
+        documents: [i18n("My Documents"), "folder-documents"], recent: [i18n("My Recent Documents"), "document-open-recent"],
+        pictures: [i18n("My Pictures"), "folder-pictures"], music: [i18n("My Music"), "folder-music"],
+        computer: [i18n("My Computer"), "computer"], settings: [i18n("Control Panel"), "preferences-system"],
+        network: [i18n("Network Connections"), "network-workgroup"], help: [i18n("Help and Support"), "help-browser"],
+        search: [i18n("Search"), "system-search"], run: [i18n("Run…"), "system-run"]
+    })
     function glyph(path) { return "file:///usr/share/icons/breeze/" + path + ".svg"; }
 
     component BarButton: PC3.AbstractButton {
         id: bb
         property string iconName
+        property string xpName
         property color chip
         readonly property bool hot: hovered || root.kbCurrent === bb
         anchors.verticalCenter: parent.verticalCenter
@@ -702,8 +758,18 @@ FocusScope {
         }
         contentItem: Row {
             spacing: m.px(6)
+            // Luna: the original coloured key / power icon.
+            Image {
+                visible: style.luna
+                anchors.verticalCenter: parent.verticalCenter
+                width: m.px(24)
+                height: width
+                sourceSize: Qt.size(width * 2, height * 2)
+                source: style.xpIcon(bb.xpName)
+            }
             // Coloured square (XP) / circle (modern) with a white symbol.
             Rectangle {
+                visible: !style.luna
                 anchors.verticalCenter: parent.verticalCenter
                 width: m.px(style.modern ? 26 : 24)
                 height: width
@@ -740,10 +806,30 @@ FocusScope {
         width: parent.width - style.pad * 2
         height: style.barH
         radius: style.modern ? style.radius : 0
-        gradient: Gradient {
+        gradient: style.lunaBlue ? lunaBar : plainBar
+        Gradient {
+            id: plainBar
             GradientStop { position: 0; color: c.barTop }
             GradientStop { position: style.luna ? 0.2 : 0; color: c.barMid }
             GradientStop { position: 1; color: c.barBottom }
+        }
+        Gradient {
+            id: lunaBar
+            GradientStop { position: 0; color: "#4282d6" }
+            GradientStop { position: 0.03; color: "#3b85e0" }
+            GradientStop { position: 0.05; color: "#418ae3" }
+            GradientStop { position: 0.17; color: "#418ae3" }
+            GradientStop { position: 0.21; color: "#3c87e2" }
+            GradientStop { position: 0.26; color: "#3786e4" }
+            GradientStop { position: 0.29; color: "#3482e3" }
+            GradientStop { position: 0.39; color: "#2e7ee1" }
+            GradientStop { position: 0.49; color: "#2374df" }
+            GradientStop { position: 0.57; color: "#2072db" }
+            GradientStop { position: 0.62; color: "#196edb" }
+            GradientStop { position: 0.72; color: "#176bd8" }
+            GradientStop { position: 0.75; color: "#1468d5" }
+            GradientStop { position: 0.83; color: "#1165d2" }
+            GradientStop { position: 1; color: "#0f61cb" }
         }
         border.color: style.modern ? Qt.alpha(c.rightBorder, 0.5) : "transparent"
 
@@ -756,6 +842,7 @@ FocusScope {
             BarButton {
                 id: logOff
                 text: i18n("Log Off")
+                xpName: "system-log-out"
                 iconName: style.glyph("actions/16/system-log-out-symbolic")
                 chip: c.orange
                 onClicked: contextMenu.show(logOff, null, -1, places.powerItems(["lock-screen", "logout", "switch-user"]))
@@ -763,6 +850,7 @@ FocusScope {
             BarButton {
                 id: turnOff
                 text: i18n("Turn Off Computer")
+                xpName: "system-shutdown"
                 iconName: style.glyph("actions/16/system-shutdown-symbolic")
                 chip: c.red
                 onClicked: contextMenu.show(turnOff, null, -1, places.powerItems(style.cfg.powerItems))

@@ -495,25 +495,37 @@ MouseArea {
     // ponytail: horizontal panels and the three XP schemes only; the tray is found by duck typing (plasmoid.pluginName).
     Rectangle {
         id: trayStrip
+        // [gradient stops top -> bottom as [position, colour]], [dark left edge, light left edge]
         readonly property var schemes: ({
-            blue: ["#0ca0f9", "#009df3", "#1288dc", "#0096ee", "#0076d8", "#0054a2", "#1bbefb"],
-            olive: ["#fcf7da", "#ebe3b4", "#ebe3b4", "#ebe3b4", "#d7c288", "#978c4a", "#f5ecab"],
-            silver: ["#ffffff", "#f3f3f7", "#e6e6ee", "#dcdce6", "#c4c4d4", "#9a9ab0", "#ffffff"]
+            blue: [[[0.01, "#0c59b9"], [0.06, "#139ee9"], [0.1, "#18b5f2"], [0.14, "#139beb"], [0.19, "#1290e8"],
+                    [0.63, "#0d8dea"], [0.81, "#0d9ff1"], [0.88, "#0f9eed"], [0.91, "#119be9"], [0.94, "#1392e2"],
+                    [0.97, "#137ed7"], [1, "#095bc9"]], ["#1042af", "#18bbff"]],
+            olive: [[[0, "#fcf7da"], [0.1, "#ebe3b4"], [0.9, "#ebe3b4"], [1, "#d7c288"]], ["#978c4a", "#f5ecab"]],
+            silver: [[[0, "#ffffff"], [0.1, "#f3f3f7"], [0.45, "#e6e6ee"], [0.9, "#dcdce6"], [1, "#c4c4d4"]], ["#9a9ab0", "#ffffff"]]
         })
         readonly property var c: schemes[button.cfg.xpColor] || null
         readonly property bool wanted: button.xp && xpPill.luna && root.xpTheme !== "" && c !== null
         property Item tray: null
         visible: wanted && tray !== null
         z: -1
+        // ponytail: 12 fixed stops (the most a scheme has); shorter schemes repeat their last stop
+        function st(i) { const g = c ? c[0] : [[1, "transparent"]]; return g[Math.min(i, g.length - 1)]; }
         gradient: Gradient {
-            GradientStop { position: 0; color: trayStrip.c ? trayStrip.c[0] : "transparent" }
-            GradientStop { position: 0.1; color: trayStrip.c ? trayStrip.c[1] : "transparent" }
-            GradientStop { position: 0.45; color: trayStrip.c ? trayStrip.c[2] : "transparent" }
-            GradientStop { position: 0.9; color: trayStrip.c ? trayStrip.c[3] : "transparent" }
-            GradientStop { position: 1; color: trayStrip.c ? trayStrip.c[4] : "transparent" }
+            GradientStop { position: trayStrip.st(0)[0]; color: trayStrip.st(0)[1] }
+            GradientStop { position: trayStrip.st(1)[0]; color: trayStrip.st(1)[1] }
+            GradientStop { position: trayStrip.st(2)[0]; color: trayStrip.st(2)[1] }
+            GradientStop { position: trayStrip.st(3)[0]; color: trayStrip.st(3)[1] }
+            GradientStop { position: trayStrip.st(4)[0]; color: trayStrip.st(4)[1] }
+            GradientStop { position: trayStrip.st(5)[0]; color: trayStrip.st(5)[1] }
+            GradientStop { position: trayStrip.st(6)[0]; color: trayStrip.st(6)[1] }
+            GradientStop { position: trayStrip.st(7)[0]; color: trayStrip.st(7)[1] }
+            GradientStop { position: trayStrip.st(8)[0]; color: trayStrip.st(8)[1] }
+            GradientStop { position: trayStrip.st(9)[0]; color: trayStrip.st(9)[1] }
+            GradientStop { position: trayStrip.st(10)[0]; color: trayStrip.st(10)[1] }
+            GradientStop { position: trayStrip.st(11)[0]; color: trayStrip.st(11)[1] }
         }
-        Rectangle { width: 1; height: parent.height; color: trayStrip.c ? trayStrip.c[5] : "transparent" }
-        Rectangle { x: 1; width: 1; height: parent.height; color: trayStrip.c ? trayStrip.c[6] : "transparent" }
+        Rectangle { width: 1; height: parent.height; color: trayStrip.c ? trayStrip.c[1][0] : "transparent" }
+        Rectangle { x: 1; width: 1; height: parent.height; color: trayStrip.c ? trayStrip.c[1][1] : "transparent" }
         function place() {
             if (!wanted) return;
             const find = (it, d) => {

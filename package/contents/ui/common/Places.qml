@@ -43,6 +43,8 @@ Item {
         "settings":        { text: i18n("Settings"), icon: "configure-symbolic", cmd: "systemsettings" },
         "terminal":        { text: i18n("Terminal"), icon: "utilities-terminal-symbolic", cmd: "konsole" },
         "monitor":         { text: i18n("System Monitor"), icon: "utilities-system-monitor-symbolic", cmd: "plasma-systemmonitor" },
+        "help":            { text: i18n("Help and Support"), icon: "help-browser", cmd: "khelpcenter" },
+        "search":          { text: i18n("Search"), icon: "system-search", cmd: "krunner" },
         "run":             { text: i18n("Run…"), icon: "system-run-symbolic", cmd: "krunner" },
         "win12":         { text: i18n("Win12 Settings"), icon: "configure", configure: true },
         "power":           { text: i18n("Power"), icon: "system-shutdown-symbolic", menu: "power" }

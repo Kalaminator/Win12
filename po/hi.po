@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Start 12\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 16:00+0200\n"
+"POT-Creation-Date: 2026-11-02 14:17+0100\n"
 "PO-Revision-Date: 2026-10-14 20:26+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -48,12 +48,21 @@ msgid "Appearance"
 msgstr "रूप-रंग"
 
 #: package/contents/config/config.qml:41
+#: package/contents/ui/common/Places.qml:47
+#: package/contents/ui/styles/xp.qml:736
 msgid "Search"
 msgstr "खोजें"
 
 #: package/contents/config/config.qml:46
 msgid "Advanced"
 msgstr "उन्नत"
+
+#: package/contents/extras/win12-showdesktop/contents/ui/main.qml:18
+#: package/contents/extras/win12-showdesktop/contents/ui/main.qml:28
+#: package/contents/ui/config/ConfigButton.qml:48
+#: package/contents/ui/main.qml:1564
+msgid "Show desktop"
+msgstr "डेस्कटॉप दिखाएँ"
 
 #: package/contents/ui/AppletPicker.qml:34
 msgid "KDE widgets"
@@ -142,9 +151,9 @@ msgstr "हाल की फ़ाइलें"
 #: package/contents/ui/common/AppCanvas.qml:458
 #: package/contents/ui/common/AppCanvas.qml:466
 #: package/contents/ui/common/PinnedGrid.qml:138
-#: package/contents/ui/main.qml:1068
+#: package/contents/ui/main.qml:1132
 #: package/contents/ui/styles/windows7.qml:300
-#: package/contents/ui/styles/xp.qml:411
+#: package/contents/ui/styles/xp.qml:429
 msgid "Rename"
 msgstr "नाम बदलें"
 
@@ -176,7 +185,7 @@ msgstr "स्वचालित"
 #: package/contents/ui/config/ConfigTaskbar.qml:142
 #: package/contents/ui/config/ConfigTaskbar.qml:207
 #: package/contents/ui/config/ConfigTaskbar.qml:221
-#: package/contents/ui/config/ConfigWindows.qml:100
+#: package/contents/ui/config/ConfigWindows.qml:110
 msgid "None"
 msgstr "कोई नहीं"
 
@@ -264,7 +273,7 @@ msgstr "समूह से निकालें"
 #: package/contents/ui/common/AppCanvas.qml:469
 #: package/contents/ui/common/PinnedGrid.qml:139
 #: package/contents/ui/styles/windows7.qml:301
-#: package/contents/ui/styles/xp.qml:418
+#: package/contents/ui/styles/xp.qml:436
 #: package/contents/ui/win10/AppList.qml:180
 msgid "Hide from apps"
 msgstr "ऐप्स से छिपाएँ"
@@ -301,7 +310,7 @@ msgstr "सभी ऐप्स"
 #: package/contents/ui/styles/windows12.qml:107
 #: package/contents/ui/styles/windows12.qml:291
 #: package/contents/ui/styles/windows7.qml:483
-#: package/contents/ui/styles/xp.qml:545
+#: package/contents/ui/styles/xp.qml:563
 msgid "Back"
 msgstr "वापस"
 
@@ -377,7 +386,8 @@ msgstr "अपडेट"
 #: package/contents/ui/common/Places.qml:41
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:68
-#: package/contents/ui/main.qml:1476
+#: package/contents/ui/config/ConfigWindows.qml:135
+#: package/contents/ui/main.qml:1540
 msgid "File Explorer"
 msgstr "फ़ाइल एक्सप्लोरर"
 
@@ -390,7 +400,7 @@ msgstr "वैयक्तिकरण"
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:70
 #: package/contents/ui/config/ConfigSearch.qml:24
-#: package/contents/ui/main.qml:1470
+#: package/contents/ui/main.qml:1534
 #: package/contents/ui/win10/SearchView.qml:31
 msgid "Settings"
 msgstr "सेटिंग"
@@ -398,30 +408,35 @@ msgstr "सेटिंग"
 #: package/contents/ui/common/Places.qml:44
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:71
-#: package/contents/ui/main.qml:1488
+#: package/contents/ui/main.qml:1552
 msgid "Terminal"
 msgstr "टर्मिनल"
 
 #: package/contents/ui/common/Places.qml:45
 #: package/contents/ui/config/ConfigButton.qml:47
 #: package/contents/ui/config/ConfigButton.qml:72
-#: package/contents/ui/main.qml:1482
+#: package/contents/ui/main.qml:1546
 msgid "System Monitor"
 msgstr "सिस्टम मॉनिटर"
 
 #: package/contents/ui/common/Places.qml:46
+#: package/contents/ui/styles/xp.qml:735
+msgid "Help and Support"
+msgstr "सहायता और समर्थन"
+
+#: package/contents/ui/common/Places.qml:48
 #: package/contents/ui/config/ConfigButton.qml:48
 #: package/contents/ui/config/ConfigButton.qml:73
-#: package/contents/ui/main.qml:1494
+#: package/contents/ui/main.qml:1558 package/contents/ui/styles/xp.qml:736
 msgid "Run…"
 msgstr "चलाएँ…"
 
-#: package/contents/ui/common/Places.qml:47
+#: package/contents/ui/common/Places.qml:49
 #: package/contents/ui/config/ConfigButton.qml:74
 msgid "Win12 Settings"
 msgstr "Win12 सेटिंग"
 
-#: package/contents/ui/common/Places.qml:48
+#: package/contents/ui/common/Places.qml:50
 #: package/contents/ui/config/ConfigButton.qml:75
 #: package/contents/ui/config/ConfigButton.qml:311
 #: package/contents/ui/styles/launcher.qml:77
@@ -429,48 +444,48 @@ msgstr "Win12 सेटिंग"
 msgid "Power"
 msgstr "पावर"
 
-#: package/contents/ui/common/Places.qml:63
+#: package/contents/ui/common/Places.qml:65
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1523
+#: package/contents/ui/main.qml:1587
 msgid "Lock"
 msgstr "लॉक करें"
 
-#: package/contents/ui/common/Places.qml:64
+#: package/contents/ui/common/Places.qml:66
 #: package/contents/ui/config/ConfigButton.qml:78
-#: package/contents/ui/main.qml:1529
+#: package/contents/ui/main.qml:1593
 msgid "Sign out"
 msgstr "साइन आउट करें"
 
-#: package/contents/ui/common/Places.qml:65
+#: package/contents/ui/common/Places.qml:67
 #: package/contents/ui/config/ConfigButton.qml:78
 msgid "Switch user"
 msgstr "उपयोगकर्ता बदलें"
 
-#: package/contents/ui/common/Places.qml:66
+#: package/contents/ui/common/Places.qml:68
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1535
+#: package/contents/ui/main.qml:1599
 msgid "Sleep"
 msgstr "स्लीप"
 
-#: package/contents/ui/common/Places.qml:67
+#: package/contents/ui/common/Places.qml:69
 #: package/contents/ui/config/ConfigButton.qml:79
 msgid "Hibernate"
 msgstr "हाइबरनेट"
 
-#: package/contents/ui/common/Places.qml:68
+#: package/contents/ui/common/Places.qml:70
 #: package/contents/ui/config/ConfigButton.qml:79
-#: package/contents/ui/main.qml:1541
+#: package/contents/ui/main.qml:1605
 msgid "Restart"
 msgstr "पुनः आरंभ करें"
 
-#: package/contents/ui/common/Places.qml:69
+#: package/contents/ui/common/Places.qml:71
 #: package/contents/ui/config/ConfigButton.qml:80
-#: package/contents/ui/main.qml:1547
+#: package/contents/ui/main.qml:1611
 #: package/contents/ui/styles/windows7.qml:614
 msgid "Shut down"
 msgstr "शट डाउन करें"
 
-#: package/contents/ui/common/Places.qml:82
+#: package/contents/ui/common/Places.qml:84
 msgid "Change account settings"
 msgstr "खाता सेटिंग बदलें"
 
@@ -582,7 +597,7 @@ msgstr "कस्टम टेक्सचर चुनें…"
 
 #: package/contents/ui/config/ConfigAppearance.qml:118
 #: package/contents/ui/config/ConfigStartMenu.qml:65
-#: package/contents/ui/main.qml:952 package/contents/ui/main.qml:959
+#: package/contents/ui/main.qml:1016 package/contents/ui/main.qml:1023
 msgid "Images (*.png *.jpg *.jpeg *.webp *.svg)"
 msgstr "छवियाँ (*.png *.jpg *.jpeg *.webp *.svg)"
 
@@ -763,9 +778,12 @@ msgstr "पढ़ने योग्य काँच: किनारा, छा
 msgid ""
 "The even background needs Win12's KWin patch: run kde/build.sh kwin from the "
 "Win12 source folder, then log out and in. Edge and shadow work without it."
-msgstr "एकसमान पृष्ठभूमि के लिए Win12 का KWin पैच चाहिए: Win12 के स्रोत फ़ोल्डर से kde/build.sh kwin चलाएँ, फिर लॉग आउट करके दोबारा लॉग इन करें। किनारा और छाया इसके बिना भी काम करते हैं।"
-"टास्कबार लेआउट और स्टार्ट की स्थिति के लिए Win12 के पैच किए हुए KDE पैकेज चाहिए। Win12 "
-"स्रोत फ़ोल्डर से kde/build.sh चलाएँ, फिर लॉग आउट करके दोबारा लॉग इन करें।"
+msgstr ""
+"एकसमान पृष्ठभूमि के लिए Win12 का KWin पैच चाहिए: Win12 के स्रोत फ़ोल्डर से kde/"
+"build.sh kwin चलाएँ, फिर लॉग आउट करके दोबारा लॉग इन करें। किनारा और छाया इसके "
+"बिना भी काम करते हैं।टास्कबार लेआउट और स्टार्ट की स्थिति के लिए Win12 के पैच किए हुए KDE "
+"पैकेज चाहिए। Win12 स्रोत फ़ोल्डर से kde/build.sh चलाएँ, फिर लॉग आउट करके दोबारा लॉग "
+"इन करें।"
 
 #: package/contents/ui/config/ConfigAppearance.qml:270
 msgid ""
@@ -785,7 +803,7 @@ msgstr "मेनू के कोने की त्रिज्या:"
 #: package/contents/ui/config/ConfigAppearance.qml:277
 #: package/contents/ui/config/ConfigTaskbar.qml:157
 #: package/contents/ui/config/ConfigTaskbar.qml:185
-#: package/contents/ui/config/ConfigWindows.qml:72
+#: package/contents/ui/config/ConfigWindows.qml:82
 msgid "Square"
 msgstr "वर्गाकार"
 
@@ -800,13 +818,13 @@ msgstr "टेक्सचर:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:301
 #: package/contents/ui/config/ConfigTaskbar.qml:227
-#: package/contents/ui/config/ConfigWindows.qml:106
+#: package/contents/ui/config/ConfigWindows.qml:116
 msgid "Placement:"
 msgstr "स्थान:"
 
 #: package/contents/ui/config/ConfigAppearance.qml:303
 #: package/contents/ui/config/ConfigTaskbar.qml:230
-#: package/contents/ui/config/ConfigWindows.qml:109
+#: package/contents/ui/config/ConfigWindows.qml:119
 msgid "Tile"
 msgstr "टाइल"
 
@@ -963,7 +981,7 @@ msgstr "हटाएँ"
 
 #: package/contents/ui/config/ConfigAppsList.qml:123
 #: package/contents/ui/config/ConfigButton.qml:359
-#: package/contents/ui/main.qml:1082
+#: package/contents/ui/main.qml:1146
 msgid "Name:"
 msgstr "नाम:"
 
@@ -988,17 +1006,12 @@ msgid "Add filtered folder"
 msgstr "फ़िल्टर किया गया फ़ोल्डर जोड़ें"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1500
-msgid "Show desktop"
-msgstr "डेस्कटॉप दिखाएँ"
-
-#: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1506
+#: package/contents/ui/main.qml:1570
 msgid "Edit panel"
 msgstr "पैनल संपादित करें"
 
 #: package/contents/ui/config/ConfigButton.qml:48
-#: package/contents/ui/main.qml:1512
+#: package/contents/ui/main.qml:1576
 msgid "Auto-hide panel"
 msgstr "पैनल अपने-आप छिपाएँ"
 
@@ -1281,7 +1294,7 @@ msgid "Off: starts with Apps, Settings and Files; tick more below."
 msgstr "बंद: ऐप्स, सेटिंग और फ़ाइलों से शुरू होता है; नीचे और चुनें।"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:64
-#: package/contents/ui/main.qml:951
+#: package/contents/ui/main.qml:1015
 msgid "Pick tile image…"
 msgstr "टाइल छवि चुनें…"
 
@@ -1435,7 +1448,7 @@ msgstr "टाइल छवि:"
 
 #: package/contents/ui/config/ConfigStartMenu.qml:163
 #: package/contents/ui/config/ConfigTaskbar.qml:222
-#: package/contents/ui/config/ConfigWindows.qml:101
+#: package/contents/ui/config/ConfigWindows.qml:111
 msgid "Pick image…"
 msgstr "छवि चुनें…"
 
@@ -1717,7 +1730,7 @@ msgid "Compact Grid Modern style"
 msgstr "कॉम्पैक्ट ग्रिड आधुनिक शैली"
 
 #: package/contents/ui/config/ConfigStyle.qml:191
-#: package/contents/ui/config/ConfigWindows.qml:125
+#: package/contents/ui/config/ConfigWindows.qml:157
 msgid "Windows XP"
 msgstr "Windows XP"
 
@@ -1771,7 +1784,7 @@ msgid "Pick taskbar texture…"
 msgstr "टास्कबार टेक्सचर चुनें…"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:71
-#: package/contents/ui/config/ConfigWindows.qml:35
+#: package/contents/ui/config/ConfigWindows.qml:45
 msgid "Images (*.png *.jpg *.jpeg)"
 msgstr "छवियाँ (*.png *.jpg *.jpeg)"
 
@@ -1911,20 +1924,20 @@ msgid "Colour:"
 msgstr "रंग:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:175
-#: package/contents/ui/config/ConfigWindows.qml:49
+#: package/contents/ui/config/ConfigWindows.qml:59
 msgid "Opacity:"
 msgstr "अपारदर्शिता:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:177
 #: package/contents/ui/config/ConfigTaskbar.qml:240
-#: package/contents/ui/config/ConfigWindows.qml:51
-#: package/contents/ui/config/ConfigWindows.qml:117
+#: package/contents/ui/config/ConfigWindows.qml:61
+#: package/contents/ui/config/ConfigWindows.qml:127
 #, javascript-format
 msgid "%1% opaque"
 msgstr "%1% अपारदर्शी"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:182
-#: package/contents/ui/config/ConfigWindows.qml:60
+#: package/contents/ui/config/ConfigWindows.qml:70
 msgid "Corner radius:"
 msgstr "कोने की त्रिज्या:"
 
@@ -1978,7 +1991,7 @@ msgid "Gradient strength: %1%"
 msgstr "ग्रेडिएंट की तीव्रता: %1%"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:230
-#: package/contents/ui/config/ConfigWindows.qml:109
+#: package/contents/ui/config/ConfigWindows.qml:119
 msgid "Stretch"
 msgstr "खींचें"
 
@@ -1999,7 +2012,7 @@ msgid "Texture opacity:"
 msgstr "टेक्सचर की अपारदर्शिता:"
 
 #: package/contents/ui/config/ConfigTaskbar.qml:245
-#: package/contents/ui/config/ConfigWindows.qml:122
+#: package/contents/ui/config/ConfigWindows.qml:132
 msgid "Tint with the accent colour"
 msgstr "एक्सेंट रंग से टिंट करें"
 
@@ -2059,39 +2072,66 @@ msgstr "पैनल की ऊँचाई, स्थिति और टास
 msgid "Edit panel…"
 msgstr "पैनल संपादित करें…"
 
-#: package/contents/ui/config/ConfigWindows.qml:34
+#: package/contents/ui/config/ConfigWindows.qml:44
 msgid "Pick title bar picture…"
 msgstr "शीर्षक पट्टी का चित्र चुनें…"
 
-#: package/contents/ui/config/ConfigWindows.qml:40
+#: package/contents/ui/config/ConfigWindows.qml:50
 msgid "Title bars and frames"
 msgstr "शीर्षक पट्टियाँ और फ़्रेम"
 
-#: package/contents/ui/config/ConfigWindows.qml:43
+#: package/contents/ui/config/ConfigWindows.qml:53
 msgid "Pick a Windows title bar on the Style page to change these."
 msgstr "इन्हें बदलने के लिए शैली पृष्ठ पर Windows शीर्षक पट्टी चुनें।"
 
-#: package/contents/ui/config/ConfigWindows.qml:56
+#: package/contents/ui/config/ConfigWindows.qml:66
 msgid "Blur behind translucent frames"
 msgstr "पारदर्शी फ़्रेम के पीछे धुंधलापन"
 
-#: package/contents/ui/config/ConfigWindows.qml:79
+#: package/contents/ui/config/ConfigWindows.qml:89
 msgid "Title bar height:"
 msgstr "टाइटल बार की ऊँचाई:"
 
-#: package/contents/ui/config/ConfigWindows.qml:99
+#: package/contents/ui/config/ConfigWindows.qml:109
 msgid "Title bar picture:"
 msgstr "शीर्षक पट्टी का चित्र:"
 
-#: package/contents/ui/config/ConfigWindows.qml:115
+#: package/contents/ui/config/ConfigWindows.qml:125
 msgid "Picture opacity:"
 msgstr "चित्र की अपारदर्शिता:"
 
-#: package/contents/ui/config/ConfigWindows.qml:129
+#: package/contents/ui/config/ConfigWindows.qml:140
+msgid ""
+"Win12 Explorer is not built. Run ./install.sh from the Win12 source folder "
+"(Arch; needs a compiler)."
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:145
+msgid "Use Win12 Explorer as the file manager"
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:147
+msgid ""
+"Folders, \"Show in folder\" from other apps, the Start menu File Explorer "
+"item and the taskbar pin open Win12 Explorer. Off puts your previous file "
+"manager back."
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:152
+msgid "Show tag flags on icons"
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:154
+msgid ""
+"A small coloured flag on files and folders that have tags, in Dolphin and "
+"Win12 Explorer."
+msgstr ""
+
+#: package/contents/ui/config/ConfigWindows.qml:161
 msgid "Use the system title bar in Firefox"
 msgstr "Firefox में सिस्टम शीर्षक पट्टी का उपयोग करें"
 
-#: package/contents/ui/config/ConfigWindows.qml:131
+#: package/contents/ui/config/ConfigWindows.qml:163
 msgid ""
 "Firefox draws its own title bar, so the XP one does not show. Restart "
 "Firefox for this to take effect."
@@ -2157,119 +2197,119 @@ msgstr "फ़ाइल का स्थान खोलें"
 msgid "Folder"
 msgstr "फ़ोल्डर"
 
-#: package/contents/ui/main.qml:579
+#: package/contents/ui/main.qml:632
 msgid "Unpin from taskbar"
 msgstr "टास्कबार से अनपिन करें"
 
-#: package/contents/ui/main.qml:579
+#: package/contents/ui/main.qml:632
 msgid "Pin to taskbar"
 msgstr "टास्कबार पर पिन करें"
 
-#: package/contents/ui/main.qml:958 package/contents/ui/win10/Tile.qml:302
+#: package/contents/ui/main.qml:1022 package/contents/ui/win10/Tile.qml:302
 msgid "Choose picture…"
 msgstr "चित्र चुनें…"
 
-#: package/contents/ui/main.qml:965 package/contents/ui/win10/Tile.qml:303
+#: package/contents/ui/main.qml:1029 package/contents/ui/win10/Tile.qml:303
 msgid "Choose folder…"
 msgstr "फ़ोल्डर चुनें…"
 
-#: package/contents/ui/main.qml:1022
+#: package/contents/ui/main.qml:1086
 msgid "Pin file to Start"
 msgstr "फ़ाइल को स्टार्ट पर पिन करें"
 
-#: package/contents/ui/main.qml:1028
+#: package/contents/ui/main.qml:1092
 msgid "Add a folder as group"
 msgstr "फ़ोल्डर को समूह के रूप में जोड़ें"
 
-#: package/contents/ui/main.qml:1028
+#: package/contents/ui/main.qml:1092
 msgid "Pin folder to Start"
 msgstr "फ़ोल्डर को स्टार्ट पर पिन करें"
 
-#: package/contents/ui/main.qml:1034
+#: package/contents/ui/main.qml:1098
 msgid "Pin website to Start"
 msgstr "वेबसाइट को स्टार्ट पर पिन करें"
 
-#: package/contents/ui/main.qml:1049
+#: package/contents/ui/main.qml:1113
 msgid "Web address:"
 msgstr "वेब पता:"
 
-#: package/contents/ui/main.qml:1059
+#: package/contents/ui/main.qml:1123
 msgid "Pin"
 msgstr "पिन करें"
 
-#: package/contents/ui/main.qml:1060 package/contents/ui/main.qml:1092
+#: package/contents/ui/main.qml:1124 package/contents/ui/main.qml:1156
 msgid "Cancel"
 msgstr "रद्द करें"
 
-#: package/contents/ui/main.qml:1082
+#: package/contents/ui/main.qml:1146
 msgid "Name (empty = original):"
 msgstr "नाम (खाली = मूल):"
 
-#: package/contents/ui/main.qml:1091
+#: package/contents/ui/main.qml:1155
 msgid "OK"
 msgstr "ठीक है"
 
-#: package/contents/ui/main.qml:1107
+#: package/contents/ui/main.qml:1171
 msgid "Pin website…"
 msgstr "वेबसाइट पिन करें…"
 
-#: package/contents/ui/main.qml:1108
+#: package/contents/ui/main.qml:1172
 msgid "Pin file…"
 msgstr "फ़ाइल पिन करें…"
 
-#: package/contents/ui/main.qml:1109
+#: package/contents/ui/main.qml:1173
 msgid "Pin folder…"
 msgstr "फ़ोल्डर पिन करें…"
 
-#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1177 package/contents/ui/win10/Tile.qml:57
 msgid "Clock"
 msgstr "घड़ी"
 
-#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1177 package/contents/ui/win10/Tile.qml:57
 msgid "Calendar"
 msgstr "कैलेंडर"
 
-#: package/contents/ui/main.qml:1113 package/contents/ui/win10/Tile.qml:57
+#: package/contents/ui/main.qml:1177 package/contents/ui/win10/Tile.qml:57
 msgid "System monitor"
 msgstr "सिस्टम मॉनिटर"
 
-#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1178 package/contents/ui/win10/Tile.qml:58
 msgid "Drives"
 msgstr "ड्राइव"
 
-#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1178 package/contents/ui/win10/Tile.qml:58
 msgid "Weather"
 msgstr "मौसम"
 
-#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1178 package/contents/ui/win10/Tile.qml:58
 msgid "Notes"
 msgstr "नोट्स"
 
-#: package/contents/ui/main.qml:1114 package/contents/ui/win10/Tile.qml:58
+#: package/contents/ui/main.qml:1178 package/contents/ui/win10/Tile.qml:58
 msgid "Photo"
 msgstr "फ़ोटो"
 
-#: package/contents/ui/main.qml:1116
+#: package/contents/ui/main.qml:1180
 msgid "KDE widgets…"
 msgstr "KDE विजेट…"
 
-#: package/contents/ui/main.qml:1446
+#: package/contents/ui/main.qml:1510
 msgid "Design mode — drag the dividers"
 msgstr "डिज़ाइन मोड — विभाजकों को खींचें"
 
-#: package/contents/ui/main.qml:1451 package/contents/ui/win10/Tile.qml:282
+#: package/contents/ui/main.qml:1515 package/contents/ui/win10/Tile.qml:282
 msgid "Reset"
 msgstr "रीसेट करें"
 
-#: package/contents/ui/main.qml:1456
+#: package/contents/ui/main.qml:1520
 msgid "Done"
 msgstr "हो गया"
 
-#: package/contents/ui/main.qml:1556
+#: package/contents/ui/main.qml:1620
 msgid "Edit menu layout"
 msgstr "मेनू लेआउट संपादित करें"
 
-#: package/contents/ui/main.qml:1561
+#: package/contents/ui/main.qml:1625
 msgctxt "@action:inmenu"
 msgid "Edit Applications…"
 msgstr "ऐप्लिकेशन संपादित करें…"
@@ -2319,17 +2359,17 @@ msgid "Good evening, %1!"
 msgstr "शुभ संध्या, %1!"
 
 #: package/contents/ui/styles/windows7.qml:298
-#: package/contents/ui/styles/xp.qml:410
+#: package/contents/ui/styles/xp.qml:428
 msgid "Unpin from Start menu"
 msgstr "स्टार्ट मेनू से अनपिन करें"
 
 #: package/contents/ui/styles/windows7.qml:299
-#: package/contents/ui/styles/xp.qml:417
+#: package/contents/ui/styles/xp.qml:435
 msgid "Pin to Start menu"
 msgstr "स्टार्ट मेनू पर पिन करें"
 
 #: package/contents/ui/styles/windows7.qml:483
-#: package/contents/ui/styles/xp.qml:545
+#: package/contents/ui/styles/xp.qml:563
 msgid "All Programs"
 msgstr "सभी प्रोग्राम"
 
@@ -2337,19 +2377,47 @@ msgstr "सभी प्रोग्राम"
 msgid "Search programs and files"
 msgstr "प्रोग्राम और फ़ाइलें खोजें"
 
-#: package/contents/ui/styles/xp.qml:412
+#: package/contents/ui/styles/xp.qml:430
 msgid "Move up"
 msgstr "ऊपर ले जाएँ"
 
-#: package/contents/ui/styles/xp.qml:413
+#: package/contents/ui/styles/xp.qml:431
 msgid "Move down"
 msgstr "नीचे ले जाएँ"
 
-#: package/contents/ui/styles/xp.qml:758
+#: package/contents/ui/styles/xp.qml:732
+msgid "My Documents"
+msgstr "मेरे दस्तावेज़"
+
+#: package/contents/ui/styles/xp.qml:732
+msgid "My Recent Documents"
+msgstr "मेरे हाल ही के दस्तावेज़"
+
+#: package/contents/ui/styles/xp.qml:733
+msgid "My Pictures"
+msgstr "मेरे चित्र"
+
+#: package/contents/ui/styles/xp.qml:733
+msgid "My Music"
+msgstr "मेरा संगीत"
+
+#: package/contents/ui/styles/xp.qml:734
+msgid "My Computer"
+msgstr "मेरा कंप्यूटर"
+
+#: package/contents/ui/styles/xp.qml:734
+msgid "Control Panel"
+msgstr "नियंत्रण कक्ष"
+
+#: package/contents/ui/styles/xp.qml:735
+msgid "Network Connections"
+msgstr "नेटवर्क कनेक्शन"
+
+#: package/contents/ui/styles/xp.qml:844
 msgid "Log Off"
 msgstr "लॉग ऑफ़ करें"
 
-#: package/contents/ui/styles/xp.qml:765
+#: package/contents/ui/styles/xp.qml:852
 msgid "Turn Off Computer"
 msgstr "कंप्यूटर बंद करें"
 

@@ -29,6 +29,8 @@ sh package/contents/ui/code/setup.sh --force
 # once no old name is left. Runs after setup.sh so the win12-* themes already exist when the old ones go.
 C="${XDG_CONFIG_HOME:-$HOME/.config}"; D="${XDG_DATA_HOME:-$HOME/.local/share}"
 A="$C/plasma-org.kde.plasma.desktop-appletsrc"
+# Win12-XP icon theme (own drawings; the XP windows look selects it).
+mkdir -p "$D/icons" && rm -rf "$D/icons/Win12-XP" && cp -r package/contents/icons/Win12-XP "$D/icons/Win12-XP"
 if grep -qs 'start12' "$A" "$C/kwinrc" "$C/kdeglobals" "$C/plasmarc" "$C/plasmashellrc" \
     || [ -d "$D/plasma/plasmoids/org.start12.menu" ]; then
     BK="$C/win12-migration-backup-$(date +%Y%m%d-%H%M%S)"

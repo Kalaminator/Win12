@@ -495,7 +495,7 @@ ContainmentItem {
         syncIcons();
     }
     // XP icons (Icons page): with the XP style the icon theme becomes xpIconTheme (empty = the first installed
-    // theme with "xp" in its folder or Name), the user's one is saved in savedIconTheme and put back after.
+    // theme with "xp" in its folder or Name, our own Win12-XP first), the user's one is saved in savedIconTheme and put back after.
     readonly property bool xpIcons: cfg.menuStyle === "xp" && cfg.xpIcons
     onXpIconsChanged: syncIcons()
     readonly property string xpIconTheme: cfg.xpIconTheme
@@ -503,7 +503,7 @@ ContainmentItem {
     function syncIcons() {
         if (!configReady) return;
         iconReader.connectSource("sh -c " + Tiles.shQuote("printf '%s|' \"$(kreadconfig6 --file kdeglobals --group Icons --key Theme)\"; "
-            + "for d in \"$HOME\"/.local/share/icons/* /usr/share/icons/*; do grep -qs ^Directories= \"$d/index.theme\" || continue; "
+            + "for d in \"$HOME\"/.local/share/icons/Win12-XP \"$HOME\"/.local/share/icons/* /usr/share/icons/*; do grep -qs ^Directories= \"$d/index.theme\" || continue; "
             + "case \"$(basename \"$d\") $(grep -m1 ^Name= \"$d/index.theme\")\" in *[xX][pP]*) basename \"$d\"; break;; esac; done"));
     }
     P5Support.DataSource {
