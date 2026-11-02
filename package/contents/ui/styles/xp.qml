@@ -671,7 +671,17 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: m.px(pb.modelData.main || style.luna ? 24 : 22)
                                 height: width
+                                // Luna: our Win12-XP file icon as a plain Image (Kirigami.Icon showed the theme icon instead).
+                                readonly property string xpSrc: pb.info && style.luna ? String(style.xpIcon(pb.info.icon.replace(/-symbolic$/, ""))) : ""
+                                readonly property bool xpFile: xpSrc.endsWith(".svg")
+                            Image {
+                                visible: parent.xpFile
+                                anchors.fill: parent
+                                sourceSize: Qt.size(width * 2, height * 2)
+                                source: parent.xpFile ? parent.xpSrc : ""
+                            }
                             Kirigami.Icon {
+                                visible: !parent.xpFile
                                 // Luna: looked up at 32 and drawn at 24 (the theme's 22/24 place icons are monochrome).
                                 anchors.centerIn: parent
                                 width: style.luna ? m.px(32) : parent.width
