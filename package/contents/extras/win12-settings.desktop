@@ -1,7 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=Win12 Settings
+Name[sv]=Win12-inställningar
 Comment=Change the Win12 menu style, icons, colours and transparency
+Comment[sv]=Ändra Win12-menyns stil, ikoner, färger och genomskinlighet
 Icon=preferences-desktop-theme-global
 Exec=win12-settings
 Categories=Settings;DesktopSettings;
