@@ -14,7 +14,7 @@ Create the product at https://store.kde.org (log in → *Add Product*).
   > window. Optional matching taskbar style, title bars, window colours and window glass (transparency, blur,
   > rounded corners) that are undone when you turn them off. Pinned apps, websites, files and folders,
   > grouped search, keyboard navigation, custom Start button, transparency and textures. Translated into
-  > Spanish, German, French, Italian, Portuguese (Brazil), Russian, Arabic, Hindi, Japanese and Chinese.
+  > Spanish, German, French, Italian, Portuguese (Brazil), Russian, Arabic, Hindi, Japanese, Chinese and Swedish.
   >
   > Needs python3 (generates the taskbar styles, title bars and colour schemes on first start) and the usual
   > KDE tools (qdbus6, kreadconfig6, kwriteconfig6). Not affiliated with Stardock.

@@ -68,7 +68,7 @@ App, Pro, Launcher and the KDE Plasma default.
 - Backup, restore and reset of all settings. Everything Win12 changes (taskbar style, title bars, colours) is
   undone when you switch it off, because your own Plasma Style, window decoration and colour scheme are saved first.
 - Translations: English, Spanish, French, German, Italian, Brazilian Portuguese, Russian, Arabic, Simplified
-  Chinese, Japanese and Hindi. It follows your Plasma language.
+  Chinese, Japanese, Hindi and Swedish. It follows your Plasma language.
 
 Full list: [docs/FEATURES.md](docs/FEATURES.md)
 
