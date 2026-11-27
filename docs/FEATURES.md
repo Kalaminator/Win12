@@ -128,7 +128,7 @@ On the Style page, *Taskbar* and *Window title bars* can follow the menu style. 
 
 ## Languages
 
-English, Spanish, French, German, Italian, Brazilian Portuguese, Russian, Arabic, Simplified Chinese, Japanese and Hindi. Win12 follows your Plasma language.
+English, Spanish, French, German, Italian, Brazilian Portuguese, Russian, Arabic, Simplified Chinese, Japanese, Hindi and Swedish. Win12 follows your Plasma language.
 
 ## Install and update
 
